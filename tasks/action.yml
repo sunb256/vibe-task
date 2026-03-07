@@ -8,14 +8,6 @@ impl_rule: |
   5. KISS/DRY/リーダブルコードの原則を守る
 
 task:
-  - id: 31
-    url: '-'
-    title: '-'
-    action: |
-      新規タスクでモーダル表示して
-      TASK内容は編集できるようにしたい
-      エディタはmonaco editorね
-
   - id: 32
     url: '-'
     title: '-'
@@ -30,3 +22,18 @@ task:
       repositoryPath は実在するリポジトリのディレクトリを指定します。は不要
       このモーダルのCLOSEボタンが小さい
       Create Projectでなくプロジェクト作成ボタン
+  - id: '34'
+    url: '-'
+    title: '-'
+    action: |-
+      TODOとDONEを表示非表示ができるようにしたい。TODOは既定で選択状態、DONEは規定では非選択状態
+      それが分かるようにしたい
+  - id: '35'
+    url: '-'
+    title: '-'
+    action: |
+      編集時もモーダル表示にしたい。別画面表示は廃止。
+      新規作成と同じでいいです
+
+      Ctrl+ENTERでタスク作成するショートカット
+      ESCでキャンセル

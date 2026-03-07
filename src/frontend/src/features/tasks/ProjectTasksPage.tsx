@@ -5,17 +5,23 @@ import { Notice } from "../../components/Notice";
 import { PageFrame } from "../../components/PageFrame";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { fetchProjects } from "../projects/projectApi";
+import { NewTaskDialog } from "./NewTaskDialog";
 import type { Project } from "../projects/types";
-import { createActionTask, deleteTask, fetchTasks } from "./taskApi";
+import { createActionTask, deleteTask, fetchTasks, updateTaskAction } from "./taskApi";
 import type { TaskRecord } from "./types";
+
+const defaultTaskAction = "TODO\n";
 
 export function ProjectTasksPage() {
   const { projectId = "" } = useParams();
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<TaskRecord[]>([]);
   const [error, setError] = useState("");
+  const [dialogError, setDialogError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newTaskAction, setNewTaskAction] = useState(defaultTaskAction);
 
   useEffect(() => {
     let cancelled = false;
@@ -63,16 +69,24 @@ export function ProjectTasksPage() {
     }
   }
 
+  function openCreateDialog() {
+    setDialogError("");
+    setNewTaskAction(defaultTaskAction);
+    setIsDialogOpen(true);
+  }
+
   async function handleCreate() {
     setIsCreating(true);
-    setError("");
+    setDialogError("");
     try {
-      await createActionTask(projectId);
+      const created = await createActionTask(projectId);
+      await updateTaskAction(projectId, "action", created.id, newTaskAction);
       const data = await readProjectPage(projectId);
       setProject(data.project);
       setTasks(data.tasks);
+      setIsDialogOpen(false);
     } catch (createError) {
-      setError(readError(createError, "task の作成に失敗しました。"));
+      setDialogError(readError(createError, "task の作成に失敗しました。"));
     } finally {
       setIsCreating(false);
     }
@@ -93,8 +107,8 @@ export function ProjectTasksPage() {
     >
       <section className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
         <div className="mb-4 flex justify-start">
-          <PrimaryButton type="button" onClick={() => void handleCreate()} disabled={isCreating}>
-            {isCreating ? "作成中..." : "新規タスク"}
+          <PrimaryButton type="button" onClick={openCreateDialog} disabled={isCreating}>
+            新規タスク
           </PrimaryButton>
         </div>
         {error ? <Notice tone="error" message={error} /> : null}
@@ -160,6 +174,21 @@ export function ProjectTasksPage() {
           </div>
         ) : null}
       </section>
+      <NewTaskDialog
+        isOpen={isDialogOpen}
+        isSaving={isCreating}
+        error={dialogError}
+        action={newTaskAction}
+        onActionChange={setNewTaskAction}
+        onClose={() => {
+          if (isCreating) {
+            return;
+          }
+          setDialogError("");
+          setIsDialogOpen(false);
+        }}
+        onSubmit={handleCreate}
+      />
     </PageFrame>
   );
 }
