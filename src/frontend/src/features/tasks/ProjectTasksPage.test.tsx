@@ -1,8 +1,21 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, vi } from "vitest";
 
 import { ProjectTasksPage } from "./ProjectTasksPage";
+
+vi.mock("@monaco-editor/react", () => ({
+  default: (props: {
+    value?: string;
+    onChange?: (value: string) => void;
+  }) => (
+    <textarea
+      aria-label="task-editor"
+      value={props.value ?? ""}
+      onChange={(event) => props.onChange?.(event.target.value)}
+    />
+  ),
+}));
 
 vi.mock("../projects/projectApi", () => ({
   fetchProjects: vi.fn(),
@@ -12,10 +25,11 @@ vi.mock("./taskApi", () => ({
   createActionTask: vi.fn(),
   deleteTask: vi.fn(),
   fetchTasks: vi.fn(),
+  updateTaskAction: vi.fn(),
 }));
 
 import { fetchProjects } from "../projects/projectApi";
-import { fetchTasks } from "./taskApi";
+import { createActionTask, fetchTasks, updateTaskAction } from "./taskApi";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -136,4 +150,98 @@ test("does not render the removed project subtitle", async () => {
     "bg-emerald-100",
     "text-emerald-700",
   );
+});
+
+test("creates a new action task from modal editor", async () => {
+  vi.mocked(fetchProjects).mockResolvedValue({
+    projects: [
+      {
+        id: "project-1",
+        name: "impl",
+        repositoryPath: "/tmp/impl",
+        actionListPath: "tasks/action.yml",
+        doneListPath: "tasks/done.yml",
+      },
+    ],
+  });
+  vi.mocked(fetchTasks)
+    .mockResolvedValueOnce({
+      tasks: [
+        {
+          projectId: "project-1",
+          source: "action",
+          id: "1",
+          title: "-",
+          url: "-",
+          action: "first task",
+        },
+      ],
+    })
+    .mockResolvedValueOnce({
+      tasks: [
+        {
+          projectId: "project-1",
+          source: "action",
+          id: "1",
+          title: "-",
+          url: "-",
+          action: "first task",
+        },
+        {
+          projectId: "project-1",
+          source: "action",
+          id: "2",
+          title: "-",
+          url: "-",
+          action: "newly created task",
+        },
+      ],
+    });
+  vi.mocked(createActionTask).mockResolvedValue({
+    projectId: "project-1",
+    source: "action",
+    id: "2",
+    title: "-",
+    url: "-",
+    action: "TODO\n",
+  });
+  vi.mocked(updateTaskAction).mockResolvedValue({
+    projectId: "project-1",
+    source: "action",
+    id: "2",
+    title: "-",
+    url: "-",
+    action: "newly created task\n",
+  });
+
+  render(
+    <MemoryRouter initialEntries={["/projects/project-1"]}>
+      <Routes>
+        <Route path="/projects/:projectId" element={<ProjectTasksPage />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("Project: impl")).toBeInTheDocument();
+  });
+
+  fireEvent.click(screen.getByRole("button", { name: "新規タスク" }));
+  expect(screen.getByRole("dialog", { name: "New Task" })).toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText("task-editor"), {
+    target: { value: "newly created task" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Create Task" }));
+
+  await waitFor(() => {
+    expect(createActionTask).toHaveBeenCalledWith("project-1");
+    expect(updateTaskAction).toHaveBeenCalledWith(
+      "project-1",
+      "action",
+      "2",
+      "newly created task",
+    );
+    expect(screen.getByText("newly created task")).toBeInTheDocument();
+  });
+  expect(screen.queryByRole("dialog", { name: "New Task" })).not.toBeInTheDocument();
 });

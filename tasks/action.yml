@@ -30,3 +30,9 @@ task:
       repositoryPath は実在するリポジトリのディレクトリを指定します。は不要
       このモーダルのCLOSEボタンが小さい
       Create Projectでなくプロジェクト作成ボタン
+  - id: '34'
+    url: '-'
+    title: '-'
+    action: |
+      TODOとDONEを表示非表示ができるようにしたい。TODOは規定で選択状態、DONEは規定では非選択状態
+      それが分かるようにしたい
