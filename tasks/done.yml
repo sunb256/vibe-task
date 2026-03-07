@@ -120,3 +120,10 @@ task:
     title: projects.yml の形式不正を修正
     action: |
       projects file is invalid になる。直して
+
+  - id: 10
+    url: https://github.com/sunb256/impl/pull/14
+    title: projects の id 採番を連番に変更
+    action: |
+      tasks/project.yml
+      idはただの連番でいい
