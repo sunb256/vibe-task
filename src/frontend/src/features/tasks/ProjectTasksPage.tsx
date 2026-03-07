@@ -105,8 +105,7 @@ export function ProjectTasksPage() {
             <table className="min-w-full border-separate border-spacing-y-3 text-left text-sm">
               <thead>
                 <tr className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
-                  <th className="px-3">id</th>
-                  <th className="px-3">source</th>
+                  <th className="px-3">id/source</th>
                   <th className="px-3">task</th>
                   <th className="px-3">actions</th>
                   <th className="px-3">url</th>
@@ -116,13 +115,10 @@ export function ProjectTasksPage() {
                 {tasks.map((task) => (
                   <tr key={`${task.source}-${task.id}`}>
                     <td className="rounded-l-md border-y border-l border-[var(--border)] bg-white px-3 py-4 text-[var(--muted)]">
-                      {task.id}
-                    </td>
-                    <td className="border-y border-[var(--border)] bg-white px-3 py-4">
                       <span
                         className={`rounded-md px-3 py-1 text-xs font-semibold uppercase ${sourceBadgeTone(task.source)}`}
                       >
-                        {task.source}
+                        {sourceTag(task)}
                       </span>
                     </td>
                     <td className="border-y border-[var(--border)] bg-white px-3 py-4">
@@ -145,7 +141,7 @@ export function ProjectTasksPage() {
                         </Link>
                         <PrimaryButton
                           type="button"
-                          className="w-20 bg-rose-500 hover:bg-rose-600 focus-visible:outline-rose-500"
+                          className="w-20 bg-rose-200 text-rose-700 hover:bg-rose-300 focus-visible:outline-rose-300"
                           onClick={() => void handleDelete(task)}
                         >
                           削除
@@ -196,7 +192,7 @@ function TaskPrLink(props: TaskPrLinkProps) {
       href={props.url}
       target="_blank"
       rel="noreferrer"
-      className="text-sm font-semibold text-[var(--accent)] underline decoration-1 underline-offset-4 transition hover:text-[var(--accent-strong)]"
+      className="inline-flex items-center justify-center rounded-md border border-[var(--accent)]/30 bg-[var(--accent)]/10 px-3 py-1.5 text-xs font-semibold text-[var(--accent)] transition hover:bg-[var(--accent)]/18"
     >
       {prLabel(props.url)}
     </a>
@@ -208,7 +204,7 @@ function prLabel(url: string) {
   if (!matched) {
     return "PR";
   }
-  return `PR #${matched[1]}`;
+  return `PR#${matched[1]}`;
 }
 
 function showTaskTitle(title: string) {
@@ -220,4 +216,15 @@ function sourceBadgeTone(source: TaskRecord["source"]) {
     return "bg-emerald-100 text-emerald-700";
   }
   return "bg-amber-100 text-amber-700";
+}
+
+function sourceLabel(source: TaskRecord["source"]) {
+  if (source === "done") {
+    return "DONE";
+  }
+  return "TODO";
+}
+
+function sourceTag(task: TaskRecord) {
+  return `${sourceLabel(task.source)}(${task.id})`;
 }
