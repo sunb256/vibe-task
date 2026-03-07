@@ -23,11 +23,16 @@ export function ProjectTasksPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<TaskRecord[]>([]);
   const [error, setError] = useState("");
-  const [dialogError, setDialogError] = useState("");
+  const [createError, setCreateError] = useState("");
+  const [editError, setEditError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTask, setEditTask] = useState<TaskRecord | null>(null);
   const [newTaskAction, setNewTaskAction] = useState(defaultTaskAction);
+  const [editTaskAction, setEditTaskAction] = useState("");
   const [showTodo, setShowTodo] = useState(true);
   const [showDone, setShowDone] = useState(false);
 
@@ -84,23 +89,67 @@ export function ProjectTasksPage() {
   }
 
   function openCreateDialog() {
-    setDialogError("");
+    setCreateError("");
     setNewTaskAction(defaultTaskAction);
-    setIsDialogOpen(true);
+    setIsCreateOpen(true);
+  }
+
+  function closeCreateDialog() {
+    if (isCreating) {
+      return;
+    }
+    setCreateError("");
+    setIsCreateOpen(false);
+  }
+
+  function openEditDialog(task: TaskRecord) {
+    setEditError("");
+    setEditTask(task);
+    setEditTaskAction(task.action);
+    setIsEditOpen(true);
+  }
+
+  function closeEditDialog() {
+    if (isEditing) {
+      return;
+    }
+    setEditError("");
+    setIsEditOpen(false);
+    setEditTask(null);
+    setEditTaskAction("");
   }
 
   async function handleCreate() {
     setIsCreating(true);
-    setDialogError("");
+    setCreateError("");
     try {
       const created = await createActionTask(projectId);
       await updateTaskAction(projectId, "action", created.id, newTaskAction);
       await refreshTasks(projectId, setTasks);
-      setIsDialogOpen(false);
+      setIsCreateOpen(false);
     } catch (createError) {
-      setDialogError(readError(createError, "task の作成に失敗しました。"));
+      setCreateError(readError(createError, "task の作成に失敗しました。"));
     } finally {
       setIsCreating(false);
+    }
+  }
+
+  async function handleEdit() {
+    if (!editTask) {
+      return;
+    }
+    setIsEditing(true);
+    setEditError("");
+    try {
+      await updateTaskAction(projectId, editTask.source, editTask.id, editTaskAction);
+      await refreshTasks(projectId, setTasks);
+      setIsEditOpen(false);
+      setEditTask(null);
+      setEditTaskAction("");
+    } catch (saveError) {
+      setEditError(readError(saveError, "task の更新に失敗しました。"));
+    } finally {
+      setIsEditing(false);
     }
   }
 
@@ -180,12 +229,13 @@ export function ProjectTasksPage() {
                     </td>
                     <td className="border-y border-[var(--border)] bg-[var(--panel-strong)] pl-1 pr-3 py-3">
                       <div className="flex items-center gap-2">
-                        <Link
-                          to={`/projects/${projectId}/tasks/${task.source}/${task.id}/edit`}
+                        <button
+                          type="button"
+                          onClick={() => openEditDialog(task)}
                           className="inline-flex w-20 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 py-2 font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
                         >
                           編集
-                        </Link>
+                        </button>
                         <PrimaryButton
                           type="button"
                           className="w-20 border border-rose-200 bg-white !text-rose-700 hover:border-rose-300 hover:bg-rose-50 focus-visible:outline-rose-300"
@@ -206,19 +256,32 @@ export function ProjectTasksPage() {
         ) : null}
       </section>
       <NewTaskDialog
-        isOpen={isDialogOpen}
+        isOpen={isCreateOpen}
         isSaving={isCreating}
-        error={dialogError}
+        error={createError}
         action={newTaskAction}
+        title="新規タスク"
+        description=""
+        submitLabel="新規作成"
+        submittingLabel="作成中..."
+        enableShortcut
         onActionChange={setNewTaskAction}
-        onClose={() => {
-          if (isCreating) {
-            return;
-          }
-          setDialogError("");
-          setIsDialogOpen(false);
-        }}
+        onClose={closeCreateDialog}
         onSubmit={handleCreate}
+      />
+      <NewTaskDialog
+        isOpen={isEditOpen}
+        isSaving={isEditing}
+        error={editError}
+        action={editTaskAction}
+        title={editTask ? `Edit Task ${editTask.id}` : "Edit Task"}
+        description=""
+        submitLabel="更新"
+        submittingLabel="更新中..."
+        enableShortcut
+        onActionChange={setEditTaskAction}
+        onClose={closeEditDialog}
+        onSubmit={handleEdit}
       />
     </PageFrame>
   );

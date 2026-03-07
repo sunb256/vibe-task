@@ -318,3 +318,13 @@ task:
     action: |-
       TODOとDONEを表示非表示ができるようにしたい。TODOは既定で選択状態、DONEは規定では非選択状態
       それが分かるようにしたい
+
+  - id: 35
+    url: https://github.com/sunb256/impl/pull/39
+    title: Project画面の編集をモーダル化しショートカット操作を追加
+    action: |
+      編集時もモーダル表示にしたい。別画面表示は廃止。
+      新規作成と同じでいいです
+
+      エディタ画面ではCtrl+ENTERで保存するショートカット
+      ESCでキャンセルして戻る

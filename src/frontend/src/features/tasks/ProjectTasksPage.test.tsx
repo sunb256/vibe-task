@@ -125,12 +125,11 @@ test("does not render the removed project subtitle", async () => {
     "https://github.com/sunb256/impl/pull/4",
   );
   expect(screen.getByRole("link", { name: "PR#4" })).toHaveClass("rounded-md");
-  const editLinks = screen.getAllByRole("link", { name: "編集" });
-  expect(editLinks).toHaveLength(1);
-  expect(editLinks[0]).toHaveAttribute("href", "/projects/project-1/tasks/action/1/edit");
+  const editButtons = screen.getAllByRole("button", { name: "編集" });
+  expect(editButtons).toHaveLength(1);
   expect(screen.getAllByRole("button", { name: "削除" })).toHaveLength(1);
-  expect(editLinks[0]).toHaveClass("w-20");
-  expect(editLinks[0].closest("td")).toHaveClass("pl-1", "pr-3");
+  expect(editButtons[0]).toHaveClass("w-20");
+  expect(editButtons[0].closest("td")).toHaveClass("pl-1", "pr-3");
   expect(screen.getAllByRole("button", { name: "削除" })[0]).toHaveClass("w-20");
   expect(screen.getAllByRole("button", { name: "削除" })[0]).toHaveClass(
     "bg-white",
@@ -138,8 +137,8 @@ test("does not render the removed project subtitle", async () => {
     "!text-rose-700",
   );
   expect(screen.getByRole("link", { name: "PR#4" }).closest("td")).toHaveClass("text-center");
-  expect(editLinks[0].parentElement).toHaveClass("flex", "items-center");
-  expect(editLinks[0].parentElement).not.toHaveClass("flex-wrap");
+  expect(editButtons[0].parentElement).toHaveClass("flex", "items-center");
+  expect(editButtons[0].parentElement).not.toHaveClass("flex-wrap");
   const rows = screen.getAllByRole("row");
   expect(rows).toHaveLength(2);
   expect(rows[1].querySelector("td")).toHaveClass("py-3");
@@ -158,7 +157,7 @@ test("does not render the removed project subtitle", async () => {
   fireEvent.click(doneToggle);
 
   await waitFor(() => {
-    expect(screen.getAllByRole("link", { name: "編集" })).toHaveLength(3);
+    expect(screen.getAllByRole("button", { name: "編集" })).toHaveLength(3);
   });
   expect(doneToggle).toHaveAttribute("aria-pressed", "true");
   expect(screen.getByText("done-title-10")).toBeInTheDocument();
@@ -326,11 +325,17 @@ test("creates a new action task from modal editor", async () => {
   });
 
   fireEvent.click(screen.getByRole("button", { name: "新規タスク" }));
-  expect(screen.getByRole("dialog", { name: "New Task" })).toBeInTheDocument();
+  expect(screen.getByRole("dialog", { name: "新規タスク" })).toBeInTheDocument();
+  fireEvent.keyDown(window, { key: "Escape" });
+  expect(screen.queryByRole("dialog", { name: "新規タスク" })).not.toBeInTheDocument();
+  expect(createActionTask).not.toHaveBeenCalled();
+
+  fireEvent.click(screen.getByRole("button", { name: "新規タスク" }));
+  expect(screen.getByRole("dialog", { name: "新規タスク" })).toBeInTheDocument();
   fireEvent.change(screen.getByLabelText("task-editor"), {
     target: { value: "newly created task" },
   });
-  fireEvent.click(screen.getByRole("button", { name: "Create Task" }));
+  fireEvent.keyDown(window, { key: "Enter", ctrlKey: true });
 
   await waitFor(() => {
     expect(createActionTask).toHaveBeenCalledWith("project-1");
@@ -342,5 +347,83 @@ test("creates a new action task from modal editor", async () => {
     );
     expect(screen.getByText("newly created task")).toBeInTheDocument();
   });
-  expect(screen.queryByRole("dialog", { name: "New Task" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("dialog", { name: "新規タスク" })).not.toBeInTheDocument();
+});
+
+test("edits a task in modal editor and supports keyboard shortcuts", async () => {
+  vi.mocked(fetchProjects).mockResolvedValue({
+    projects: [
+      {
+        id: "project-1",
+        name: "impl",
+        repositoryPath: "/tmp/impl",
+        actionListPath: "tasks/action.yml",
+        doneListPath: "tasks/done.yml",
+      },
+    ],
+  });
+  vi.mocked(fetchTasks)
+    .mockResolvedValueOnce({
+      tasks: [
+        {
+          projectId: "project-1",
+          source: "action",
+          id: "1",
+          title: "-",
+          url: "-",
+          action: "first task",
+        },
+      ],
+    })
+    .mockResolvedValueOnce({
+      tasks: [
+        {
+          projectId: "project-1",
+          source: "action",
+          id: "1",
+          title: "-",
+          url: "-",
+          action: "edited task",
+        },
+      ],
+    });
+  vi.mocked(updateTaskAction).mockResolvedValue({
+    projectId: "project-1",
+    source: "action",
+    id: "1",
+    title: "-",
+    url: "-",
+    action: "edited task",
+  });
+
+  render(
+    <MemoryRouter initialEntries={["/projects/project-1"]}>
+      <Routes>
+        <Route path="/projects/:projectId" element={<ProjectTasksPage />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("Project: impl")).toBeInTheDocument();
+  });
+
+  fireEvent.click(screen.getByRole("button", { name: "編集" }));
+  expect(screen.getByRole("dialog", { name: "Edit Task 1" })).toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText("task-editor"), {
+    target: { value: "edited task" },
+  });
+  fireEvent.keyDown(window, { key: "Enter", ctrlKey: true });
+
+  await waitFor(() => {
+    expect(updateTaskAction).toHaveBeenCalledWith("project-1", "action", "1", "edited task");
+    expect(screen.getByText("edited task")).toBeInTheDocument();
+  });
+  expect(screen.queryByRole("dialog", { name: "Edit Task 1" })).not.toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole("button", { name: "編集" }));
+  expect(screen.getByRole("dialog", { name: "Edit Task 1" })).toBeInTheDocument();
+  fireEvent.keyDown(window, { key: "Escape" });
+  expect(screen.queryByRole("dialog", { name: "Edit Task 1" })).not.toBeInTheDocument();
+  expect(updateTaskAction).toHaveBeenCalledTimes(1);
 });
