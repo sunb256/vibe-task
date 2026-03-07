@@ -440,3 +440,10 @@ task:
     title: プロジェクト一覧に編集機能と更新APIを追加
     action: |-
       プロジェクトの変更ができる画面が欲しい
+  - id: 50
+    url: https://github.com/sunb256/impl/pull/54
+    title: タスク一覧に上下ボタンでID入れ替え機能を追加
+    action: |
+      タスクの順位の入れ替え機能が欲しい
+
+      上下ボタンがあって、taskidを入れ替えることができる機能
