@@ -152,3 +152,11 @@ task:
       編集ボタンの背景が白は良くない、別の色
       削除ボタンの背景が赤できつい、もう少し柔らかい赤
       PR#xはリンクっぽくしたい
+
+  - id: 14
+    url: https://github.com/sunb256/impl/pull/17
+    title: Project画面からaction taskを新規作成できるようにする
+    action: |
+      Project画面
+      新規ボタンを追加する
+      追加したデータはaction.ymlに追加する

@@ -8,14 +8,6 @@ impl_rule: |
  5. KISS/DRY/リーダブルコードの原則を守る
 
 task: 
-  - id: 14
-    url: -
-    title: -
-    action: |
-      Project画面
-      新規ボタンを追加する
-      追加したデータはaction.ymlに追加する
-
   - id: 15
     url: -
     title: -
