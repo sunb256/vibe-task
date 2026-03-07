@@ -1,5 +1,12 @@
-import { type DragEvent, useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import {
+  type DragEvent,
+  type MouseEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 import { Notice } from "../../components/Notice";
 import { PageFrame } from "../../components/PageFrame";
@@ -16,6 +23,7 @@ import { ProjectSettingsDialog } from "./ProjectSettingsDialog";
 import { defaultProjectForm, type Project, type ProjectFormState } from "./types";
 
 export function ProjectListPage() {
+  const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [error, setError] = useState("");
   const [dialogError, setDialogError] = useState("");
@@ -174,6 +182,13 @@ export function ProjectListPage() {
     setDropProjectId(null);
   }
 
+  function handleCardClick(event: MouseEvent<HTMLElement>, projectId: string) {
+    if (isReordering || isInteractiveTarget(event.target)) {
+      return;
+    }
+    navigate(`/projects/${projectId}`);
+  }
+
   return (
     <>
       <PageFrame
@@ -218,6 +233,7 @@ export function ProjectListPage() {
               onDragOver={(event) => handleDragOver(event, project.id)}
               onDrop={(event) => void handleDrop(event, project.id)}
               onDragEnd={handleDragEnd}
+              onClick={(event) => handleCardClick(event, project.id)}
               className={`h-full rounded-xl border bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)] transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_1px_0_rgba(9,9,11,0.05),0_18px_42px_rgba(9,9,11,0.12)] ${
                 dropProjectId === project.id && dragProjectId !== project.id
                   ? "border-[var(--accent)] ring-2 ring-[var(--accent)]/30"
@@ -252,7 +268,10 @@ export function ProjectListPage() {
               <div className="mt-4 flex justify-end gap-2">
                 <button
                   type="button"
-                  onClick={() => openEditDialog(project)}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    openEditDialog(project);
+                  }}
                   className="rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
                 >
                   編集
@@ -260,7 +279,10 @@ export function ProjectListPage() {
                 <button
                   type="button"
                   disabled={isDeleting}
-                  onClick={() => void handleDelete(project)}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    void handleDelete(project);
+                  }}
                   className="rounded-lg border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-700 transition hover:border-rose-300 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   削除
@@ -318,4 +340,11 @@ function toFormState(project: Project): ProjectFormState {
     actionListPath: project.actionListPath,
     doneListPath: project.doneListPath,
   };
+}
+
+function isInteractiveTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+  return Boolean(target.closest("a,button,input,textarea,select,label,[role='button']"));
 }

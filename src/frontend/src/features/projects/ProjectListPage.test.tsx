@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, vi } from "vitest";
 
 import { ProjectListPage } from "./ProjectListPage";
@@ -270,6 +270,46 @@ test("reorders project cards by drag and drop", async () => {
       .getAllByRole("heading", { level: 2 })
       .map((heading) => heading.textContent);
     expect(cardTitles).toEqual(["impl-2", "impl"]);
+  });
+});
+
+test("navigates when clicking project card area", async () => {
+  vi.spyOn(globalThis, "fetch").mockResolvedValue(
+    new Response(
+      JSON.stringify({
+        projects: [
+          {
+            id: "project-1",
+            name: "impl",
+            repositoryPath: "/tmp/impl",
+            actionListPath: "tasks/action.yml",
+            doneListPath: "tasks/done.yml",
+          },
+        ],
+      }),
+    ),
+  );
+
+  render(
+    <MemoryRouter initialEntries={["/"]}>
+      <Routes>
+        <Route path="/" element={<ProjectListPage />} />
+        <Route path="/projects/:projectId" element={<div>project page</div>} />
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("impl")).toBeInTheDocument();
+  });
+
+  const projectCard = screen.getByText("impl").closest("article");
+  if (!projectCard) {
+    throw new Error("project card is missing");
+  }
+  fireEvent.click(projectCard);
+  await waitFor(() => {
+    expect(screen.getByText("project page")).toBeInTheDocument();
   });
 });
 
