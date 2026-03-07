@@ -154,6 +154,7 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
                 wordWrap: "on",
                 padding: { top: 8 },
                 renderLineHighlight: "none",
+                editContext: false,
               }}
             />
           </div>

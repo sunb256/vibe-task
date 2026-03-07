@@ -10,9 +10,11 @@ vi.mock("@monaco-editor/react", () => ({
     value?: string;
     onChange?: (value: string) => void;
     onMount?: (editor: { focus: () => void; addCommand: () => number }, monaco: unknown) => void;
+    options?: { editContext?: boolean };
   }) => (
     <textarea
       aria-label="task-editor"
+      data-edit-context={String(props.options?.editContext)}
       value={props.value ?? ""}
       ref={(node) => {
         if (!node || !props.onMount) {
@@ -104,7 +106,7 @@ test("does not render the removed project subtitle", async () => {
   );
 
   await waitFor(() => {
-    expect(screen.getByText("Project: impl")).toBeInTheDocument();
+    expect(screen.getByText("impl")).toBeInTheDocument();
   });
   expect(screen.getAllByRole("columnheader").map((header) => header.textContent)).toEqual([
     "id",
@@ -122,7 +124,7 @@ test("does not render the removed project subtitle", async () => {
   expect(createButton).toBeInTheDocument();
   expect(createButton.parentElement).toHaveClass("justify-start", "pl-2");
   expect(screen.queryByRole("button", { name: "新規" })).not.toBeInTheDocument();
-  expect(screen.getByRole("link", { name: "Project: impl" })).toHaveAttribute(
+  expect(screen.getByRole("link", { name: "impl" })).toHaveAttribute(
     "href",
     "/",
   );
@@ -259,7 +261,7 @@ test("swaps task ids with up/down buttons", async () => {
   );
 
   await waitFor(() => {
-    expect(screen.getByText("Project: impl")).toBeInTheDocument();
+    expect(screen.getByText("impl")).toBeInTheDocument();
   });
 
   fireEvent.click(screen.getByRole("button", { name: "task 1 を下へ" }));
@@ -424,13 +426,14 @@ test("creates a new action task from modal editor", async () => {
   );
 
   await waitFor(() => {
-    expect(screen.getByText("Project: impl")).toBeInTheDocument();
+    expect(screen.getByText("impl")).toBeInTheDocument();
   });
 
   fireEvent.keyDown(window, { key: "n", ctrlKey: true });
   expect(screen.getByRole("dialog", { name: "新規タスク" })).toBeInTheDocument();
   expect(screen.getByLabelText("task-editor")).toHaveFocus();
   expect(screen.getByLabelText("task-editor")).toHaveValue("");
+  expect(screen.getByLabelText("task-editor")).toHaveAttribute("data-edit-context", "false");
   fireEvent.keyDown(window, { key: "Escape" });
   expect(screen.queryByRole("dialog", { name: "新規タスク" })).not.toBeInTheDocument();
   expect(screen.getByRole("button", { name: "新規タスク(N)" })).toHaveFocus();
@@ -528,7 +531,7 @@ test("edits a task in modal editor and supports keyboard shortcuts", async () =>
   );
 
   await waitFor(() => {
-    expect(screen.getByText("Project: impl")).toBeInTheDocument();
+    expect(screen.getByText("impl")).toBeInTheDocument();
   });
 
   fireEvent.click(screen.getByRole("button", { name: "編集" }));

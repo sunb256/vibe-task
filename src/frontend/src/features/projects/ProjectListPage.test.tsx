@@ -41,6 +41,8 @@ test("renders project cards", async () => {
   expect(pageTitle).toBeInTheDocument();
   expect(pageTitle).toHaveClass("text-xl");
   expect(screen.getByRole("link", { name: "Project 一覧" })).toHaveAttribute("href", "/");
+  const pageTitleLink = screen.getByRole("link", { name: "Project 一覧" });
+  expect(pageTitleLink.querySelector('img[src="/assets/images/logs.svg"]')).not.toBeNull();
   expect(screen.getByRole("button", { name: "新規プロジェクト" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Setting" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "編集" })).toBeInTheDocument();

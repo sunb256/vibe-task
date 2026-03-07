@@ -214,9 +214,15 @@ export function ProjectTasksPage() {
       title={
         <Link
           to="/"
-          className="rounded-sm transition hover:text-[var(--muted)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
+          className="inline-flex items-center gap-2 rounded-sm transition hover:text-[var(--muted)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
         >
-          {project ? `Project: ${project.name}` : "Project"}
+          <img
+            src="/assets/images/code-xml.svg"
+            alt=""
+            aria-hidden="true"
+            className="h-5 w-5 shrink-0 mt-[3px]"
+          />
+          <span>{project ? project.name : "Project"}</span>
         </Link>
       }
     >
