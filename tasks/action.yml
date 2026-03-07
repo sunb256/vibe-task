@@ -8,17 +8,24 @@ impl_rule: |
   5. KISS/DRY/リーダブルコードの原則を守る
 
 task:
-  - id: '47'
-    url: '-'
-    title: '-'
-    action: |-
-      新規タスク作成で、TODOタスクがない場合、1から始めないで、DONEタスクのMAX+1をidにしたい
   - id: '48'
     url: '-'
     title: '-'
-    action: |
+    action: |-
       repositoryPathは環境変数を含めたパスを取り扱えるようにしたい
-      
+
       $HOME/path/to/dir
-      
+
       みたいなことを考えている
+  - id: '49'
+    url: '-'
+    title: '-'
+    action: |-
+      プロジェクトの変更ができる画面が欲しい
+  - id: '50'
+    url: '-'
+    title: '-'
+    action: |
+      タスクの順位の入れ替え機能が欲しい
+
+      上下ボタンがあって、taskidを入れ替えることができる機能

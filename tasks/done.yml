@@ -419,3 +419,9 @@ task:
     action: |-
       新規プロジェクト画面
       repositoryPathは長くなることが多いので２カラムにしないようにしたい
+
+  - id: 47
+    url: https://github.com/sunb256/impl/pull/51
+    title: TODO空時の新規タスクID採番をDONE最大値基準に調整
+    action: |-
+      新規タスク作成で、TODOタスクがない場合、1から始めないで、DONEタスクのMAX+1をidにしたい
