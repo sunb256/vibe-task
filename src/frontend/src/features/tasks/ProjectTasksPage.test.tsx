@@ -65,4 +65,7 @@ test("does not render the removed project subtitle", async () => {
     "href",
     "https://github.com/sunb256/impl/pull/4",
   );
+  expect(
+    screen.getAllByRole("columnheader").map((header) => header.textContent),
+  ).toEqual(["id", "source", "title", "action", "actions", "url"]);
 });
