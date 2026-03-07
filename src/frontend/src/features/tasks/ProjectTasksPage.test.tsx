@@ -116,6 +116,7 @@ test("does not render the removed project subtitle", async () => {
   await waitFor(() => {
     expect(screen.getByText("impl")).toBeInTheDocument();
   });
+  expect(screen.getByText("VIBE TASK")).toBeInTheDocument();
   expect(screen.getAllByRole("columnheader").map((header) => header.textContent)).toEqual([
     "id",
     "task",

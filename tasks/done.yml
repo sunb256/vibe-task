@@ -536,3 +536,8 @@ task:
     title: projects.yml欠損時に初期ファイルを自動作成
     action: |
       /app/tasks/projects.yml がなかったら新規作成するみたいな方式にしておきたい。dockerで使用するので
+  - id: 67
+    url: https://github.com/sunb256/vibe-task/pull/71
+    title: ヘッダーのCode Manager表記をVIBE TASKに変更
+    action: |
+      CODE MANAGER でなくて  VIBE TASK にして
