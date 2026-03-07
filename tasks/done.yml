@@ -104,3 +104,13 @@ task:
     action: |
       プロジェクト画面
       EDITとDELETEは編集、削除にして
+
+  - id: 8
+    url: https://github.com/sunb256/impl/pull/12
+    title: プロジェクト画面のタスク列順をテストで固定化
+    action: |
+      プロジェクト画面
+      id	title	url	source	action	actions
+      でなく
+      id	source  title	action  actions url
+      の順にして
