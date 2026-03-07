@@ -87,3 +87,10 @@ task:
     action: |
       プロジェクト画面
       URLはURL文字列でなくPRとして
+  - id: 6
+    url: https://github.com/sunb256/impl/pull/6
+    title: プロジェクト画面のタイトルからTOPへ戻れるようにする
+    action: |
+      プロジェクト画面
+      BACK TO TOPのリンクはいらない。
+      ヘッダ部のタイトルでTOPページに戻りたい

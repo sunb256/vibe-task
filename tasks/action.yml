@@ -8,14 +8,6 @@ impl_rule: |
  5. KISS/DRY/リーダブルコードの原則を守る
 
 task: 
-  - id: 6
-    url: -
-    title: -
-    action: |
-      プロジェクト画面
-      BACK TO TOPのリンクはいらない。
-      ヘッダ部のタイトルでTOPページに戻りたい
-
   - id: 7
     url: -
     title: -
