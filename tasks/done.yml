@@ -447,3 +447,9 @@ task:
       タスクの順位の入れ替え機能が欲しい
 
       上下ボタンがあって、taskidを入れ替えることができる機能
+  - id: 51
+    url: https://github.com/sunb256/impl/pull/55
+    title: タスクモーダル表示時のEditorフォーカスを改善
+    action: |-
+      新規タスクを選択してモーダルを表示したときにEDITORニFOCI'Sが当たっていてほしい。
+      編集時も同じです
