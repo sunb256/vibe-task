@@ -103,9 +103,7 @@ export function ProjectTasksPage() {
                       {task.title}
                     </td>
                     <td className="border-y border-[var(--border)] bg-white px-3 py-4">
-                      <span className="block max-w-[14rem] break-all">
-                        {task.url}
-                      </span>
+                      <TaskPrLink url={task.url} />
                     </td>
                     <td className="border-y border-[var(--border)] bg-white px-3 py-4">
                       <span className="rounded-lg bg-[var(--accent)]/10 px-3 py-1 text-xs font-semibold uppercase text-[var(--accent)]">
@@ -159,4 +157,33 @@ async function readProjectPage(projectId: string) {
   ]);
   const project = projectResponse.projects.find((item) => item.id === projectId) ?? null;
   return { project, tasks: taskResponse.tasks };
+}
+
+type TaskPrLinkProps = {
+  url: string;
+};
+
+function TaskPrLink(props: TaskPrLinkProps) {
+  if (props.url === "-") {
+    return <span className="block max-w-[14rem] break-all">-</span>;
+  }
+
+  return (
+    <a
+      href={props.url}
+      target="_blank"
+      rel="noreferrer"
+      className="inline-flex rounded-full border border-[var(--border)] px-3 py-1 text-xs font-semibold text-[var(--accent)] transition hover:border-[var(--accent)] hover:bg-[var(--accent)]/8"
+    >
+      {prLabel(props.url)}
+    </a>
+  );
+}
+
+function prLabel(url: string) {
+  const matched = /\/pull\/(\d+)$/.exec(url);
+  if (!matched) {
+    return "PR";
+  }
+  return `PR #${matched[1]}`;
 }

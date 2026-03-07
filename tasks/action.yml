@@ -8,13 +8,6 @@ impl_rule: |
  5. KISS/DRY/リーダブルコードの原則を守る
 
 task: 
-  - id: 5
-    url: -
-    title: -
-    action: |
-      プロジェクト画面
-      URLはURL文字列でなくPRとして
-      
   - id: 6
     url: -
     title: -
@@ -46,3 +39,9 @@ task:
     action: |
       tasks/project.yml
       idはただの連番でいい
+
+  - id: 10
+    url: -
+    title: -
+    action: |
+      ACTIONとDONEの色合いは変えてほしい

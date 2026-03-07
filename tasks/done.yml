@@ -82,3 +82,9 @@ task:
       プロジェクト画面
       action と done の task をまとめて表示します。source 列で所属ファイルを判別できます。
       の文字はいらない
+  - id: 5
+    url: https://github.com/sunb256/impl/pull/5
+    title: プロジェクト画面のURLをPRリンク表示に変更
+    action: |
+      プロジェクト画面
+      URLはURL文字列でなくPRとして
