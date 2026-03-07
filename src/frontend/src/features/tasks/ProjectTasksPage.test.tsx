@@ -428,6 +428,7 @@ test("creates a new action task from modal editor", async () => {
   fireEvent.keyDown(window, { key: "n", ctrlKey: true });
   expect(screen.getByRole("dialog", { name: "新規タスク" })).toBeInTheDocument();
   expect(screen.getByLabelText("task-editor")).toHaveFocus();
+  expect(screen.getByLabelText("task-editor")).toHaveValue("");
   fireEvent.keyDown(window, { key: "Escape" });
   expect(screen.queryByRole("dialog", { name: "新規タスク" })).not.toBeInTheDocument();
 

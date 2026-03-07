@@ -22,7 +22,7 @@ import {
 } from "./taskApi";
 import type { TaskRecord } from "./types";
 
-const defaultTaskAction = "TODO\n";
+const defaultTaskAction = "";
 
 export function ProjectTasksPage() {
   const { projectId = "" } = useParams();
