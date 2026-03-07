@@ -114,3 +114,9 @@ task:
       でなく
       id	source  title	action  actions url
       の順にして
+
+  - id: 9
+    url: https://github.com/sunb256/impl/pull/13
+    title: projects.yml の形式不正を修正
+    action: |
+      projects file is invalid になる。直して
