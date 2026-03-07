@@ -39,3 +39,9 @@ task:
     action: |
       tasks/project.yml
       idはただの連番でいい
+
+  - id: 10
+    url: -
+    title: -
+    action: |
+      ACTIONとDONEの色合いは変えてほしい
