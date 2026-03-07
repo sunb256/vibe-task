@@ -1,4 +1,6 @@
 
+# Vive Task
+
 ## 実行
 
 backend:
@@ -21,9 +23,11 @@ npm run dev
 ## Docker / docker-compose
 
 ```bash
-docker compose up --build
+docker compose up --build -d
 ```
 
 - frontend: http://127.0.0.1:5555
 - backend: http://127.0.0.1:5000
-- `tasks/projects.yml` は `docker-compose` で backend に bind mount されるため永続化されます。
+- `tasks/projects.yml` は `docker-compose` で backend に bind mount 
+- backend には `${HOME}/ghq` も bind mount 、`repositoryPath` は
+  `$HOME/ghq/github.com/...` と `$HOME/ghq/gitlab.com/...` のどちらでも利用できます。

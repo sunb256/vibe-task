@@ -7,3 +7,5 @@ src/backend/.ruff_cache/
 src/backend/*.egg-info/
 __pycache__/
 *.pyc
+
+.env
