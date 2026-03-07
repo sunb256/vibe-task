@@ -87,7 +87,7 @@ export function ProjectTasksPage() {
           to="/"
           className="rounded-sm transition hover:text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
         >
-          {project ? project.name : "Project"}
+          {project ? `Project: ${project.name}` : "Project"}
         </Link>
       }
     >

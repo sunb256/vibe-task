@@ -34,7 +34,7 @@ test("renders project cards", async () => {
   await waitFor(() => {
     expect(screen.getByText("impl")).toBeInTheDocument();
   });
-  expect(screen.getByText("Task YAML Manager")).toBeInTheDocument();
+  expect(screen.getByText("Task Manager")).toBeInTheDocument();
   expect(screen.getByRole("heading", { level: 1, name: "Project一覧" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "新規プロジェクト" })).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "NEW" })).not.toBeInTheDocument();
