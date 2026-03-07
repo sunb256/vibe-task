@@ -202,3 +202,11 @@ task:
     action: |
       Project画面
       DONE側はID降順に表示する
+
+  - id: 20
+    url: https://github.com/sunb256/impl/pull/24
+    title: Project画面のTASK本文表示量を2倍に調整
+    action: |
+      Project画面
+      TASKの内容が長いと...になるが、もう少し表示量を増やしたい
+      今の2倍がいい

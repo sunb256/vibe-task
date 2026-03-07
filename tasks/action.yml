@@ -8,14 +8,6 @@ impl_rule: |
  5. KISS/DRY/リーダブルコードの原則を守る
 
 task: 
-  - id: 20
-    url: -
-    title: -
-    action: |
-      Project画面
-      TASKの内容が長いと...になるが、もう少し表示量を増やしたい
-      今の2倍がいい
-
   - id: 21
     url: -
     title: -
