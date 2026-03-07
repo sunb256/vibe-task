@@ -1,6 +1,6 @@
 task:
   - id: 1
-    url: https://github.com/sunb256/impl/pull/1
+    url: https://github.com/sunb256/vibe-task/pull/1
     title: task YAML 管理アプリの一覧・編集機能を追加
     action: |
       このリポジトリは Vite + React + TypeScript + React Router + ESLint + Prettier + Tailwind CSS で構成されたフロントエンドアプリと
@@ -62,13 +62,13 @@ task:
 
       UPDATEで対象レコードが所属するファイルが更新保存されます。
   - id: 2
-    url: https://github.com/sunb256/impl/pull/2
+    url: https://github.com/sunb256/vibe-task/pull/2
     title: UIの角丸を緩めて見た目を調整
     action: |
       角丸がきついのでもう少し緩めてください
       
   - id: 3
-    url: https://github.com/sunb256/impl/pull/3
+    url: https://github.com/sunb256/vibe-task/pull/3
     title: TOP画面の不要な見出し文言を削除
     action: |
       Task YAML Manager
@@ -76,7 +76,7 @@ task:
       の文字はいらない
       
   - id: 4
-    url: https://github.com/sunb256/impl/pull/4
+    url: https://github.com/sunb256/vibe-task/pull/4
     title: プロジェクト画面の不要な説明文を削除
     action: |
       プロジェクト画面
@@ -84,14 +84,14 @@ task:
       の文字はいらない
 
   - id: 5
-    url: https://github.com/sunb256/impl/pull/5
+    url: https://github.com/sunb256/vibe-task/pull/5
     title: プロジェクト画面のURLをPRリンク表示に変更
     action: |
       プロジェクト画面
       URLはURL文字列でなくPRとして
 
   - id: 6
-    url: https://github.com/sunb256/impl/pull/8
+    url: https://github.com/sunb256/vibe-task/pull/8
     title: プロジェクト画面のタイトルからTOPへ戻れるようにする
     action: |
       プロジェクト画面
@@ -99,14 +99,14 @@ task:
       ヘッダ部のタイトルでTOPページに戻りたい
 
   - id: 7
-    url: https://github.com/sunb256/impl/pull/11
+    url: https://github.com/sunb256/vibe-task/pull/11
     title: プロジェクト画面の操作文言を日本語化
     action: |
       プロジェクト画面
       EDITとDELETEは編集、削除にして
 
   - id: 8
-    url: https://github.com/sunb256/impl/pull/12
+    url: https://github.com/sunb256/vibe-task/pull/12
     title: プロジェクト画面のタスク列順をテストで固定化
     action: |
       プロジェクト画面
@@ -116,32 +116,32 @@ task:
       の順にして
 
   - id: 9
-    url: https://github.com/sunb256/impl/pull/13
+    url: https://github.com/sunb256/vibe-task/pull/13
     title: projects.yml の形式不正を修正
     action: |
       projects file is invalid になる。直して
 
   - id: 10
-    url: https://github.com/sunb256/impl/pull/14
+    url: https://github.com/sunb256/vibe-task/pull/14
     title: projects の id 採番を連番に変更
     action: |
       tasks/project.yml
       idはただの連番でいい
 
   - id: 11
-    url: https://github.com/sunb256/impl/pull/15
+    url: https://github.com/sunb256/vibe-task/pull/15
     title: プロジェクト画面でACTIONとDONEの色を分ける
     action: |
       ACTIONとDONEの色合いは変えてほしい
 
   - id: 12
-    url: https://github.com/sunb256/impl/pull/16
+    url: https://github.com/sunb256/vibe-task/pull/16
     title: UIの角丸を弱めて角寄りの見た目に調整
     action: |
       UIの角丸を緩めて見た目を角っぽくして
 
   - id: 13
-    url: https://github.com/sunb256/impl/pull/17
+    url: https://github.com/sunb256/vibe-task/pull/17
     title: Project画面のタスク表示レイアウトを整理
     action: |
       Project画面
@@ -154,7 +154,7 @@ task:
       PR#xはリンクっぽくしたい
 
   - id: 14
-    url: https://github.com/sunb256/impl/pull/18
+    url: https://github.com/sunb256/vibe-task/pull/18
     title: Project画面からaction taskを新規作成できるようにする
     action: |
       Project画面
@@ -162,14 +162,14 @@ task:
       追加したデータはaction.ymlに追加する
 
   - id: 15
-    url: https://github.com/sunb256/impl/pull/19
+    url: https://github.com/sunb256/vibe-task/pull/19
     title: TOP画面にTask YAML Managerを表示する
     action: |
       TOP画面
       Project画面と同じくTask YAML Managerを追加する
 
   - id: 16
-    url: https://github.com/sunb256/impl/pull/20
+    url: https://github.com/sunb256/vibe-task/pull/20
     title: Project画面のTODO/DONE表示と操作UIを調整
     action: |
       Project画面
@@ -180,7 +180,7 @@ task:
       ACTION/DONE はACTIONはTODOという文字にする
 
   - id: 17
-    url: https://github.com/sunb256/impl/pull/21
+    url: https://github.com/sunb256/vibe-task/pull/21
     title: Project画面のタイトル文言と新規ボタン位置を調整
     action: |
       TOP画面
@@ -189,7 +189,7 @@ task:
       新規ボタンの位置がおかしいテーブル表の上に配置したい
 
   - id: 18
-    url: https://github.com/sunb256/impl/pull/22
+    url: https://github.com/sunb256/vibe-task/pull/22
     title: TOP画面のタイトルと新規ボタン文言を変更
     action: |
       TOP画面
@@ -197,14 +197,14 @@ task:
       NEWボタンでなくて新規プロジェクトというボタンにしたい
 
   - id: 19
-    url: https://github.com/sunb256/impl/pull/23
+    url: https://github.com/sunb256/vibe-task/pull/23
     title: Project画面のDONEタスク表示をID降順に変更
     action: |
       Project画面
       DONE側はID降順に表示する
 
   - id: 20
-    url: https://github.com/sunb256/impl/pull/24
+    url: https://github.com/sunb256/vibe-task/pull/24
     title: Project画面のTASK本文表示量を2倍に調整
     action: |
       Project画面
@@ -212,21 +212,21 @@ task:
       今の2倍がいい
 
   - id: 21
-    url: https://github.com/sunb256/impl/pull/25
+    url: https://github.com/sunb256/vibe-task/pull/25
     title: ヘッダー文言をTask Managerに統一しProject画面タイトルを変更
     action: |
       Task YAML ManagerでなくTask Managerとしたい
       Project画面のタイトルは Project: `<プロジェクト名>` としたい
 
   - id: 22
-    url: https://github.com/sunb256/impl/pull/26
+    url: https://github.com/sunb256/vibe-task/pull/26
     title: Vercel風のモノトーンデザインにUIを調整
     action: |
       デザインがダサいです。
       https://vercel.com/ みたいな見た目にしたい
 
   - id: 23
-    url: https://github.com/sunb256/impl/pull/27
+    url: https://github.com/sunb256/vibe-task/pull/27
     title: TOP画面のプロジェクトカード全体をリンク化
     action: |
       TOP画面
@@ -234,7 +234,7 @@ task:
       Project一覧をリンク選択してRootのリンクとしたい
 
   - id: 24
-    url: https://github.com/sunb256/impl/pull/28
+    url: https://github.com/sunb256/vibe-task/pull/28
     title: Project画面の新規タスクボタン配置と文言を調整
     action: |
       プロジェクト画面
@@ -242,7 +242,7 @@ task:
       新規タスクボタンと名称を変える
 
   - id: 25
-    url: https://github.com/sunb256/impl/pull/29
+    url: https://github.com/sunb256/vibe-task/pull/29
     title: Project画面のTask列表示幅を広げて折り返しを抑制
     action: |
       プロジェクト画面
@@ -250,7 +250,7 @@ task:
       もっと横幅を広げてすぐに折り返しされないようにする
 
   - id: 26
-    url: https://github.com/sunb256/impl/pull/30
+    url: https://github.com/sunb256/vibe-task/pull/30
     title: Project画面のTODO/DONE表記を # 形式に変更
     action: |
       プロジェクト画面
@@ -259,7 +259,7 @@ task:
       DONE #xx とする
 
   - id: 27
-    url: https://github.com/sunb256/impl/pull/31
+    url: https://github.com/sunb256/vibe-task/pull/31
     title: プロジェクト画面の削除ボタンを薄いピンクに調整
     action: |
       プロジェクト画面
@@ -267,7 +267,7 @@ task:
       赤はきついので薄いピンクぐらいがいいか
 
   - id: 28
-    url: https://github.com/sunb256/impl/pull/32
+    url: https://github.com/sunb256/vibe-task/pull/32
     title: Project 一覧表記とProject画面の操作列UIを調整
     action: |-
       プロジェクト画面
@@ -275,21 +275,21 @@ task:
       Project 一覧 とスペースを空ける
 
   - id: 29
-    url: https://github.com/sunb256/impl/pull/33
+    url: https://github.com/sunb256/vibe-task/pull/33
     title: Project画面のid/source列をidのみ表示に変更
     action: |
       id/source
       はidのみの表示でいい
 
   - id: 30
-    url: https://github.com/sunb256/impl/pull/34
+    url: https://github.com/sunb256/vibe-task/pull/34
     title: Project画面のテーブル余白とTASK本文の色を調整
     action: |
       テーブル表は上下余白が多いので少し少なめ
       TASKの内容の文字がもう少し黒っぽく
 
   - id: 31
-    url: https://github.com/sunb256/impl/pull/35
+    url: https://github.com/sunb256/vibe-task/pull/35
     title: Project画面の新規タスクをモーダルMonaco編集に変更
     action: |
       新規タスクでモーダル表示して
@@ -297,14 +297,14 @@ task:
       エディタはmonaco editorね
 
   - id: 32
-    url: https://github.com/sunb256/impl/pull/36
+    url: https://github.com/sunb256/vibe-task/pull/36
     title: Project画面のタスク一覧読み込み待ちを短縮
     action: |-
       LoadingTaskが長い、もっと早くならないのか
       データ量は少ないのでもっと早くなるはず
 
   - id: 33
-    url: https://github.com/sunb256/impl/pull/37
+    url: https://github.com/sunb256/vibe-task/pull/37
     title: TOP画面の新規プロジェクトモーダル文言と操作を調整
     action: |-
       TOP画面
@@ -313,14 +313,14 @@ task:
       Create Projectでなくプロジェクト作成ボタン
 
   - id: 34
-    url: https://github.com/sunb256/impl/pull/38
+    url: https://github.com/sunb256/vibe-task/pull/38
     title: Project画面にTODO/DONE表示フィルターを追加し配色を調整
     action: |-
       TODOとDONEを表示非表示ができるようにしたい。TODOは既定で選択状態、DONEは規定では非選択状態
       それが分かるようにしたい
 
   - id: 35
-    url: https://github.com/sunb256/impl/pull/39
+    url: https://github.com/sunb256/vibe-task/pull/39
     title: Project画面の編集をモーダル化しショートカット操作を追加
     action: |
       編集時もモーダル表示にしたい。別画面表示は廃止。
@@ -330,13 +330,13 @@ task:
       ESCでキャンセルして戻る
 
   - id: 36
-    url: https://github.com/sunb256/impl/pull/40
+    url: https://github.com/sunb256/vibe-task/pull/40
     title: Project画面のTASK列クリックで編集モーダルを開けるように調整
     action: |
       プロジェクト画面でタスク列のコンテンツを選択したときに編集画面を表示する
 
   - id: 37
-    url: https://github.com/sunb256/impl/pull/41
+    url: https://github.com/sunb256/vibe-task/pull/41
     title: Project画面にCtrl+Nで新規タスク作成ショートカットを追加
     action: |-
       プロジェクト画面
@@ -345,7 +345,7 @@ task:
       Ctrl+N: 新規タスク
 
   - id: 38
-    url: https://github.com/sunb256/impl/pull/42
+    url: https://github.com/sunb256/vibe-task/pull/42
     title: Task Manager見出しの配色・サイズ・余白を調整
     action: |
       Task Manager というタイトルに色を付けたい。今はグレーなので殺風景です
@@ -355,33 +355,33 @@ task:
       上下の余白を一回り小さく
 
   - id: 39
-    url: https://github.com/sunb256/impl/pull/43
+    url: https://github.com/sunb256/vibe-task/pull/43
     title: 開発サーバーの起動ポートを5555に変更
     action: |
       起動するPort番号は5555にする。5174だとかぶるので変えたい
 
   - id: 40
-    url: https://github.com/sunb256/impl/pull/44
+    url: https://github.com/sunb256/vibe-task/pull/44
     title: 新規タスク表示部に左余白を追加
     action: |-
       新規タスク表示部に左側に少し余白をつけたい
       スペース２つ分ぐらい
 
   - id: 41
-    url: https://github.com/sunb256/impl/pull/45
+    url: https://github.com/sunb256/vibe-task/pull/45
     title: タイトル部の余白とメインタイトルサイズを調整
     action: |-
       タイトル部は余白を少し狭く
       メインタイトルの文字の大きさを少し小さく
 
   - id: 42
-    url: https://github.com/sunb256/impl/pull/46
+    url: https://github.com/sunb256/vibe-task/pull/46
     title: プロジェクト画面の表カーソル表示を調整
     action: |-
       プロジェクト画面で表にカーソルがあってしまい、大きなカーソルが表示されてしまい気になる
 
   - id: 43
-    url: https://github.com/sunb256/impl/pull/47
+    url: https://github.com/sunb256/vibe-task/pull/47
     title: TOP画面にSettingを追加しprojects.yml入出力機能を実装
     action: |
       TOP画面にSetting画面を追加したい
@@ -392,7 +392,7 @@ task:
        - データエクスポート/インポート機能(projects.yml)
 
   - id: 44
-    url: https://github.com/sunb256/impl/pull/48
+    url: https://github.com/sunb256/vibe-task/pull/48
     title: 新規プロジェクトモーダルの文言と操作UIを調整
     action: |-
       プロジェクト新規作成画面
@@ -405,7 +405,7 @@ task:
        - Cancelボタンを右下に
 
   - id: 45
-    url: https://github.com/sunb256/impl/pull/49
+    url: https://github.com/sunb256/vibe-task/pull/49
     title: faviconとページタイトルをTask Manager仕様へ変更
     action: |
       faviconとタイトルを変更したい
@@ -414,20 +414,20 @@ task:
       favicon: src/frontend/assets/images.logs.svg
 
   - id: 46
-    url: https://github.com/sunb256/impl/pull/50
+    url: https://github.com/sunb256/vibe-task/pull/50
     title: 新規プロジェクト画面のrepositoryPath入力を1カラム化
     action: |-
       新規プロジェクト画面
       repositoryPathは長くなることが多いので２カラムにしないようにしたい
 
   - id: 47
-    url: https://github.com/sunb256/impl/pull/51
+    url: https://github.com/sunb256/vibe-task/pull/51
     title: TODO空時の新規タスクID採番をDONE最大値基準に調整
     action: |-
       新規タスク作成で、TODOタスクがない場合、1から始めないで、DONEタスクのMAX+1をidにしたい
 
   - id: 48
-    url: https://github.com/sunb256/impl/pull/52
+    url: https://github.com/sunb256/vibe-task/pull/52
     title: repositoryPathで環境変数を含むパスをサポート
     action: |-
       repositoryPathは環境変数を含めたパスを取り扱えるようにしたい
@@ -436,51 +436,51 @@ task:
 
       みたいなことを考えている
   - id: 49
-    url: https://github.com/sunb256/impl/pull/53
+    url: https://github.com/sunb256/vibe-task/pull/53
     title: プロジェクト一覧に編集機能と更新APIを追加
     action: |-
       プロジェクトの変更ができる画面が欲しい
   - id: 50
-    url: https://github.com/sunb256/impl/pull/54
+    url: https://github.com/sunb256/vibe-task/pull/54
     title: タスク一覧に上下ボタンでID入れ替え機能を追加
     action: |
       タスクの順位の入れ替え機能が欲しい
 
       上下ボタンがあって、taskidを入れ替えることができる機能
   - id: 51
-    url: https://github.com/sunb256/impl/pull/55
+    url: https://github.com/sunb256/vibe-task/pull/55
     title: タスクモーダル表示時のEditorフォーカスを改善
     action: |-
       新規タスクを選択してモーダルを表示したときにEDITORニFOCI'Sが当たっていてほしい。
       編集時も同じです
   - id: 52
-    url: https://github.com/sunb256/impl/pull/56
+    url: https://github.com/sunb256/vibe-task/pull/56
     title: プロジェクト一覧でドラッグ&ドロップ並び替えを追加
     action: |-
       プロジェクト選択画面でプロジェクトの入れ替えがしたい。ドラッグアンドドロップで入れ替えれるといいです
   - id: 53
-    url: https://github.com/sunb256/impl/pull/57
+    url: https://github.com/sunb256/vibe-task/pull/57
     title: 新規タスク作成時のTODO初期値を削除
     action: |-
       新規タスク作成時にTODOと既定で入っているがこれは不要
   - id: 54
-    url: https://github.com/sunb256/impl/pull/58
+    url: https://github.com/sunb256/vibe-task/pull/58
     title: TASK列の長文でID列が崩れる表示不具合を修正
     action: |-
       TASK列に長い文字列が入った内容が入ると、ID列の表示が崩れます
   - id: 55
-    url: https://github.com/sunb256/impl/pull/59
+    url: https://github.com/sunb256/vibe-task/pull/59
     title: タスク入力モーダル終了後のフォーカス遷移を改善
     action: |-
       タスク入力画面からフォーカスが外れてコンテンツ画面になったときにテーブルが選択されている。テーブルにカーソルが当たっているのが嫌なので、別のオブジェクトにフォーカスが当たっていてほしい
   - id: 56
-    url: https://github.com/sunb256/impl/pull/60
+    url: https://github.com/sunb256/vibe-task/pull/60
     title: TOP画面にプロジェクト削除機能を追加
     action: |-
       TOP画面
       プロジェクトの削除機能が欲しいです
   - id: 57
-    url: https://github.com/sunb256/impl/pull/61
+    url: https://github.com/sunb256/vibe-task/pull/61
     title: TOP画面カードタイトル先頭にSVGアイコンを追加
     action: |-
       TOP画面
@@ -488,7 +488,7 @@ task:
 
       アイコンはsrc/frontend/assets/images/code-xml.svg
   - id: 58
-    url: https://github.com/sunb256/impl/pull/62
+    url: https://github.com/sunb256/vibe-task/pull/62
     title: Monacoの日本語選択ハイライト崩れを修正
     action: |-
       monaco editor で日本語の場合、選択ハイライトがおかしい。全部表示ハイライトされてしまう
@@ -497,42 +497,42 @@ task:
 
       これをヒントに直してください
   - id: 59
-    url: https://github.com/sunb256/impl/pull/63
+    url: https://github.com/sunb256/vibe-task/pull/63
     title: TASK MANAGER表記拡大とMonaco入力設定を調整
     action: |
       TASK MANAGER表記はもう一回り大きくてもいいかな
   - id: 60
-    url: https://github.com/sunb256/impl/pull/63
+    url: https://github.com/sunb256/vibe-task/pull/63
     title: TASK列を行選択化しCode Manager表記に変更
     action: |-
       TASK列の選択だけど行選択がいいな
   - id: 61
-    url: https://github.com/sunb256/impl/pull/63
+    url: https://github.com/sunb256/vibe-task/pull/63
     title: プロジェクト一覧カードをコンパクト化し詳細パス表示を削除
     action: |-
       プロジェクト一覧のカードだけど、もう少し小さくなるようにaction-list, done-listの情報はなくてもいいかな、編集ボタンで見れるし
   - id: 62
-    url: https://github.com/sunb256/impl/pull/65
+    url: https://github.com/sunb256/vibe-task/pull/65
     title: 背景を同系色ベースの多色グラデーションに調整
     action: |
       背景をもう少し凝った感じにしたいですね。現在と同じ色合いで今どきのグラデーションみたいな感じが出ているといいです
   - id: 63
-    url: https://github.com/sunb256/impl/pull/66
+    url: https://github.com/sunb256/vibe-task/pull/66
     title: TOP画面カード全体クリックでプロジェクトへ遷移
     action: |
       TOP画面のカード部でリンクがカード全体に効いていない
   - id: 64
-    url: https://github.com/sunb256/impl/pull/67
+    url: https://github.com/sunb256/vibe-task/pull/67
     title: ボタンホバー時のカーソル表示とカード操作性を改善
     action: |
       ボタンにマウスフォーますが当たってもマウスカーソルが変わらないのが違和感
   - id: 65
-    url: https://github.com/sunb256/impl/pull/68
+    url: https://github.com/sunb256/vibe-task/pull/68
     title: Docker/docker-compose対応とprojects.yml永続化を追加
     action: |
       Docker/docker-compose 対応をしたい
   - id: 66
-    url: https://github.com/sunb256/impl/pull/69
+    url: https://github.com/sunb256/vibe-task/pull/69
     title: projects.yml欠損時に初期ファイルを自動作成
     action: |
       /app/tasks/projects.yml がなかったら新規作成するみたいな方式にしておきたい。dockerで使用するので

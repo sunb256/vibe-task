@@ -8,4 +8,6 @@ src/backend/*.egg-info/
 __pycache__/
 *.pyc
 
+./tasks/projects.yml 
 .env
+.vscode
