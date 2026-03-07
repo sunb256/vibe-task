@@ -50,7 +50,7 @@ export function ProjectListPage() {
   return (
     <>
       <PageFrame
-        title="Project一覧"
+        title="Project 一覧"
         actions={
           <PrimaryButton onClick={() => setIsDialogOpen(true)}>新規プロジェクト</PrimaryButton>
         }

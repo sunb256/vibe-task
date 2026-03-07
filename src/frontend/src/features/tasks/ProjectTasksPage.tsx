@@ -109,8 +109,8 @@ export function ProjectTasksPage() {
                 <tr className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
                   <th className="px-3">id/source</th>
                   <th className="px-3">task</th>
-                  <th className="px-3">actions</th>
-                  <th className="px-3">url</th>
+                  <th className="pl-1 pr-3">actions</th>
+                  <th className="px-3 text-center">url</th>
                 </tr>
               </thead>
               <tbody>
@@ -133,8 +133,8 @@ export function ProjectTasksPage() {
                         </p>
                       </div>
                     </td>
-                    <td className="border-y border-[var(--border)] bg-[var(--panel-strong)] px-3 py-4">
-                      <div className="flex flex-wrap gap-2">
+                    <td className="border-y border-[var(--border)] bg-[var(--panel-strong)] pl-1 pr-3 py-4">
+                      <div className="flex items-center gap-2">
                         <Link
                           to={`/projects/${projectId}/tasks/${task.source}/${task.id}/edit`}
                           className="inline-flex w-20 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 py-2 font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
@@ -143,14 +143,14 @@ export function ProjectTasksPage() {
                         </Link>
                         <PrimaryButton
                           type="button"
-                          className="w-20 border border-pink-300 bg-pink-200 text-pink-800 hover:bg-pink-300 focus-visible:outline-pink-300"
+                          className="w-20 border border-rose-200 bg-white !text-rose-700 hover:border-rose-300 hover:bg-rose-50 focus-visible:outline-rose-300"
                           onClick={() => void handleDelete(task)}
                         >
                           削除
                         </PrimaryButton>
                       </div>
                     </td>
-                    <td className="rounded-r-md border-y border-r border-[var(--border)] bg-[var(--panel-strong)] px-3 py-4">
+                    <td className="rounded-r-md border-y border-r border-[var(--border)] bg-[var(--panel-strong)] px-3 py-4 text-center">
                       <TaskPrLink url={task.url} />
                     </td>
                   </tr>

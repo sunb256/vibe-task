@@ -95,6 +95,8 @@ test("does not render the removed project subtitle", async () => {
   );
   const table = screen.getByRole("table");
   expect(createButton.compareDocumentPosition(table) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(screen.getByRole("columnheader", { name: "actions" })).toHaveClass("pl-1", "pr-3");
+  expect(screen.getByRole("columnheader", { name: "url" })).toHaveClass("text-center");
   expect(screen.getByRole("link", { name: "PR#4" })).toHaveAttribute(
     "href",
     "https://github.com/sunb256/impl/pull/4",
@@ -107,8 +109,16 @@ test("does not render the removed project subtitle", async () => {
   expect(editLinks[2]).toHaveAttribute("href", "/projects/project-1/tasks/done/2/edit");
   expect(screen.getAllByRole("button", { name: "削除" })).toHaveLength(3);
   expect(editLinks[0]).toHaveClass("w-20");
+  expect(editLinks[0].closest("td")).toHaveClass("pl-1", "pr-3");
   expect(screen.getAllByRole("button", { name: "削除" })[0]).toHaveClass("w-20");
-  expect(screen.getAllByRole("button", { name: "削除" })[0]).toHaveClass("bg-pink-200");
+  expect(screen.getAllByRole("button", { name: "削除" })[0]).toHaveClass(
+    "bg-white",
+    "border-rose-200",
+    "!text-rose-700",
+  );
+  expect(screen.getByRole("link", { name: "PR#4" }).closest("td")).toHaveClass("text-center");
+  expect(editLinks[0].parentElement).toHaveClass("flex", "items-center");
+  expect(editLinks[0].parentElement).not.toHaveClass("flex-wrap");
   const rows = screen.getAllByRole("row");
   expect(within(rows[1]).queryByText("-")).not.toBeInTheDocument();
   expect(within(rows[2]).getByText("done-title-10")).toBeInTheDocument();

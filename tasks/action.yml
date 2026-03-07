@@ -8,17 +8,9 @@ impl_rule: |
   5. KISS/DRY/リーダブルコードの原則を守る
 
 task:
-  - id: 28
+  - id: 29
     url: "-"
     title: "-"
-    action: |-
-      プロジェクト画面
-      Project一覧は
-      Project 一覧 とスペースを空ける
-
-  - id: 29
-    url: -
-    title: -
     action: |
       id/source
       はidのみの表示でいい
@@ -41,6 +33,14 @@ task:
   - id: 32
     url: '-'
     title: '-'
-    action: |
+    action: |-
       LoadingTaskが長い、もっと早くならないのか
       データ量は少ないのでもっと早くなるはず
+  - id: '33'
+    url: '-'
+    title: '-'
+    action: |
+      TOP画面
+      repositoryPath は実在するリポジトリのディレクトリを指定します。は不要
+      このモーダルのCLOSEボタンが小さい
+      Create Projectでなくプロジェクト作成ボタン

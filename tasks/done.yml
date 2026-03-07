@@ -265,3 +265,11 @@ task:
       プロジェクト画面
       削除ボタンが薄い
       赤はきついので薄いピンクぐらいがいいか
+
+  - id: 28
+    url: https://github.com/sunb256/impl/pull/32
+    title: Project 一覧表記とProject画面の操作列UIを調整
+    action: |-
+      プロジェクト画面
+      Project一覧は
+      Project 一覧 とスペースを空ける
