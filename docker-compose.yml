@@ -1,0 +1,18 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: src/backend/Dockerfile
+    ports:
+      - "5000:5000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: src/frontend/Dockerfile
+    depends_on:
+      - backend
+    environment:
+      VITE_API_PROXY_TARGET: http://backend:5000
+    ports:
+      - "5555:5555"
