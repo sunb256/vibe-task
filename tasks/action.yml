@@ -8,14 +8,6 @@ impl_rule: |
   5. KISS/DRY/リーダブルコードの原則を守る
 
 task:
-  - id: 28
-    url: "-"
-    title: "-"
-    action: |-
-      プロジェクト画面
-      Project一覧は
-      Project 一覧 とスペースを空ける
-
   - id: 29
     url: "-"
     title: "-"
