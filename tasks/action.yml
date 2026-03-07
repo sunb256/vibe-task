@@ -35,3 +35,11 @@ task:
 
        - モーダル領域外でキャンセル
        - Cancelボタンを右下に
+  - id: '45'
+    url: '-'
+    title: '-'
+    action: |
+      faviconとタイトルを変更したい
+
+      タイトル: Task Manager: impl
+      favicon: src/frontend/assets/images.logs.svg
