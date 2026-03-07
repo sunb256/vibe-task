@@ -280,3 +280,10 @@ task:
     action: |
       id/source
       はidのみの表示でいい
+
+  - id: 30
+    url: https://github.com/sunb256/impl/pull/34
+    title: Project画面のテーブル余白とTASK本文の色を調整
+    action: |
+      テーブル表は上下余白が多いので少し少なめ
+      TASKの内容の文字がもう少し黒っぽく

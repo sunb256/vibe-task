@@ -8,13 +8,6 @@ impl_rule: |
   5. KISS/DRY/リーダブルコードの原則を守る
 
 task:
-  - id: 30
-    url: '-'
-    title: '-'
-    action: |
-      テーブル表は上下余白が多いので少し少なめ
-      TASKの内容の文字がもう少し黒っぽく
-
   - id: 31
     url: '-'
     title: '-'
