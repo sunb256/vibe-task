@@ -8,14 +8,6 @@ impl_rule: |
  5. KISS/DRY/リーダブルコードの原則を守る
 
 task: 
-  - id: 18
-    url: -
-    title: -
-    action: |
-      TOP画面
-      Projectsというタイトル名でなくProject一覧としたい
-      NEWボタンでなくて新規プロジェクトというボタンにしたい
-
   - id: 19
     url: -
     title: -

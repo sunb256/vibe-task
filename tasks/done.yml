@@ -187,3 +187,11 @@ task:
       impl Tasks というタイトルになっている
       プロジェクト名にしたい
       新規ボタンの位置がおかしいテーブル表の上に配置したい
+
+  - id: 18
+    url: https://github.com/sunb256/impl/pull/22
+    title: TOP画面のタイトルと新規ボタン文言を変更
+    action: |
+      TOP画面
+      Projectsというタイトル名でなくProject一覧としたい
+      NEWボタンでなくて新規プロジェクトというボタンにしたい
