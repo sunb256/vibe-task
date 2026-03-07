@@ -1,6 +1,9 @@
 
 # Vive Task
 
+Vive Agentic Coding Management System
+
+
 ## 実行
 
 backend:
@@ -17,8 +20,8 @@ cd ./src/frontend
 npm install
 npm run dev
 ```
+-> http://127.0.0.1:5555
 
-その後、ブラウザで http://127.0.0.1:5555
 
 ## Docker / docker-compose
 
@@ -28,6 +31,9 @@ docker compose up --build -d
 
 - frontend: http://127.0.0.1:5555
 - backend: http://127.0.0.1:5000
-- `tasks/projects.yml` は `docker-compose` で backend に bind mount 
-- backend には `${HOME}/ghq` も bind mount 、`repositoryPath` は
-  `$HOME/ghq/github.com/...` と `$HOME/ghq/gitlab.com/...` のどちらでも利用できます。
+- bind mount
+  - `tasks/projects.yml`:  
+  - `${HOME}/ghq`
+    - `repositoryPath`
+      - `$HOME/ghq/github.com/...` 
+      - `$HOME/ghq/gitlab.com/...` 
