@@ -111,7 +111,7 @@ export function ProjectTasksPage() {
                         {task.action}
                       </p>
                     </td>
-                    <td className="rounded-r-xl border-y border-r border-[var(--border)] bg-white px-3 py-4">
+                    <td className="border-y border-[var(--border)] bg-white px-3 py-4">
                       <div className="flex flex-wrap gap-2">
                         <Link
                           to={`/projects/${projectId}/tasks/${task.source}/${task.id}/edit`}
