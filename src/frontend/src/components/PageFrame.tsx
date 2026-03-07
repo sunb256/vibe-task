@@ -15,14 +15,14 @@ export function PageFrame(props: PageFrameProps) {
   return (
     <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <header className="mb-6 flex flex-col gap-4 rounded-lg border border-[var(--border)] bg-[var(--panel)] p-6 shadow-[0_18px_60px_rgba(31,43,46,0.08)] backdrop-blur md:flex-row md:items-end md:justify-between">
+        <header className="mb-6 flex flex-col gap-5 rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-6 shadow-[0_1px_0_rgba(9,9,11,0.04),0_18px_40px_rgba(9,9,11,0.08)] md:flex-row md:items-end md:justify-between">
           <div className="space-y-2">
             {eyebrow ? (
-              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[var(--accent)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[var(--muted)]">
                 {eyebrow}
               </p>
             ) : null}
-            <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
+            <h1 className="text-3xl font-semibold tracking-[-0.02em]">{title}</h1>
             {subtitle ? (
               <p className="max-w-2xl text-sm leading-6 text-[var(--muted)]">
                 {subtitle}

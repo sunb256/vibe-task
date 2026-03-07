@@ -4,13 +4,13 @@ type NoticeProps = {
 };
 
 const toneClass = {
-  error: "border-rose-200 bg-rose-50 text-rose-700",
-  neutral: "border-[var(--border)] bg-[var(--panel)] text-[var(--muted)]",
+  error: "border-rose-300 bg-rose-50 text-rose-700",
+  neutral: "border-[var(--border)] bg-white text-[var(--muted)]",
 };
 
 export function Notice(props: NoticeProps) {
   return (
-    <div className={`rounded-md border px-4 py-3 text-sm ${toneClass[props.tone]}`}>
+    <div className={`rounded-lg border px-4 py-3 text-sm ${toneClass[props.tone]}`}>
       {props.message}
     </div>
   );

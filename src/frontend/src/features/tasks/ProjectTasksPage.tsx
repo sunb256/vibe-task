@@ -85,13 +85,13 @@ export function ProjectTasksPage() {
       title={
         <Link
           to="/"
-          className="rounded-sm transition hover:text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
+          className="rounded-sm transition hover:text-[var(--muted)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
         >
           {project ? `Project: ${project.name}` : "Project"}
         </Link>
       }
     >
-      <section className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4 shadow-[0_18px_50px_rgba(31,43,46,0.08)] backdrop-blur">
+      <section className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
         <div className="mb-4 flex justify-end">
           <PrimaryButton type="button" onClick={() => void handleCreate()} disabled={isCreating}>
             {isCreating ? "作成中..." : "新規"}
@@ -104,7 +104,7 @@ export function ProjectTasksPage() {
         ) : null}
         {!isLoading && orderedTasks.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="min-w-full border-separate border-spacing-y-3 text-left text-sm">
+            <table className="min-w-full border-separate border-spacing-y-2.5 text-left text-sm">
               <thead>
                 <tr className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
                   <th className="px-3">id/source</th>
@@ -116,14 +116,14 @@ export function ProjectTasksPage() {
               <tbody>
                 {orderedTasks.map((task) => (
                   <tr key={`${task.source}-${task.id}`}>
-                    <td className="rounded-l-md border-y border-l border-[var(--border)] bg-white px-3 py-4 text-[var(--muted)]">
+                    <td className="rounded-l-md border-y border-l border-[var(--border)] bg-[var(--panel-strong)] px-3 py-4 text-[var(--muted)]">
                       <span
                         className={`rounded-md px-3 py-1 text-xs font-semibold uppercase ${sourceBadgeTone(task.source)}`}
                       >
                         {sourceTag(task)}
                       </span>
                     </td>
-                    <td className="border-y border-[var(--border)] bg-white px-3 py-4">
+                    <td className="border-y border-[var(--border)] bg-[var(--panel-strong)] px-3 py-4">
                       <div className="space-y-1">
                         {showTaskTitle(task.title) ? (
                           <p className="font-semibold text-[var(--ink)]">{task.title}</p>
@@ -133,11 +133,11 @@ export function ProjectTasksPage() {
                         </p>
                       </div>
                     </td>
-                    <td className="border-y border-[var(--border)] bg-white px-3 py-4">
+                    <td className="border-y border-[var(--border)] bg-[var(--panel-strong)] px-3 py-4">
                       <div className="flex flex-wrap gap-2">
                         <Link
                           to={`/projects/${projectId}/tasks/${task.source}/${task.id}/edit`}
-                          className="inline-flex w-20 items-center justify-center rounded-md border border-[var(--accent)]/30 bg-[var(--accent)]/10 px-3 py-2 font-semibold text-[var(--accent)] transition hover:bg-[var(--accent)]/18"
+                          className="inline-flex w-20 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 py-2 font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
                         >
                           編集
                         </Link>
@@ -150,7 +150,7 @@ export function ProjectTasksPage() {
                         </PrimaryButton>
                       </div>
                     </td>
-                    <td className="rounded-r-md border-y border-r border-[var(--border)] bg-white px-3 py-4">
+                    <td className="rounded-r-md border-y border-r border-[var(--border)] bg-[var(--panel-strong)] px-3 py-4">
                       <TaskPrLink url={task.url} />
                     </td>
                   </tr>
@@ -194,7 +194,7 @@ function TaskPrLink(props: TaskPrLinkProps) {
       href={props.url}
       target="_blank"
       rel="noreferrer"
-      className="inline-flex items-center justify-center rounded-md border border-[var(--accent)]/30 bg-[var(--accent)]/10 px-3 py-1.5 text-xs font-semibold text-[var(--accent)] transition hover:bg-[var(--accent)]/18"
+      className="inline-flex items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
     >
       {prLabel(props.url)}
     </a>

@@ -8,9 +8,52 @@ impl_rule: |
  5. KISS/DRY/リーダブルコードの原則を守る
 
 task: 
-  - id: 22
+  - id: 23
     url: -
     title: -
     action: |
-      デザインがダサいです。
-      https://vercel.com/ みたいな見た目にしたい
+      TOP画面
+      OpenProjectのリンクはボタンではなく、カード全体に効くほうがいい
+      Project一覧をリンク選択してRootのリンクとしたい
+      
+  - id: 24
+    url: -
+    title: -
+    action: |
+      プロジェクト画面
+      新規ボタンは左寄せ
+      新規タスクボタンと名称を変える
+
+  - id: 25
+    url: -
+    title: -
+    action: |
+      プロジェクト画面
+      Task列は横幅が狭くすぐ折り返される
+      もっと横幅を広げてすぐに折り返しされないようにする
+
+  - id: 26
+    url: -
+    title: -
+    action: |
+      プロジェクト画面
+      TODO(xx)/DONE(xx)は
+      TODO #xx
+      DONE #xx とする
+
+  - id: 27
+    url: -
+    title: -
+    action: |
+      プロジェクト画面
+      削除ボタンが薄い
+      赤はきついので薄いピンクぐらいがいいか
+
+  - id: 28
+    url: -
+    title: -
+    action: |
+      プロジェクト画面
+      Project一覧は
+      Project 一覧 とスペースを空ける
+
