@@ -51,7 +51,6 @@ export function ProjectListPage() {
     <>
       <PageFrame
         title="Projects"
-        eyebrow={null}
         actions={<PrimaryButton onClick={() => setIsDialogOpen(true)}>NEW</PrimaryButton>}
       >
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
