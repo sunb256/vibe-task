@@ -224,7 +224,15 @@ export function ProjectListPage() {
               >
                 <div className="space-y-3">
                   <div>
-                    <h2 className="text-xl font-semibold">{project.name}</h2>
+                    <h2 className="flex items-center gap-2 text-xl font-semibold">
+                      <img
+                        src="/assets/images/code-xml.svg"
+                        alt=""
+                        aria-hidden="true"
+                        className="h-5 w-5 shrink-0 text-[var(--muted)]"
+                      />
+                      <span>{project.name}</span>
+                    </h2>
                     <p className="mt-1 break-all text-sm text-[var(--muted)]">
                       {project.repositoryPath}
                     </p>

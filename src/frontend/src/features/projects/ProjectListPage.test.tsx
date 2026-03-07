@@ -55,6 +55,8 @@ test("renders project cards", async () => {
     "href",
     "/projects/project-1",
   );
+  const projectCard = screen.getByText("impl").closest("article");
+  expect(projectCard?.querySelector('img[src="/assets/images/code-xml.svg"]')).not.toBeNull();
   expect(screen.queryByRole("link", { name: "Open Project" })).not.toBeInTheDocument();
 
   fireEvent.click(screen.getByRole("button", { name: "新規プロジェクト" }));
