@@ -112,6 +112,12 @@ test("does not render the removed project subtitle", async () => {
   const table = screen.getByRole("table");
   expect(table).toHaveClass("border-spacing-y-2");
   expect(createButton.compareDocumentPosition(table) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  const todoToggle = screen.getByRole("button", { name: "TODO(1)" });
+  const doneToggle = screen.getByRole("button", { name: "DONE(2)" });
+  expect(todoToggle).toHaveAttribute("aria-pressed", "true");
+  expect(doneToggle).toHaveAttribute("aria-pressed", "false");
+  expect(todoToggle).toHaveClass("bg-blue-100", "text-blue-700", "rounded-full");
+  expect(doneToggle).toHaveClass("rounded-full");
   expect(screen.getByRole("columnheader", { name: "actions" })).toHaveClass("pl-1", "pr-3");
   expect(screen.getByRole("columnheader", { name: "url" })).toHaveClass("text-center");
   expect(screen.getByRole("link", { name: "PR#4" })).toHaveAttribute(
@@ -120,11 +126,9 @@ test("does not render the removed project subtitle", async () => {
   );
   expect(screen.getByRole("link", { name: "PR#4" })).toHaveClass("rounded-md");
   const editLinks = screen.getAllByRole("link", { name: "編集" });
-  expect(editLinks).toHaveLength(3);
+  expect(editLinks).toHaveLength(1);
   expect(editLinks[0]).toHaveAttribute("href", "/projects/project-1/tasks/action/1/edit");
-  expect(editLinks[1]).toHaveAttribute("href", "/projects/project-1/tasks/done/10/edit");
-  expect(editLinks[2]).toHaveAttribute("href", "/projects/project-1/tasks/done/2/edit");
-  expect(screen.getAllByRole("button", { name: "削除" })).toHaveLength(3);
+  expect(screen.getAllByRole("button", { name: "削除" })).toHaveLength(1);
   expect(editLinks[0]).toHaveClass("w-20");
   expect(editLinks[0].closest("td")).toHaveClass("pl-1", "pr-3");
   expect(screen.getAllByRole("button", { name: "削除" })[0]).toHaveClass("w-20");
@@ -137,17 +141,28 @@ test("does not render the removed project subtitle", async () => {
   expect(editLinks[0].parentElement).toHaveClass("flex", "items-center");
   expect(editLinks[0].parentElement).not.toHaveClass("flex-wrap");
   const rows = screen.getAllByRole("row");
+  expect(rows).toHaveLength(2);
   expect(rows[1].querySelector("td")).toHaveClass("py-3");
   expect(within(rows[1]).queryByText("-")).not.toBeInTheDocument();
-  expect(within(rows[2]).getByText("done-title-10")).toBeInTheDocument();
-  expect(within(rows[3]).getByText("done-title-2")).toBeInTheDocument();
+  expect(screen.queryByText("done-title-10")).not.toBeInTheDocument();
+  expect(screen.queryByText("done-title-2")).not.toBeInTheDocument();
   expect(screen.getByText("first task")).toHaveClass("line-clamp-6");
   expect(screen.getByText("first task")).toHaveClass("max-w-[44rem]");
   expect(screen.getByText("first task")).toHaveClass("text-zinc-700");
   expect(screen.getByText("TODO #1", { selector: "span" })).toHaveClass(
-    "bg-amber-100",
-    "text-amber-700",
+    "bg-blue-100",
+    "text-blue-700",
   );
+  expect(screen.queryByText("DONE #10", { selector: "span" })).not.toBeInTheDocument();
+
+  fireEvent.click(doneToggle);
+
+  await waitFor(() => {
+    expect(screen.getAllByRole("link", { name: "編集" })).toHaveLength(3);
+  });
+  expect(doneToggle).toHaveAttribute("aria-pressed", "true");
+  expect(screen.getByText("done-title-10")).toBeInTheDocument();
+  expect(screen.getByText("done-title-2")).toBeInTheDocument();
   expect(screen.getByText("DONE #10", { selector: "span" })).toHaveClass(
     "bg-emerald-100",
     "text-emerald-700",
