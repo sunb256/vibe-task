@@ -15,10 +15,10 @@ export function PageFrame(props: PageFrameProps) {
   return (
     <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <header className="mb-6 flex flex-col gap-5 rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] px-6 py-5 shadow-[0_1px_0_rgba(9,9,11,0.04),0_18px_40px_rgba(9,9,11,0.08)] md:flex-row md:items-end md:justify-between">
+        <header className="mb-4 flex flex-col gap-5 rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] px-6 py-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_18px_40px_rgba(9,9,11,0.08)] md:flex-row md:items-end md:justify-between">
           <div className="space-y-2">
             {eyebrow ? (
-              <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-sky-700/60">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-sky-700/60">
                 {eyebrow}
               </p>
             ) : null}
