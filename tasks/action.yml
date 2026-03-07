@@ -12,16 +12,22 @@ task:
     url: -
     title: -
     action: |
-      tasks/project.yml
-      idはただの連番でいい
+      projects file is invalid になる。直して
 
   - id: 10
     url: -
     title: -
     action: |
-      ACTIONとDONEの色合いは変えてほしい
+      tasks/project.yml
+      idはただの連番でいい
 
   - id: 11
+    url: -
+    title: -
+    action: |
+      ACTIONとDONEの色合いは変えてほしい
+
+  - id: 12
     url: -
     title: -
     action: |
