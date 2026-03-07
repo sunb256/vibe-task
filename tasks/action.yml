@@ -8,15 +8,6 @@ impl_rule: |
   5. KISS/DRY/リーダブルコードの原則を守る
 
 task:
-  - id: '58'
-    url: '-'
-    title: '-'
-    action: |-
-      monaco editor で日本語の場合、選択ハイライトがおかしい。全部表示ハイライトされてしまう
-
-      Monaco 側でも最近の issue で 「EditContext が原因っぽい。off にすると直るはず」 という案内が出ています
-
-      これをヒントに直してください
   - id: '59'
     url: '-'
     title: '-'

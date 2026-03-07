@@ -180,9 +180,15 @@ export function ProjectListPage() {
         title={
           <Link
             to="/"
-            className="rounded-sm transition hover:text-[var(--muted)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
+            className="inline-flex items-center gap-2 rounded-sm transition hover:text-[var(--muted)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
           >
-            Project 一覧
+            <img
+              src="/assets/images/logs.svg"
+              alt=""
+              aria-hidden="true"
+              className="h-5 w-5 shrink-0 mt-[3px]"
+            />
+            <span>Project 一覧</span>
           </Link>
         }
         actions={
@@ -229,7 +235,7 @@ export function ProjectListPage() {
                         src="/assets/images/code-xml.svg"
                         alt=""
                         aria-hidden="true"
-                        className="h-5 w-5 shrink-0 text-[var(--muted)]"
+                        className="h-5 w-5 shrink-0 mt-[3px] text-[var(--muted)]"
                       />
                       <span>{project.name}</span>
                     </h2>
