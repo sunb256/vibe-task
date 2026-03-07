@@ -7,6 +7,12 @@ import { PrimaryButton } from "../../components/PrimaryButton";
 import { fetchProjects } from "../projects/projectApi";
 import { NewTaskDialog } from "./NewTaskDialog";
 import type { Project } from "../projects/types";
+import {
+  readCachedProject,
+  readCachedTasks,
+  saveProjectCache,
+  saveTaskCache,
+} from "./projectTasksPageCache";
 import { createActionTask, deleteTask, fetchTasks, updateTaskAction } from "./taskApi";
 import type { TaskRecord } from "./types";
 
@@ -27,20 +33,20 @@ export function ProjectTasksPage() {
     let cancelled = false;
 
     async function loadPage() {
-      setIsLoading(true);
       setError("");
-      setProject(null);
-      setTasks([]);
+      applyCache(projectId, setProject, setTasks, setIsLoading);
       try {
         const loadedTasks = await readTasks(projectId);
         if (cancelled) {
           return;
         }
+        saveTaskCache(projectId, loadedTasks);
         setTasks(loadedTasks);
         setIsLoading(false);
         try {
           const loadedProject = await readProject(projectId);
           if (!cancelled) {
+            saveProjectCache(projectId, loadedProject);
             setProject(loadedProject);
           }
         } catch {
@@ -217,7 +223,30 @@ async function readTasks(projectId: string) {
 
 async function refreshTasks(projectId: string, setTasks: (tasks: TaskRecord[]) => void) {
   const tasks = await readTasks(projectId);
+  saveTaskCache(projectId, tasks);
   setTasks(tasks);
+}
+
+function applyCache(
+  projectId: string,
+  setProject: (project: Project | null) => void,
+  setTasks: (tasks: TaskRecord[]) => void,
+  setIsLoading: (isLoading: boolean) => void,
+) {
+  const cachedTasks = readCachedTasks(projectId);
+  if (cachedTasks) {
+    setTasks(cachedTasks);
+    setIsLoading(false);
+  } else {
+    setTasks([]);
+    setIsLoading(true);
+  }
+  const cachedProject = readCachedProject(projectId);
+  if (cachedProject !== undefined) {
+    setProject(cachedProject);
+  } else {
+    setProject(null);
+  }
 }
 
 type TaskPrLinkProps = {

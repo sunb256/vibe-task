@@ -3,6 +3,7 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, vi } from "vitest";
 
 import { ProjectTasksPage } from "./ProjectTasksPage";
+import { resetProjectTasksPageCacheForTest } from "./projectTasksPageCache";
 
 vi.mock("@monaco-editor/react", () => ({
   default: (props: {
@@ -33,6 +34,7 @@ import { createActionTask, fetchTasks, updateTaskAction } from "./taskApi";
 
 afterEach(() => {
   vi.restoreAllMocks();
+  resetProjectTasksPageCacheForTest();
 });
 
 test("does not render the removed project subtitle", async () => {
@@ -180,6 +182,58 @@ test("renders tasks before project list request finishes", async () => {
   });
   expect(screen.queryByText("Loading tasks...")).not.toBeInTheDocument();
   expect(screen.getByRole("link", { name: "Project" })).toHaveAttribute("href", "/");
+});
+
+test("uses cached tasks on revisit before refetch resolves", async () => {
+  vi.mocked(fetchProjects).mockResolvedValue({
+    projects: [
+      {
+        id: "project-1",
+        name: "impl",
+        repositoryPath: "/tmp/impl",
+        actionListPath: "tasks/action.yml",
+        doneListPath: "tasks/done.yml",
+      },
+    ],
+  });
+  vi.mocked(fetchTasks).mockResolvedValue({
+    tasks: [
+      {
+        projectId: "project-1",
+        source: "action",
+        id: "1",
+        title: "-",
+        url: "-",
+        action: "cached task",
+      },
+    ],
+  });
+
+  const first = render(
+    <MemoryRouter initialEntries={["/projects/project-1"]}>
+      <Routes>
+        <Route path="/projects/:projectId" element={<ProjectTasksPage />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+  await waitFor(() => {
+    expect(screen.getByText("cached task")).toBeInTheDocument();
+  });
+  first.unmount();
+
+  vi.mocked(fetchProjects).mockImplementation(() => new Promise(() => {}));
+  vi.mocked(fetchTasks).mockImplementation(() => new Promise(() => {}));
+
+  render(
+    <MemoryRouter initialEntries={["/projects/project-1"]}>
+      <Routes>
+        <Route path="/projects/:projectId" element={<ProjectTasksPage />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  expect(screen.getByText("cached task")).toBeInTheDocument();
+  expect(screen.queryByText("Loading tasks...")).not.toBeInTheDocument();
 });
 
 test("creates a new action task from modal editor", async () => {
