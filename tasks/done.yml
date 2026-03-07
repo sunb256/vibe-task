@@ -403,3 +403,12 @@ task:
 
        - モーダル領域外でキャンセル
        - Cancelボタンを右下に
+
+  - id: 45
+    url: https://github.com/sunb256/impl/pull/49
+    title: faviconとページタイトルをTask Manager仕様へ変更
+    action: |
+      faviconとタイトルを変更したい
+
+      タイトル: Task Manager: impl
+      favicon: src/frontend/assets/images.logs.svg
