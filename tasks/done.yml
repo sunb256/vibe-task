@@ -154,7 +154,7 @@ task:
       PR#xはリンクっぽくしたい
 
   - id: 14
-    url: https://github.com/sunb256/impl/pull/17
+    url: https://github.com/sunb256/impl/pull/18
     title: Project画面からaction taskを新規作成できるようにする
     action: |
       Project画面
