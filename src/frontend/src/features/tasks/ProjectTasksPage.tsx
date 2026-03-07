@@ -221,7 +221,7 @@ export function ProjectTasksPage() {
         ) : null}
         {!isLoading && visibleTasks.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="min-w-full cursor-default border-separate border-spacing-y-2 text-left text-sm">
+            <table className="min-w-full border-separate border-spacing-y-2 text-left text-sm">
               <thead>
                 <tr className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
                   <th className="px-3">id</th>
