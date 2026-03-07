@@ -34,7 +34,7 @@ test("renders project cards", async () => {
   await waitFor(() => {
     expect(screen.getByText("impl")).toBeInTheDocument();
   });
-  const taskManagerTitle = screen.getByText("Code Manager");
+  const taskManagerTitle = screen.getByText("VIBE TASK");
   expect(taskManagerTitle).toBeInTheDocument();
   expect(taskManagerTitle).toHaveClass("text-[12px]", "text-sky-700/80");
   const pageTitle = screen.getByRole("heading", { level: 1, name: "Project 一覧" });
