@@ -1,4 +1,4 @@
-import { type DragEvent, useEffect, useMemo, useState } from "react";
+import { type DragEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { Notice } from "../../components/Notice";
@@ -24,6 +24,7 @@ export function ProjectListPage() {
   const [editProject, setEditProject] = useState<Project | null>(null);
   const [dragProjectId, setDragProjectId] = useState<string | null>(null);
   const [dropProjectId, setDropProjectId] = useState<string | null>(null);
+  const dragProjectIdRef = useRef<string | null>(null);
   const editForm = useMemo(
     () => (editProject ? toFormState(editProject) : defaultProjectForm),
     [editProject],
@@ -114,13 +115,15 @@ export function ProjectListPage() {
       event.preventDefault();
       return;
     }
+    dragProjectIdRef.current = projectId;
     setDragProjectId(projectId);
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/plain", projectId);
   }
 
   function handleDragOver(event: DragEvent<HTMLElement>, projectId: string) {
-    if (!dragProjectId || dragProjectId === projectId) {
+    const sourceId = dragProjectIdRef.current || event.dataTransfer.getData("text/plain");
+    if (!sourceId || sourceId === projectId) {
       return;
     }
     event.preventDefault();
@@ -130,7 +133,9 @@ export function ProjectListPage() {
 
   async function handleDrop(event: DragEvent<HTMLElement>, targetId: string) {
     event.preventDefault();
-    const sourceId = dragProjectId || event.dataTransfer.getData("text/plain");
+    const sourceId =
+      dragProjectIdRef.current || dragProjectId || event.dataTransfer.getData("text/plain");
+    dragProjectIdRef.current = null;
     setDragProjectId(null);
     setDropProjectId(null);
     if (!sourceId || sourceId === targetId) {
@@ -140,6 +145,7 @@ export function ProjectListPage() {
   }
 
   function handleDragEnd() {
+    dragProjectIdRef.current = null;
     setDragProjectId(null);
     setDropProjectId(null);
   }
