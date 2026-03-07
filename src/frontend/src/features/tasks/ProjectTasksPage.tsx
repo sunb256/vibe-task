@@ -218,14 +218,21 @@ export function ProjectTasksPage() {
                       </span>
                     </td>
                     <td className="border-y border-[var(--border)] bg-[var(--panel-strong)] px-3 py-3">
-                      <div className="space-y-1">
-                        {showTaskTitle(task.title) ? (
-                          <p className="font-semibold text-[var(--ink)]">{task.title}</p>
-                        ) : null}
-                        <p className="line-clamp-6 max-w-[44rem] whitespace-pre-wrap text-zinc-700">
-                          {task.action}
-                        </p>
-                      </div>
+                      <button
+                        type="button"
+                        aria-label={`task ${task.id} を編集`}
+                        onClick={() => openEditDialog(task)}
+                        className="w-full rounded-md text-left transition hover:bg-zinc-50/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+                      >
+                        <div className="space-y-1">
+                          {showTaskTitle(task.title) ? (
+                            <p className="font-semibold text-[var(--ink)]">{task.title}</p>
+                          ) : null}
+                          <p className="line-clamp-6 max-w-[44rem] whitespace-pre-wrap text-zinc-700">
+                            {task.action}
+                          </p>
+                        </div>
+                      </button>
                     </td>
                     <td className="border-y border-[var(--border)] bg-[var(--panel-strong)] pl-1 pr-3 py-3">
                       <div className="flex items-center gap-2">
