@@ -20,6 +20,13 @@ export function createProject(payload: ProjectFormState) {
   });
 }
 
+export function updateProject(projectId: string, payload: ProjectFormState) {
+  return apiFetch<Project>(`/api/projects/${projectId}`, {
+    method: "PATCH",
+    json: payload,
+  });
+}
+
 export function exportProjectsFile() {
   return apiFetch<ProjectExportResponse>("/api/projects/export");
 }

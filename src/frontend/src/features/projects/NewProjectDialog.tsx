@@ -9,19 +9,33 @@ type NewProjectDialogProps = {
   isOpen: boolean;
   isSaving: boolean;
   error: string;
+  title: string;
+  submitLabel: string;
+  submittingLabel: string;
+  initialForm?: ProjectFormState;
   onClose: () => void;
   onSubmit: (form: ProjectFormState) => Promise<void>;
 };
 
 export function NewProjectDialog(props: NewProjectDialogProps) {
-  const { error, isOpen, isSaving, onClose, onSubmit } = props;
+  const {
+    error,
+    isOpen,
+    isSaving,
+    title,
+    submitLabel,
+    submittingLabel,
+    initialForm,
+    onClose,
+    onSubmit,
+  } = props;
   const [form, setForm] = useState(defaultProjectForm);
 
   useEffect(() => {
     if (isOpen) {
-      setForm(defaultProjectForm);
+      setForm(initialForm ?? defaultProjectForm);
     }
-  }, [isOpen]);
+  }, [initialForm, isOpen]);
 
   if (!isOpen) {
     return null;
@@ -57,7 +71,7 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
             <h2 id="new-project-title" className="text-xl font-semibold">
-              新規作成
+              {title}
             </h2>
           </div>
         </div>
@@ -94,7 +108,7 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
           {error ? <Notice tone="error" message={error} /> : null}
           <div className="flex justify-end gap-2">
             <PrimaryButton type="submit" disabled={isSaving}>
-              {isSaving ? "Saving..." : "プロジェクト作成"}
+              {isSaving ? submittingLabel : submitLabel}
             </PrimaryButton>
             <button
               type="button"

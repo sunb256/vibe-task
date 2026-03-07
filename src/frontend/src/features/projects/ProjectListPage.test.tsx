@@ -43,6 +43,7 @@ test("renders project cards", async () => {
   expect(screen.getByRole("link", { name: "Project 一覧" })).toHaveAttribute("href", "/");
   expect(screen.getByRole("button", { name: "新規プロジェクト" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Setting" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "編集" })).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "NEW" })).not.toBeInTheDocument();
   expect(
     screen.queryByText(
@@ -86,4 +87,9 @@ test("renders project cards", async () => {
   }
   fireEvent.mouseDown(settingsDialogOverlay);
   expect(screen.queryByRole("dialog", { name: "Setting" })).not.toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole("button", { name: "編集" }));
+  expect(screen.getByRole("dialog", { name: "プロジェクト編集 - #project-1" })).toBeInTheDocument();
+  expect(screen.getByDisplayValue("impl")).toBeInTheDocument();
+  expect(screen.getByDisplayValue("/tmp/impl")).toBeInTheDocument();
 });

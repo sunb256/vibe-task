@@ -27,6 +27,16 @@ def create_project():
     return jsonify(project.to_dict()), 201
 
 
+@api_bp.patch("/projects/<project_id>")
+def update_project(project_id: str):
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        raise AppError("request body must be an object", 400)
+    service = ProjectService(_project_repository())
+    project = service.update_project(project_id, payload)
+    return jsonify(project.to_dict())
+
+
 @api_bp.get("/projects/export")
 def export_projects():
     service = ProjectService(_project_repository())

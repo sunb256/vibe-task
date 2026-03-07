@@ -97,3 +97,28 @@ def test_keeps_literal_block_text_unchanged(client, project_repo: Path):
 
     assert response.status_code == 200
     assert response.get_json()["action"] == "url: -\nkeep this text"
+
+
+def test_expands_env_var_in_repository_path_when_loading_tasks(
+    client,
+    project_repo: Path,
+    monkeypatch,
+):
+    monkeypatch.setenv("PROJECT_REPO_ROOT", str(project_repo))
+    created = client.post(
+        "/api/projects",
+        json={
+            "name": "impl-env",
+            "repositoryPath": "$PROJECT_REPO_ROOT",
+            "actionListPath": "tasks/action.yml",
+            "doneListPath": "tasks/done.yml",
+        },
+    )
+    project_id = created.get_json()["id"]
+
+    listed = client.get(f"/api/projects/{project_id}/tasks")
+
+    assert created.status_code == 201
+    assert listed.status_code == 200
+    payload = listed.get_json()
+    assert [task["id"] for task in payload["tasks"]] == ["1", "2"]

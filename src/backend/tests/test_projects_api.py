@@ -66,6 +66,88 @@ def test_rejects_missing_repository(client, tmp_path: Path):
     assert response.get_json()["error"] == "repositoryPath must be an existing directory"
 
 
+def test_updates_project(client, project_repo: Path, tmp_path: Path):
+    created = client.post(
+        "/api/projects",
+        json={
+            "name": "impl",
+            "repositoryPath": str(project_repo),
+            "actionListPath": "tasks/action.yml",
+            "doneListPath": "tasks/done.yml",
+        },
+    )
+    project_id = created.get_json()["id"]
+    next_repo = tmp_path / "next-repo"
+    tasks_dir = next_repo / "tasks"
+    tasks_dir.mkdir(parents=True)
+    (tasks_dir / "action.yml").write_text(
+        "impl_rule: |\n  sample\n\ntask: []\n",
+        encoding="utf-8",
+    )
+    (tasks_dir / "done.yml").write_text("task: []\n", encoding="utf-8")
+
+    response = client.patch(
+        f"/api/projects/{project_id}",
+        json={
+            "name": "impl-updated",
+            "repositoryPath": str(next_repo),
+            "actionListPath": "tasks/action.yml",
+            "doneListPath": "tasks/done.yml",
+        },
+    )
+
+    assert response.status_code == 200
+    updated = response.get_json()
+    assert updated["id"] == project_id
+    assert updated["name"] == "impl-updated"
+    assert updated["repositoryPath"] == str(next_repo.resolve())
+    listed = client.get("/api/projects")
+    payload = listed.get_json()
+    assert payload["projects"][0]["name"] == "impl-updated"
+
+
+def test_updates_project_with_env_var_path(
+    client,
+    project_repo: Path,
+    tmp_path: Path,
+    monkeypatch,
+):
+    created = client.post(
+        "/api/projects",
+        json={
+            "name": "impl",
+            "repositoryPath": str(project_repo),
+            "actionListPath": "tasks/action.yml",
+            "doneListPath": "tasks/done.yml",
+        },
+    )
+    project_id = created.get_json()["id"]
+    next_repo = tmp_path / "env-repo"
+    tasks_dir = next_repo / "tasks"
+    tasks_dir.mkdir(parents=True)
+    (tasks_dir / "action.yml").write_text("impl_rule: |\n  sample\n\ntask: []\n", encoding="utf-8")
+    (tasks_dir / "done.yml").write_text("task: []\n", encoding="utf-8")
+    monkeypatch.setenv("PROJECT_REPO_ROOT", str(next_repo))
+
+    response = client.patch(
+        f"/api/projects/{project_id}",
+        json={
+            "name": "impl-env-updated",
+            "repositoryPath": "$PROJECT_REPO_ROOT",
+            "actionListPath": "tasks/action.yml",
+            "doneListPath": "tasks/done.yml",
+        },
+    )
+
+    assert response.status_code == 200
+    updated = response.get_json()
+    assert updated["repositoryPath"] == "$PROJECT_REPO_ROOT"
+    listed = client.get(f"/api/projects/{project_id}/tasks")
+    assert listed.status_code == 200
+    tasks = listed.get_json()["tasks"]
+    assert tasks == []
+
+
 def test_accepts_repository_path_with_env_var(client, project_repo: Path, monkeypatch):
     monkeypatch.setenv("PROJECT_REPO_ROOT", str(project_repo))
     response = client.post(
@@ -80,7 +162,7 @@ def test_accepts_repository_path_with_env_var(client, project_repo: Path, monkey
 
     assert response.status_code == 201
     created = response.get_json()
-    assert created["repositoryPath"] == str(project_repo.resolve())
+    assert created["repositoryPath"] == "$PROJECT_REPO_ROOT"
 
 
 def test_exports_projects_file(client, project_repo: Path):

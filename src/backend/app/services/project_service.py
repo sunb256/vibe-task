@@ -17,20 +17,41 @@ class ProjectService:
 
     def create_project(self, payload: dict) -> ProjectRecord:
         name = self._require_text(payload, "name")
-        repository_path = self._resolve_repository_path(payload)
+        repository_path = self._require_repository_path(payload)
         action_list_path = self._require_relative_path(payload, "actionListPath")
         done_list_path = self._require_relative_path(payload, "doneListPath")
         preview = ProjectRecord(
             id="preview",
             name=name,
-            repository_path=str(repository_path),
+            repository_path=repository_path,
             action_list_path=action_list_path,
             done_list_path=done_list_path,
         )
         self.task_repository.list_tasks(preview)
         return self.project_repository.create_project(
             name=name,
-            repository_path=str(repository_path),
+            repository_path=repository_path,
+            action_list_path=action_list_path,
+            done_list_path=done_list_path,
+        )
+
+    def update_project(self, project_id: str, payload: dict) -> ProjectRecord:
+        name = self._require_text(payload, "name")
+        repository_path = self._require_repository_path(payload)
+        action_list_path = self._require_relative_path(payload, "actionListPath")
+        done_list_path = self._require_relative_path(payload, "doneListPath")
+        preview = ProjectRecord(
+            id=project_id,
+            name=name,
+            repository_path=repository_path,
+            action_list_path=action_list_path,
+            done_list_path=done_list_path,
+        )
+        self.task_repository.list_tasks(preview)
+        return self.project_repository.update_project(
+            project_id=project_id,
+            name=name,
+            repository_path=repository_path,
             action_list_path=action_list_path,
             done_list_path=done_list_path,
         )
@@ -41,8 +62,12 @@ class ProjectService:
     def import_projects_text(self, content: str) -> None:
         self.project_repository.import_projects_text(content)
 
-    def _resolve_repository_path(self, payload: dict) -> Path:
+    def _require_repository_path(self, payload: dict) -> str:
         repository_path = self._require_text(payload, "repositoryPath")
+        self._validate_repository_path(repository_path)
+        return repository_path
+
+    def _validate_repository_path(self, repository_path: str) -> Path:
         expanded = os.path.expandvars(repository_path)
         resolved = Path(expanded).expanduser().resolve()
         if not resolved.exists() or not resolved.is_dir():
