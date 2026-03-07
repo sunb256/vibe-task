@@ -94,6 +94,7 @@ test("does not render the removed project subtitle", async () => {
     "/",
   );
   const table = screen.getByRole("table");
+  expect(table).toHaveClass("border-spacing-y-2");
   expect(createButton.compareDocumentPosition(table) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   expect(screen.getByRole("columnheader", { name: "actions" })).toHaveClass("pl-1", "pr-3");
   expect(screen.getByRole("columnheader", { name: "url" })).toHaveClass("text-center");
@@ -120,11 +121,13 @@ test("does not render the removed project subtitle", async () => {
   expect(editLinks[0].parentElement).toHaveClass("flex", "items-center");
   expect(editLinks[0].parentElement).not.toHaveClass("flex-wrap");
   const rows = screen.getAllByRole("row");
+  expect(rows[1].querySelector("td")).toHaveClass("py-3");
   expect(within(rows[1]).queryByText("-")).not.toBeInTheDocument();
   expect(within(rows[2]).getByText("done-title-10")).toBeInTheDocument();
   expect(within(rows[3]).getByText("done-title-2")).toBeInTheDocument();
   expect(screen.getByText("first task")).toHaveClass("line-clamp-6");
   expect(screen.getByText("first task")).toHaveClass("max-w-[44rem]");
+  expect(screen.getByText("first task")).toHaveClass("text-zinc-700");
   expect(screen.getByText("TODO #1", { selector: "span" })).toHaveClass(
     "bg-amber-100",
     "text-amber-700",

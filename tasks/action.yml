@@ -32,7 +32,7 @@ task:
   - id: '33'
     url: '-'
     title: '-'
-    action: |
+    action: |-
       TOP画面
       repositoryPath は実在するリポジトリのディレクトリを指定します。は不要
       このモーダルのCLOSEボタンが小さい
