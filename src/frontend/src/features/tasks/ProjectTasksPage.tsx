@@ -13,7 +13,13 @@ import {
   saveProjectCache,
   saveTaskCache,
 } from "./projectTasksPageCache";
-import { createActionTask, deleteTask, fetchTasks, updateTaskAction } from "./taskApi";
+import {
+  createActionTask,
+  deleteTask,
+  fetchTasks,
+  swapTaskId,
+  updateTaskAction,
+} from "./taskApi";
 import type { TaskRecord } from "./types";
 
 const defaultTaskAction = "TODO\n";
@@ -30,6 +36,7 @@ export function ProjectTasksPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isSwapping, setIsSwapping] = useState(false);
   const [editTask, setEditTask] = useState<TaskRecord | null>(null);
   const [newTaskAction, setNewTaskAction] = useState(defaultTaskAction);
   const [editTaskAction, setEditTaskAction] = useState("");
@@ -85,6 +92,22 @@ export function ProjectTasksPage() {
       await refreshTasks(projectId, setTasks);
     } catch (deleteError) {
       setError(readError(deleteError, "タスクの削除に失敗しました。"));
+    }
+  }
+
+  async function handleSwap(task: TaskRecord, swapWithId: string | null) {
+    if (!swapWithId) {
+      return;
+    }
+    setIsSwapping(true);
+    setError("");
+    try {
+      await swapTaskId(projectId, task.source, task.id, swapWithId);
+      await refreshTasks(projectId, setTasks);
+    } catch (swapError) {
+      setError(readError(swapError, "task の並び替えに失敗しました。"));
+    } finally {
+      setIsSwapping(false);
     }
   }
 
@@ -231,8 +254,11 @@ export function ProjectTasksPage() {
                 </tr>
               </thead>
               <tbody>
-                {visibleTasks.map((task) => (
-                  <tr key={`${task.source}-${task.id}`}>
+                {visibleTasks.map((task) => {
+                  const upTargetId = swapTargetId(orderedTasks, task, "up");
+                  const downTargetId = swapTargetId(orderedTasks, task, "down");
+                  return (
+                    <tr key={`${task.source}-${task.id}`}>
                     <td className="rounded-l-md border-y border-l border-[var(--border)] bg-[var(--panel-strong)] px-3 py-3 text-[var(--muted)]">
                       <span
                         className={`rounded-md px-3 py-1 text-xs font-semibold uppercase ${sourceBadgeTone(task.source)}`}
@@ -273,13 +299,26 @@ export function ProjectTasksPage() {
                         >
                           削除
                         </PrimaryButton>
+                        <SwapButton
+                          label="↑"
+                          ariaLabel={`task ${task.id} を上へ`}
+                          disabled={isSwapping || !upTargetId}
+                          onClick={() => void handleSwap(task, upTargetId)}
+                        />
+                        <SwapButton
+                          label="↓"
+                          ariaLabel={`task ${task.id} を下へ`}
+                          disabled={isSwapping || !downTargetId}
+                          onClick={() => void handleSwap(task, downTargetId)}
+                        />
                       </div>
                     </td>
                     <td className="rounded-r-md border-y border-r border-[var(--border)] bg-[var(--panel-strong)] px-3 py-3 text-center">
                       <TaskPrLink url={task.url} />
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -450,6 +489,43 @@ function compareTaskIdDesc(left: TaskRecord, right: TaskRecord) {
     return rightId - leftId;
   }
   return right.id.localeCompare(left.id, undefined, { numeric: true, sensitivity: "base" });
+}
+
+function swapTargetId(
+  tasks: TaskRecord[],
+  task: TaskRecord,
+  direction: "up" | "down",
+) {
+  const sourceTasks = tasks.filter((item) => item.source === task.source);
+  const index = sourceTasks.findIndex((item) => item.id === task.id);
+  if (index < 0) {
+    return null;
+  }
+  const offset = direction === "up" ? -1 : 1;
+  const target = sourceTasks[index + offset];
+  return target ? target.id : null;
+}
+
+type SwapButtonProps = {
+  label: string;
+  ariaLabel: string;
+  disabled: boolean;
+  onClick: () => void;
+};
+
+function SwapButton(props: SwapButtonProps) {
+  const { label, ariaLabel, disabled, onClick } = props;
+  return (
+    <button
+      type="button"
+      aria-label={ariaLabel}
+      disabled={disabled}
+      onClick={onClick}
+      className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-[var(--border)] bg-white text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50 disabled:cursor-not-allowed disabled:text-[var(--muted)]"
+    >
+      {label}
+    </button>
+  );
 }
 
 function isCreateShortcut(event: KeyboardEvent) {

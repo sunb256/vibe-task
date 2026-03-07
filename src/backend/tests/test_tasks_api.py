@@ -122,3 +122,37 @@ def test_expands_env_var_in_repository_path_when_loading_tasks(
     assert listed.status_code == 200
     payload = listed.get_json()
     assert [task["id"] for task in payload["tasks"]] == ["1", "2"]
+
+
+def test_swaps_task_ids(client, project_repo: Path):
+    action_file = project_repo / "tasks" / "action.yml"
+    action_file.write_text(
+        (
+            "impl_rule: |\n  sample\n\n"
+            "task:\n"
+            "  - id: 1\n"
+            "    url: -\n"
+            "    title: -\n"
+            "    action: |\n"
+            "      first task\n"
+            "  - id: 2\n"
+            "    url: -\n"
+            "    title: -\n"
+            "    action: |\n"
+            "      second task\n"
+        ),
+        encoding="utf-8",
+    )
+    project_id = create_project(client, project_repo)
+
+    swapped = client.patch(
+        f"/api/projects/{project_id}/tasks/action/1/swap",
+        json={"swapWithId": "2"},
+    )
+
+    assert swapped.status_code == 204
+    listed = client.get(f"/api/projects/{project_id}/tasks")
+    assert listed.status_code == 200
+    tasks = listed.get_json()["tasks"]
+    action_ids = [task["id"] for task in tasks if task["source"] == "action"]
+    assert action_ids == ["2", "1"]

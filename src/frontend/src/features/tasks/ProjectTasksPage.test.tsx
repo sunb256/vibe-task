@@ -26,11 +26,12 @@ vi.mock("./taskApi", () => ({
   createActionTask: vi.fn(),
   deleteTask: vi.fn(),
   fetchTasks: vi.fn(),
+  swapTaskId: vi.fn(),
   updateTaskAction: vi.fn(),
 }));
 
 import { fetchProjects } from "../projects/projectApi";
-import { createActionTask, fetchTasks, updateTaskAction } from "./taskApi";
+import { createActionTask, fetchTasks, swapTaskId, updateTaskAction } from "./taskApi";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -139,6 +140,8 @@ test("does not render the removed project subtitle", async () => {
   expect(screen.getByRole("link", { name: "PR#4" }).closest("td")).toHaveClass("text-center");
   expect(editButtons[0].parentElement).toHaveClass("flex", "items-center");
   expect(editButtons[0].parentElement).not.toHaveClass("flex-wrap");
+  expect(screen.getByRole("button", { name: "task 1 を上へ" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "task 1 を下へ" })).toBeDisabled();
   const rows = screen.getAllByRole("row");
   expect(rows).toHaveLength(2);
   expect(rows[1].querySelector("td")).toHaveClass("py-3");
@@ -172,6 +175,82 @@ test("does not render the removed project subtitle", async () => {
     "bg-emerald-100",
     "text-emerald-700",
   );
+});
+
+test("swaps task ids with up/down buttons", async () => {
+  vi.mocked(fetchProjects).mockResolvedValue({
+    projects: [
+      {
+        id: "project-1",
+        name: "impl",
+        repositoryPath: "/tmp/impl",
+        actionListPath: "tasks/action.yml",
+        doneListPath: "tasks/done.yml",
+      },
+    ],
+  });
+  vi.mocked(fetchTasks)
+    .mockResolvedValueOnce({
+      tasks: [
+        {
+          projectId: "project-1",
+          source: "action",
+          id: "1",
+          title: "-",
+          url: "-",
+          action: "first task",
+        },
+        {
+          projectId: "project-1",
+          source: "action",
+          id: "2",
+          title: "-",
+          url: "-",
+          action: "second task",
+        },
+      ],
+    })
+    .mockResolvedValueOnce({
+      tasks: [
+        {
+          projectId: "project-1",
+          source: "action",
+          id: "2",
+          title: "-",
+          url: "-",
+          action: "first task",
+        },
+        {
+          projectId: "project-1",
+          source: "action",
+          id: "1",
+          title: "-",
+          url: "-",
+          action: "second task",
+        },
+      ],
+    });
+  vi.mocked(swapTaskId).mockResolvedValue();
+
+  render(
+    <MemoryRouter initialEntries={["/projects/project-1"]}>
+      <Routes>
+        <Route path="/projects/:projectId" element={<ProjectTasksPage />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("Project: impl")).toBeInTheDocument();
+  });
+
+  fireEvent.click(screen.getByRole("button", { name: "task 1 を下へ" }));
+
+  await waitFor(() => {
+    expect(swapTaskId).toHaveBeenCalledWith("project-1", "action", "1", "2");
+    expect(fetchTasks).toHaveBeenCalledTimes(2);
+  });
+  expect(screen.getByText("TODO #2", { selector: "span" })).toBeInTheDocument();
 });
 
 test("renders tasks before project list request finishes", async () => {
