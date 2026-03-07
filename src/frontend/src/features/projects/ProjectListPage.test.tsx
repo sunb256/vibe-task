@@ -75,4 +75,13 @@ test("renders project cards", async () => {
   expect(screen.getByRole("dialog", { name: "Setting" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "projects.yml をエクスポート" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "インポート" })).toBeDisabled();
+  const settingsCancelButton = screen.getByRole("button", { name: "Cancel" });
+  expect(settingsCancelButton).toHaveClass("px-4", "py-2");
+  const settingsDialogOverlay = screen.getByRole("dialog", { name: "Setting" }).parentElement;
+  expect(settingsDialogOverlay).not.toBeNull();
+  if (!settingsDialogOverlay) {
+    throw new Error("settings dialog overlay is missing");
+  }
+  fireEvent.mouseDown(settingsDialogOverlay);
+  expect(screen.queryByRole("dialog", { name: "Setting" })).not.toBeInTheDocument();
 });
