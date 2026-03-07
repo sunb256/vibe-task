@@ -94,6 +94,29 @@ export function ProjectTasksPage() {
     setIsCreateOpen(true);
   }
 
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.repeat || !isCreateShortcut(event)) {
+        return;
+      }
+      if (isCreateOpen || isEditOpen || isCreating || isEditing) {
+        return;
+      }
+      if (isEditableTarget(event.target)) {
+        return;
+      }
+      event.preventDefault();
+      setCreateError("");
+      setNewTaskAction(defaultTaskAction);
+      setIsCreateOpen(true);
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isCreateOpen, isEditOpen, isCreating, isEditing]);
+
   function closeCreateDialog() {
     if (isCreating) {
       return;
@@ -427,4 +450,19 @@ function compareTaskIdDesc(left: TaskRecord, right: TaskRecord) {
     return rightId - leftId;
   }
   return right.id.localeCompare(left.id, undefined, { numeric: true, sensitivity: "base" });
+}
+
+function isCreateShortcut(event: KeyboardEvent) {
+  return (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "n";
+}
+
+function isEditableTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+  const tag = target.tagName.toLowerCase();
+  if (tag === "input" || tag === "textarea" || tag === "select") {
+    return true;
+  }
+  return target.isContentEditable;
 }

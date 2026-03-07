@@ -42,5 +42,14 @@ task:
   - id: '42'
     url: '-'
     title: '-'
-    action: |
+    action: |-
       プロジェクト画面で表にカーソルがあってしまい、大きなカーソルが表示されてしまい気になる
+  - id: '43'
+    url: '-'
+    title: '-'
+    action: |
+      TOP画面にSetting画面を追加したい
+
+      Setting画面の機能
+
+       - データエクスポート/インポート機能(projects.yml)
