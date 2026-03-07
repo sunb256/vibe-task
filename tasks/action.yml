@@ -18,3 +18,28 @@ task:
       id	source は同じ列にする
       ex. DONE(xx) みたいなのがいい
       ACTION/DONE はACTIONはTODOという文字にする
+
+  - id: 17
+    url: -
+    title: -
+    action: |
+      TOP画面
+      impl Tasks というタイトルになっている
+      プロジェクト名にしたい
+      新規ボタンの位置がおかしいテーブル表の上に配置したい
+      
+  - id: 18
+    url: -
+    title: -
+    action: |
+      TOP画面
+      Projectsというタイトル名でなくProject一覧としたい
+      NEWボタンでなくて新規プロジェクトというボタンにしたい
+
+  - id: 19
+    url: -
+    title: -
+    action: |
+      Project画面
+      DONE側はID降順に表示する
+      
