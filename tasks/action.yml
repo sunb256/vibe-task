@@ -8,14 +8,33 @@ impl_rule: |
  5. KISS/DRY/リーダブルコードの原則を守る
 
 task: 
-  - id: 11
-    url: -
-    title: -
-    action: |
-      ACTIONとDONEの色合いは変えてほしい
-
   - id: 12
     url: -
     title: -
     action: |
       UIの角丸を緩めて見た目を角っぽくして
+
+  - id: 13
+    url: -
+    title: -
+    action: |
+      Project画面
+      TITLEとACTIONは同一列にする
+      TITLEがない場合はTITLEは非表示
+      IDは薄い文字にする
+      編集ボタンと削除ボタンの横幅を合わせる
+      編集ボタンの背景が白は良くない、別の色
+      削除ボタンの背景が赤できつい、もう少し柔らかい赤
+      PR#xはリンクっぽくしたい
+
+  - id: 14
+    url: -
+    title: -
+    action: |
+      TITLEとACTIONは同一列にする
+      TITLEがない場合はTITLEは非表示
+      IDは薄い文字にする
+      編集ボタンと削除ボタンの横幅を合わせる
+      編集ボタンの背景が白は良くない、別の色
+      削除ボタンの背景が赤できつい、もう少し柔らかい赤
+      PR#xはリンクっぽくしたい
