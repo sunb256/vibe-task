@@ -1,6 +1,6 @@
 import { afterEach, vi } from "vitest";
 
-import { deleteTask, fetchTasks, updateTaskAction } from "./taskApi";
+import { deleteTask, fetchTasks, swapTaskId, updateTaskAction } from "./taskApi";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -33,7 +33,7 @@ test("fetchTasks requests the project task list", async () => {
   expect(response.tasks[0].id).toBe("1");
 });
 
-test("updateTaskAction and deleteTask use the scoped task endpoint", async () => {
+test("updateTaskAction, deleteTask, and swapTaskId use the scoped task endpoint", async () => {
   const fetchMock = vi
     .spyOn(globalThis, "fetch")
     .mockResolvedValueOnce(
@@ -48,10 +48,12 @@ test("updateTaskAction and deleteTask use the scoped task endpoint", async () =>
         }),
       ),
     )
+    .mockResolvedValueOnce(new Response(null, { status: 204 }))
     .mockResolvedValueOnce(new Response(null, { status: 204 }));
 
   await updateTaskAction("project-1", "action", "1", "updated");
   await deleteTask("project-1", "done", "2");
+  await swapTaskId("project-1", "action", "1", "2");
 
   expect(fetchMock).toHaveBeenNthCalledWith(
     1,
@@ -65,5 +67,13 @@ test("updateTaskAction and deleteTask use the scoped task endpoint", async () =>
     2,
     "/api/projects/project-1/tasks/done/2",
     expect.objectContaining({ method: "DELETE" }),
+  );
+  expect(fetchMock).toHaveBeenNthCalledWith(
+    3,
+    "/api/projects/project-1/tasks/action/1/swap",
+    expect.objectContaining({
+      method: "PATCH",
+      body: JSON.stringify({ swapWithId: "2" }),
+    }),
   );
 });

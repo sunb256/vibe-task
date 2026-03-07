@@ -56,6 +56,22 @@ class TaskRepository:
         del tasks[index]
         self._write_yaml(path, document)
 
+    def swap_task_id(
+        self,
+        project: ProjectRecord,
+        source: str,
+        task_id: str,
+        swap_with_id: str,
+    ) -> None:
+        if task_id == swap_with_id:
+            return
+        path = self._resolve_source_path(project, source)
+        document = self._load_yaml(path)
+        task = self._find_task(document, task_id)
+        swap_task = self._find_task(document, swap_with_id)
+        task["id"], swap_task["id"] = swap_task.get("id"), task.get("id")
+        self._write_yaml(path, document)
+
     def create_task(self, project: ProjectRecord, source: str) -> TaskRecord:
         path = self._resolve_source_path(project, source)
         document = self._load_yaml(path)

@@ -98,6 +98,19 @@ def delete_task(project_id: str, source: str, task_id: str):
     return "", 204
 
 
+@api_bp.patch("/projects/<project_id>/tasks/<source>/<task_id>/swap")
+def swap_task_id(project_id: str, source: str, task_id: str):
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        raise AppError("request body must be an object", 400)
+    swap_with_id = payload.get("swapWithId")
+    if not isinstance(swap_with_id, str) or not swap_with_id.strip():
+        raise AppError("swapWithId is required", 400)
+    service = TaskService(_project_repository())
+    service.swap_task_id(project_id, source, task_id, swap_with_id.strip())
+    return "", 204
+
+
 def _project_repository() -> ProjectRepository:
     projects_file = Path(current_app.config["PROJECTS_FILE"])
     return ProjectRepository(projects_file)

@@ -36,3 +36,15 @@ export function deleteTask(projectId: string, source: TaskSource, taskId: string
     method: "DELETE",
   });
 }
+
+export function swapTaskId(
+  projectId: string,
+  source: TaskSource,
+  taskId: string,
+  swapWithId: string,
+) {
+  return apiFetch<void>(`/api/projects/${projectId}/tasks/${source}/${taskId}/swap`, {
+    method: "PATCH",
+    json: { swapWithId },
+  });
+}
