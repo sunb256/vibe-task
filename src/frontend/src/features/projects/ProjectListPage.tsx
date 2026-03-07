@@ -6,6 +6,7 @@ import { PageFrame } from "../../components/PageFrame";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { createProject, fetchProjects } from "./projectApi";
 import { NewProjectDialog } from "./NewProjectDialog";
+import { ProjectSettingsDialog } from "./ProjectSettingsDialog";
 import { type Project, type ProjectFormState } from "./types";
 
 export function ProjectListPage() {
@@ -13,6 +14,7 @@ export function ProjectListPage() {
   const [error, setError] = useState("");
   const [dialogError, setDialogError] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -59,7 +61,16 @@ export function ProjectListPage() {
           </Link>
         }
         actions={
-          <PrimaryButton onClick={() => setIsDialogOpen(true)}>新規プロジェクト</PrimaryButton>
+          <div className="flex items-center gap-2">
+            <PrimaryButton onClick={() => setIsDialogOpen(true)}>新規プロジェクト</PrimaryButton>
+            <button
+              type="button"
+              onClick={() => setIsSettingsOpen(true)}
+              className="rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
+            >
+              Setting
+            </button>
+          </div>
         }
       >
         <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -107,6 +118,11 @@ export function ProjectListPage() {
           setIsDialogOpen(false);
         }}
         onSubmit={handleCreate}
+      />
+      <ProjectSettingsDialog
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        onImported={loadProjects}
       />
     </>
   );

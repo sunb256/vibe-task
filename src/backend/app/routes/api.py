@@ -27,6 +27,26 @@ def create_project():
     return jsonify(project.to_dict()), 201
 
 
+@api_bp.get("/projects/export")
+def export_projects():
+    service = ProjectService(_project_repository())
+    content = service.export_projects_text()
+    return jsonify({"content": content})
+
+
+@api_bp.post("/projects/import")
+def import_projects():
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        raise AppError("request body must be an object", 400)
+    content = payload.get("content")
+    if not isinstance(content, str):
+        raise AppError("content is required", 400)
+    service = ProjectService(_project_repository())
+    service.import_projects_text(content)
+    return "", 204
+
+
 @api_bp.get("/projects/<project_id>/tasks")
 def list_tasks(project_id: str):
     service = TaskService(_project_repository())
