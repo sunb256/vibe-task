@@ -152,6 +152,36 @@ test("does not render the removed project subtitle", async () => {
   );
 });
 
+test("renders tasks before project list request finishes", async () => {
+  vi.mocked(fetchProjects).mockImplementation(() => new Promise(() => {}));
+  vi.mocked(fetchTasks).mockResolvedValue({
+    tasks: [
+      {
+        projectId: "project-1",
+        source: "action",
+        id: "1",
+        title: "-",
+        url: "-",
+        action: "fast task",
+      },
+    ],
+  });
+
+  render(
+    <MemoryRouter initialEntries={["/projects/project-1"]}>
+      <Routes>
+        <Route path="/projects/:projectId" element={<ProjectTasksPage />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("fast task")).toBeInTheDocument();
+  });
+  expect(screen.queryByText("Loading tasks...")).not.toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "Project" })).toHaveAttribute("href", "/");
+});
+
 test("creates a new action task from modal editor", async () => {
   vi.mocked(fetchProjects).mockResolvedValue({
     projects: [
