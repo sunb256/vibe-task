@@ -195,7 +195,7 @@ export function ProjectTasksPage() {
       <section className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
         <div className="mb-4 flex items-center justify-start gap-2">
           <PrimaryButton type="button" onClick={openCreateDialog} disabled={isCreating}>
-            新規タスク
+            新規タスク(N)
           </PrimaryButton>
           <button
             type="button"
