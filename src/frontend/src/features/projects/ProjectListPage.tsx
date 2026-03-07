@@ -218,7 +218,7 @@ export function ProjectListPage() {
               onDragOver={(event) => handleDragOver(event, project.id)}
               onDrop={(event) => void handleDrop(event, project.id)}
               onDragEnd={handleDragEnd}
-              className={`h-full rounded-xl border bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)] transition hover:-translate-y-0.5 hover:border-[var(--ink)] hover:shadow-[0_1px_0_rgba(9,9,11,0.05),0_18px_42px_rgba(9,9,11,0.12)] ${
+              className={`h-full rounded-xl border bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)] transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_1px_0_rgba(9,9,11,0.05),0_18px_42px_rgba(9,9,11,0.12)] ${
                 dropProjectId === project.id && dragProjectId !== project.id
                   ? "border-[var(--accent)] ring-2 ring-[var(--accent)]/30"
                   : "border-[var(--border)]"
@@ -226,7 +226,7 @@ export function ProjectListPage() {
             >
               <Link
                 to={`/projects/${project.id}`}
-                className="block rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
+                className="block rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400"
               >
                 <div>
                   <h2 className="flex items-center gap-2 text-xl font-semibold">
