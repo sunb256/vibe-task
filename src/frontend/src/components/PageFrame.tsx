@@ -9,7 +9,7 @@ type PageFrameProps = {
 };
 
 export function PageFrame(props: PageFrameProps) {
-  const { title, eyebrow = "Task Manager", subtitle, actions, children } =
+  const { title, eyebrow = "Code Manager", subtitle, actions, children } =
     props;
 
   return (
