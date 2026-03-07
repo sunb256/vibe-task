@@ -1,0 +1,64 @@
+from pathlib import Path
+
+
+def create_project(client, project_repo: Path) -> str:
+    response = client.post(
+        "/api/projects",
+        json={
+            "name": "impl",
+            "repositoryPath": str(project_repo),
+            "actionListPath": "tasks/action.yml",
+            "doneListPath": "tasks/done.yml",
+        },
+    )
+    return response.get_json()["id"]
+
+
+def test_lists_tasks_from_action_and_done(client, project_repo: Path):
+    project_id = create_project(client, project_repo)
+
+    response = client.get(f"/api/projects/{project_id}/tasks")
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert {task["source"] for task in payload["tasks"]} == {"action", "done"}
+    assert [task["id"] for task in payload["tasks"]] == ["1", "2"]
+
+
+def test_updates_action_text(client, project_repo: Path):
+    project_id = create_project(client, project_repo)
+
+    response = client.patch(
+        f"/api/projects/{project_id}/tasks/action/1",
+        json={"action": "updated action"},
+    )
+
+    assert response.status_code == 200
+    assert response.get_json()["action"] == "updated action\n"
+    action_text = (project_repo / "tasks" / "action.yml").read_text(encoding="utf-8")
+    assert "updated action" in action_text
+
+
+def test_deletes_task(client, project_repo: Path):
+    project_id = create_project(client, project_repo)
+
+    response = client.delete(f"/api/projects/{project_id}/tasks/done/2")
+
+    assert response.status_code == 204
+    tasks_response = client.get(f"/api/projects/{project_id}/tasks")
+    payload = tasks_response.get_json()
+    assert [task["id"] for task in payload["tasks"]] == ["1"]
+
+
+def test_keeps_literal_block_text_unchanged(client, project_repo: Path):
+    action_file = project_repo / "tasks" / "action.yml"
+    action_file.write_text(
+        "impl_rule: |\n  sample\n\ntask:\n  - id: 1\n    url: -\n    title: -\n    action: |\n      url: -\n      keep this text\n",
+        encoding="utf-8",
+    )
+    project_id = create_project(client, project_repo)
+
+    response = client.get(f"/api/projects/{project_id}/tasks/action/1")
+
+    assert response.status_code == 200
+    assert response.get_json()["action"] == "url: -\nkeep this text"

@@ -1,5 +1,10 @@
-def main():
-    print("Hello from backend!")
+from app import create_app
+
+app = create_app()
+
+
+def main() -> None:
+    app.run()
 
 
 if __name__ == "__main__":
