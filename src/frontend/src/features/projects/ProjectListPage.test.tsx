@@ -39,7 +39,7 @@ test("renders project cards", async () => {
   expect(taskManagerTitle).toHaveClass("text-[11px]", "text-sky-700/80");
   const pageTitle = screen.getByRole("heading", { level: 1, name: "Project 一覧" });
   expect(pageTitle).toBeInTheDocument();
-  expect(pageTitle).toHaveClass("text-2xl");
+  expect(pageTitle).toHaveClass("text-xl");
   expect(screen.getByRole("link", { name: "Project 一覧" })).toHaveAttribute("href", "/");
   expect(screen.getByRole("button", { name: "新規プロジェクト" })).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "NEW" })).not.toBeInTheDocument();
