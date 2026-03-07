@@ -257,3 +257,11 @@ task:
       TODO(xx)/DONE(xx)は
       TODO #xx
       DONE #xx とする
+
+  - id: 27
+    url: https://github.com/sunb256/impl/pull/31
+    title: プロジェクト画面の削除ボタンを薄いピンクに調整
+    action: |
+      プロジェクト画面
+      削除ボタンが薄い
+      赤はきついので薄いピンクぐらいがいいか
