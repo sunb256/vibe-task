@@ -425,3 +425,13 @@ task:
     title: TODO空時の新規タスクID採番をDONE最大値基準に調整
     action: |-
       新規タスク作成で、TODOタスクがない場合、1から始めないで、DONEタスクのMAX+1をidにしたい
+
+  - id: 48
+    url: https://github.com/sunb256/impl/pull/52
+    title: repositoryPathで環境変数を含むパスをサポート
+    action: |-
+      repositoryPathは環境変数を含めたパスを取り扱えるようにしたい
+
+      $HOME/path/to/dir
+
+      みたいなことを考えている
