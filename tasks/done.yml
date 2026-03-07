@@ -435,3 +435,8 @@ task:
       $HOME/path/to/dir
 
       みたいなことを考えている
+  - id: 49
+    url: https://github.com/sunb256/impl/pull/53
+    title: プロジェクト一覧に編集機能と更新APIを追加
+    action: |-
+      プロジェクトの変更ができる画面が欲しい
