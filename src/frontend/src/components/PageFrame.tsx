@@ -9,7 +9,7 @@ type PageFrameProps = {
 };
 
 export function PageFrame(props: PageFrameProps) {
-  const { title, eyebrow = "Task Manager", subtitle, actions, children } =
+  const { title, eyebrow = "Code Manager", subtitle, actions, children } =
     props;
 
   return (
@@ -18,7 +18,7 @@ export function PageFrame(props: PageFrameProps) {
         <header className="mb-3 flex flex-col gap-4 rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] px-6 py-3 shadow-[0_1px_0_rgba(9,9,11,0.04),0_18px_40px_rgba(9,9,11,0.08)] md:flex-row md:items-end md:justify-between">
           <div className="space-y-1.5">
             {eyebrow ? (
-              <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-sky-700/80">
+              <p className="text-[12px] font-semibold uppercase tracking-[0.25em] text-sky-700/80">
                 {eyebrow}
               </p>
             ) : null}

@@ -274,7 +274,11 @@ export function ProjectTasksPage() {
                   const upTargetId = swapTargetId(orderedTasks, task, "up");
                   const downTargetId = swapTargetId(orderedTasks, task, "down");
                   return (
-                    <tr key={`${task.source}-${task.id}`}>
+                    <tr
+                      key={`${task.source}-${task.id}`}
+                      onClick={() => openEditDialog(task)}
+                      className="cursor-pointer"
+                    >
                       <td className="rounded-l-md border-y border-l border-[var(--border)] bg-[var(--panel-strong)] px-3 py-3 text-[var(--muted)] whitespace-nowrap">
                         <span
                           className={`rounded-md px-3 py-1 text-xs font-semibold uppercase ${sourceBadgeTone(task.source)}`}
@@ -286,7 +290,10 @@ export function ProjectTasksPage() {
                         <button
                           type="button"
                           aria-label={`task ${task.id} を編集`}
-                          onClick={() => openEditDialog(task)}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            openEditDialog(task);
+                          }}
                           className="block h-full w-full px-3 py-3 text-left transition hover:bg-zinc-50/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
                         >
                           <div className="space-y-1">
@@ -303,7 +310,10 @@ export function ProjectTasksPage() {
                         <div className="flex items-center gap-2">
                           <button
                             type="button"
-                            onClick={() => openEditDialog(task)}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              openEditDialog(task);
+                            }}
                             className="inline-flex w-20 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 py-2 font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
                           >
                             編集
@@ -311,7 +321,10 @@ export function ProjectTasksPage() {
                           <PrimaryButton
                             type="button"
                             className="w-20 border border-rose-200 bg-white !text-rose-700 hover:border-rose-300 hover:bg-rose-50 focus-visible:outline-rose-300"
-                            onClick={() => void handleDelete(task)}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              void handleDelete(task);
+                            }}
                           >
                             削除
                           </PrimaryButton>
@@ -432,6 +445,9 @@ function TaskPrLink(props: TaskPrLinkProps) {
       href={props.url}
       target="_blank"
       rel="noreferrer"
+      onClick={(event) => {
+        event.stopPropagation();
+      }}
       className="inline-flex items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
     >
       {prLabel(props.url)}
@@ -536,7 +552,10 @@ function SwapButton(props: SwapButtonProps) {
       type="button"
       aria-label={ariaLabel}
       disabled={disabled}
-      onClick={onClick}
+      onClick={(event) => {
+        event.stopPropagation();
+        onClick();
+      }}
       className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-[var(--border)] bg-white text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50 disabled:cursor-not-allowed disabled:text-[var(--muted)]"
     >
       {label}

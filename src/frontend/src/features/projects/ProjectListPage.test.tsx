@@ -34,9 +34,9 @@ test("renders project cards", async () => {
   await waitFor(() => {
     expect(screen.getByText("impl")).toBeInTheDocument();
   });
-  const taskManagerTitle = screen.getByText("Task Manager");
+  const taskManagerTitle = screen.getByText("Code Manager");
   expect(taskManagerTitle).toBeInTheDocument();
-  expect(taskManagerTitle).toHaveClass("text-[11px]", "text-sky-700/80");
+  expect(taskManagerTitle).toHaveClass("text-[12px]", "text-sky-700/80");
   const pageTitle = screen.getByRole("heading", { level: 1, name: "Project 一覧" });
   expect(pageTitle).toBeInTheDocument();
   expect(pageTitle).toHaveClass("text-xl");
