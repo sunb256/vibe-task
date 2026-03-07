@@ -1,0 +1,24 @@
+services:
+
+  backend:
+    build:
+      context: .
+      dockerfile: src/backend/Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      HOME: ${HOME}
+    volumes:
+      - ./tasks/projects.yml:/app/tasks/projects.yml
+      - ${HOME}/ghq:${HOME}/ghq
+
+  frontend:
+    build:
+      context: .
+      dockerfile: src/frontend/Dockerfile
+    environment:
+      VITE_API_PROXY_TARGET: http://backend:5000
+    ports:
+      - "5555:5555"
+    depends_on:
+      - backend
