@@ -1,0 +1,8 @@
+src/backend/.venv/
+src/frontend/node_modules/
+src/frontend/dist/
+src/frontend/coverage/
+src/backend/.pytest_cache/
+src/backend/__pycache__/
+src/backend/.ruff_cache/
+src/backend/*.egg-info/
