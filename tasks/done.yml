@@ -517,7 +517,7 @@ task:
     action: |
       背景をもう少し凝った感じにしたいですね。現在と同じ色合いで今どきのグラデーションみたいな感じが出ているといいです
   - id: 63
-    url: https://github.com/sunb256/impl/pull/65
+    url: https://github.com/sunb256/impl/pull/66
     title: TOP画面カード全体クリックでプロジェクトへ遷移
     action: |
       TOP画面のカード部でリンクがカード全体に効いていない
