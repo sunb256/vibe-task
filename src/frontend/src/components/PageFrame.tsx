@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 type PageFrameProps = {
-  title: string;
+  title: ReactNode;
   eyebrow?: string | null;
   subtitle?: string | null;
   actions?: ReactNode;
