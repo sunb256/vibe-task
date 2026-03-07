@@ -63,5 +63,5 @@ uv run pytest
 
 - frontend と backend の両方にまたがる変更では、片側だけ見て完了としない
 - API の request / response shape を変える場合は、呼び出し側への影響も確認する
-- ブランチはdevで作成し作業
+- gitのブランチは `dev` がなければ作成して `dev` で作業
 - ユーザは`tasks/` 配下のファイルを編集することがある。この場合は同一コミットに含める

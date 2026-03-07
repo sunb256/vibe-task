@@ -8,7 +8,7 @@ impl_rule: |
  5. KISS/DRY/リーダブルコードの原則を守る
 
 task: 
-  - id: 7
+  - id: 8
     url: -
     title: -
     action: |
