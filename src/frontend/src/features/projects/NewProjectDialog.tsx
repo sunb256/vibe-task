@@ -42,7 +42,7 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="new-project-title"
-        className="w-full max-w-2xl rounded-[2rem] border border-[var(--border)] bg-[var(--panel-strong)] p-6 shadow-[0_24px_80px_rgba(31,43,46,0.18)]"
+        className="w-full max-w-2xl rounded-[1.5rem] border border-[var(--border)] bg-[var(--panel-strong)] p-6 shadow-[0_24px_80px_rgba(31,43,46,0.18)]"
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
@@ -56,7 +56,7 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-[var(--border)] px-3 py-1 text-sm"
+            className="rounded-xl border border-[var(--border)] px-3 py-1 text-sm"
           >
             Close
           </button>

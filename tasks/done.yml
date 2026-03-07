@@ -66,10 +66,3 @@ task:
     title: UIの角丸を緩めて見た目を調整
     action: |
       角丸がきついのでもう少し緩めてください
-  - id: 3
-    url: https://github.com/sunb256/impl/pull/3
-    title: TOP画面の不要な見出し文言を削除
-    action: |
-      Task YAML Manager
-      TOP画面ローカルリポジトリと task YAML を紐づけて、一覧表示と action 編集を行います。
-      の文字はいらない
