@@ -8,13 +8,13 @@ impl_rule: |
   5. KISS/DRY/リーダブルコードの原則を守る
 
 task:
-  - id: '59'
-    url: '-'
-    title: '-'
-    action: |
-      TASK MANAGER表記はもう一回り大きくてもいいかな
   - id: '60'
     url: '-'
     title: '-'
-    action: |
+    action: |-
       TASK列の選択だけど行選択がいいな
+  - id: '61'
+    url: '-'
+    title: '-'
+    action: |
+      プロジェクト一覧のカードだけど、もう少し小さくなるように
