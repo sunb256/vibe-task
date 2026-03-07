@@ -325,11 +325,17 @@ test("creates a new action task from modal editor", async () => {
   });
 
   fireEvent.click(screen.getByRole("button", { name: "新規タスク" }));
-  expect(screen.getByRole("dialog", { name: "New Task" })).toBeInTheDocument();
+  expect(screen.getByRole("dialog", { name: "新規タスク" })).toBeInTheDocument();
+  fireEvent.keyDown(window, { key: "Escape" });
+  expect(screen.queryByRole("dialog", { name: "新規タスク" })).not.toBeInTheDocument();
+  expect(createActionTask).not.toHaveBeenCalled();
+
+  fireEvent.click(screen.getByRole("button", { name: "新規タスク" }));
+  expect(screen.getByRole("dialog", { name: "新規タスク" })).toBeInTheDocument();
   fireEvent.change(screen.getByLabelText("task-editor"), {
     target: { value: "newly created task" },
   });
-  fireEvent.click(screen.getByRole("button", { name: "Create Task" }));
+  fireEvent.keyDown(window, { key: "Enter", ctrlKey: true });
 
   await waitFor(() => {
     expect(createActionTask).toHaveBeenCalledWith("project-1");
@@ -341,7 +347,7 @@ test("creates a new action task from modal editor", async () => {
     );
     expect(screen.getByText("newly created task")).toBeInTheDocument();
   });
-  expect(screen.queryByRole("dialog", { name: "New Task" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("dialog", { name: "新規タスク" })).not.toBeInTheDocument();
 });
 
 test("edits a task in modal editor and supports keyboard shortcuts", async () => {

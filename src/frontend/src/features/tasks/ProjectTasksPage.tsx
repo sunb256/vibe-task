@@ -260,10 +260,11 @@ export function ProjectTasksPage() {
         isSaving={isCreating}
         error={createError}
         action={newTaskAction}
-        title="New Task"
-        description="task 内容を Monaco Editor で入力して作成します。"
-        submitLabel="Create Task"
-        submittingLabel="Creating..."
+        title="新規タスク"
+        description=""
+        submitLabel="新規作成"
+        submittingLabel="作成中..."
+        enableShortcut
         onActionChange={setNewTaskAction}
         onClose={closeCreateDialog}
         onSubmit={handleCreate}
@@ -274,9 +275,9 @@ export function ProjectTasksPage() {
         error={editError}
         action={editTaskAction}
         title={editTask ? `Edit Task ${editTask.id}` : "Edit Task"}
-        description="task 内容を Monaco Editor で編集します。"
-        submitLabel="Update Task"
-        submittingLabel="Updating..."
+        description=""
+        submitLabel="更新"
+        submittingLabel="更新中..."
         enableShortcut
         onActionChange={setEditTaskAction}
         onClose={closeEditDialog}

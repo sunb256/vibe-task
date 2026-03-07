@@ -1,5 +1,5 @@
 import Editor from "@monaco-editor/react";
-import { type FormEvent, useEffect } from "react";
+import { type FormEvent, useEffect, useRef } from "react";
 
 import { Notice } from "../../components/Notice";
 import { PrimaryButton } from "../../components/PrimaryButton";
@@ -34,9 +34,37 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
     onClose,
     onSubmit,
   } = props;
+  const isSavingRef = useRef(isSaving);
+  const onCloseRef = useRef(onClose);
+  const onSubmitRef = useRef(onSubmit);
+  const submitLockRef = useRef(false);
 
   useEffect(() => {
-    if (!isOpen || !enableShortcut) {
+    isSavingRef.current = isSaving;
+  }, [isSaving]);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  useEffect(() => {
+    onSubmitRef.current = onSubmit;
+  }, [onSubmit]);
+
+  async function triggerSubmit() {
+    if (isSavingRef.current || submitLockRef.current) {
+      return;
+    }
+    submitLockRef.current = true;
+    try {
+      await onSubmitRef.current();
+    } finally {
+      submitLockRef.current = false;
+    }
+  }
+
+  useEffect(() => {
+    if (!isOpen) {
       return;
     }
 
@@ -46,23 +74,23 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
       }
       if (event.key === "Escape") {
         event.preventDefault();
-        if (!isSaving) {
-          onClose();
+        if (!isSavingRef.current) {
+          onCloseRef.current();
         }
         return;
       }
-      if (!isSaveShortcut(event) || isSaving) {
+      if (!enableShortcut || !isSaveShortcut(event) || isSavingRef.current) {
         return;
       }
       event.preventDefault();
-      void onSubmit();
+      void triggerSubmit();
     }
 
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [enableShortcut, isOpen, isSaving, onClose, onSubmit]);
+  }, [enableShortcut, isOpen]);
 
   if (!isOpen) {
     return null;
@@ -70,7 +98,7 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    await onSubmit();
+    await triggerSubmit();
   }
 
   return (
@@ -86,30 +114,43 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
             <h2 id="task-dialog-title" className="text-xl font-semibold">
               {title}
             </h2>
-            <p className="mt-1 text-sm text-[var(--muted)]">{description}</p>
+            {description ? <p className="mt-1 text-sm text-[var(--muted)]">{description}</p> : null}
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg border border-[var(--border)] bg-white px-3 py-1 text-sm text-[var(--muted)] transition hover:text-[var(--ink)]"
-          >
-            Close
-          </button>
         </div>
         <form className="grid gap-4" onSubmit={handleSubmit}>
-          <Editor
-            height="40vh"
-            language="markdown"
-            value={action}
-            onChange={(value) => onActionChange(value ?? "")}
-            options={{
-              fontSize: 14,
-              minimap: { enabled: false },
-              wordWrap: "on",
-            }}
-          />
+          <div className="mt-1 overflow-hidden rounded-md border border-[var(--border)] bg-white">
+            <Editor
+              height="40vh"
+              language="markdown"
+              value={action}
+              onChange={(value) => onActionChange(value ?? "")}
+              onMount={(editor, monaco) => {
+                if (!enableShortcut) {
+                  return;
+                }
+                editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+                  void triggerSubmit();
+                });
+                editor.addCommand(monaco.KeyCode.Escape, () => {
+                  if (!isSavingRef.current) {
+                    onCloseRef.current();
+                  }
+                });
+              }}
+              options={{
+                fontSize: 15,
+                minimap: { enabled: false },
+                wordWrap: "on",
+                padding: { top: 8 },
+                renderLineHighlight: "none",
+              }}
+            />
+          </div>
           {error ? <Notice tone="error" message={error} /> : null}
           <div className="flex justify-end gap-2">
+            <PrimaryButton type="submit" disabled={isSaving}>
+              {isSaving ? submittingLabel : submitLabel}
+            </PrimaryButton>
             <button
               type="button"
               onClick={onClose}
@@ -117,9 +158,6 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
             >
               Cancel
             </button>
-            <PrimaryButton type="submit" disabled={isSaving}>
-              {isSaving ? submittingLabel : submitLabel}
-            </PrimaryButton>
           </div>
         </form>
       </div>
