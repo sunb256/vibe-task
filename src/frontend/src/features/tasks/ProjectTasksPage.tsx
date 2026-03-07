@@ -281,7 +281,7 @@ export function ProjectTasksPage() {
         isSaving={isEditing}
         error={editError}
         action={editTaskAction}
-        title={editTask ? `Edit Task ${editTask.id}` : "Edit Task"}
+        title={editTask ? `編集 - #${editTask.id}` : "編集"}
         description=""
         submitLabel="更新"
         submittingLabel="更新中..."
