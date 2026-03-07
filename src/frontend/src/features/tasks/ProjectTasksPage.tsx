@@ -86,8 +86,7 @@ export function ProjectTasksPage() {
                 <tr className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
                   <th className="px-3">id</th>
                   <th className="px-3">source</th>
-                  <th className="px-3">title</th>
-                  <th className="px-3">action</th>
+                  <th className="px-3">task</th>
                   <th className="px-3">actions</th>
                   <th className="px-3">url</th>
                 </tr>
@@ -95,7 +94,7 @@ export function ProjectTasksPage() {
               <tbody>
                 {tasks.map((task) => (
                   <tr key={`${task.source}-${task.id}`}>
-                    <td className="rounded-l-md border-y border-l border-[var(--border)] bg-white px-3 py-4 font-semibold">
+                    <td className="rounded-l-md border-y border-l border-[var(--border)] bg-white px-3 py-4 text-[var(--muted)]">
                       {task.id}
                     </td>
                     <td className="border-y border-[var(--border)] bg-white px-3 py-4">
@@ -106,24 +105,26 @@ export function ProjectTasksPage() {
                       </span>
                     </td>
                     <td className="border-y border-[var(--border)] bg-white px-3 py-4">
-                      {task.title}
-                    </td>
-                    <td className="border-y border-[var(--border)] bg-white px-3 py-4">
-                      <p className="line-clamp-3 max-w-[22rem] whitespace-pre-wrap text-[var(--muted)]">
-                        {task.action}
-                      </p>
+                      <div className="space-y-1">
+                        {showTaskTitle(task.title) ? (
+                          <p className="font-semibold text-[var(--ink)]">{task.title}</p>
+                        ) : null}
+                        <p className="line-clamp-3 max-w-[22rem] whitespace-pre-wrap text-[var(--muted)]">
+                          {task.action}
+                        </p>
+                      </div>
                     </td>
                     <td className="border-y border-[var(--border)] bg-white px-3 py-4">
                       <div className="flex flex-wrap gap-2">
                         <Link
                           to={`/projects/${projectId}/tasks/${task.source}/${task.id}/edit`}
-                          className="inline-flex rounded-md border border-[var(--border)] px-3 py-2 font-semibold text-[var(--accent)]"
+                          className="inline-flex w-20 items-center justify-center rounded-md border border-[var(--accent)]/30 bg-[var(--accent)]/10 px-3 py-2 font-semibold text-[var(--accent)] transition hover:bg-[var(--accent)]/18"
                         >
                           編集
                         </Link>
                         <PrimaryButton
                           type="button"
-                          className="bg-rose-600 hover:bg-rose-700 focus-visible:outline-rose-600"
+                          className="w-20 bg-rose-500 hover:bg-rose-600 focus-visible:outline-rose-500"
                           onClick={() => void handleDelete(task)}
                         >
                           削除
@@ -174,7 +175,7 @@ function TaskPrLink(props: TaskPrLinkProps) {
       href={props.url}
       target="_blank"
       rel="noreferrer"
-      className="inline-flex rounded-md border border-[var(--border)] px-3 py-1 text-xs font-semibold text-[var(--accent)] transition hover:border-[var(--accent)] hover:bg-[var(--accent)]/8"
+      className="text-sm font-semibold text-[var(--accent)] underline decoration-1 underline-offset-4 transition hover:text-[var(--accent-strong)]"
     >
       {prLabel(props.url)}
     </a>
@@ -187,6 +188,10 @@ function prLabel(url: string) {
     return "PR";
   }
   return `PR #${matched[1]}`;
+}
+
+function showTaskTitle(title: string) {
+  return title.trim() !== "" && title.trim() !== "-";
 }
 
 function sourceBadgeTone(source: TaskRecord["source"]) {

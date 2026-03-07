@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, vi } from "vitest";
 
@@ -67,8 +67,7 @@ test("does not render the removed project subtitle", async () => {
   expect(screen.getAllByRole("columnheader").map((header) => header.textContent)).toEqual([
     "id",
     "source",
-    "title",
-    "action",
+    "task",
     "actions",
     "url",
   ]);
@@ -86,11 +85,17 @@ test("does not render the removed project subtitle", async () => {
     "href",
     "https://github.com/sunb256/impl/pull/4",
   );
+  expect(screen.getByRole("link", { name: "PR #4" })).toHaveClass("underline");
   const editLinks = screen.getAllByRole("link", { name: "編集" });
   expect(editLinks).toHaveLength(2);
   expect(editLinks[0]).toHaveAttribute("href", "/projects/project-1/tasks/action/1/edit");
   expect(editLinks[1]).toHaveAttribute("href", "/projects/project-1/tasks/done/2/edit");
   expect(screen.getAllByRole("button", { name: "削除" })).toHaveLength(2);
+  expect(editLinks[0]).toHaveClass("w-20");
+  expect(screen.getAllByRole("button", { name: "削除" })[0]).toHaveClass("w-20");
+  const rows = screen.getAllByRole("row");
+  expect(within(rows[1]).queryByText("-")).not.toBeInTheDocument();
+  expect(within(rows[2]).getByText("done-title")).toBeInTheDocument();
   expect(screen.getByText("action", { selector: "span" })).toHaveClass(
     "bg-amber-100",
     "text-amber-700",
