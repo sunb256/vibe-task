@@ -526,3 +526,8 @@ task:
     title: ボタンホバー時のカーソル表示とカード操作性を改善
     action: |
       ボタンにマウスフォーますが当たってもマウスカーソルが変わらないのが違和感
+  - id: 65
+    url: https://github.com/sunb256/impl/pull/68
+    title: Docker/docker-compose対応とprojects.yml永続化を追加
+    action: |
+      Docker/docker-compose 対応をしたい
