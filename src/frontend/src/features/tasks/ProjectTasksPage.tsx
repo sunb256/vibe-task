@@ -28,6 +28,8 @@ export function ProjectTasksPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newTaskAction, setNewTaskAction] = useState(defaultTaskAction);
+  const [showTodo, setShowTodo] = useState(true);
+  const [showDone, setShowDone] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -103,6 +105,9 @@ export function ProjectTasksPage() {
   }
 
   const orderedTasks = orderTasks(tasks);
+  const visibleTasks = filterTasks(orderedTasks, showTodo, showDone);
+  const todoCount = countTasks(tasks, "action");
+  const doneCount = countTasks(tasks, "done");
 
   return (
     <PageFrame
@@ -116,17 +121,33 @@ export function ProjectTasksPage() {
       }
     >
       <section className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
-        <div className="mb-4 flex justify-start">
+        <div className="mb-4 flex items-center justify-start gap-2">
           <PrimaryButton type="button" onClick={openCreateDialog} disabled={isCreating}>
             新規タスク
           </PrimaryButton>
+          <button
+            type="button"
+            aria-pressed={showTodo}
+            onClick={() => setShowTodo((value) => !value)}
+            className={`${sourceFilterClass("todo", showTodo)} ml-2`}
+          >
+            {`TODO(${todoCount})`}
+          </button>
+          <button
+            type="button"
+            aria-pressed={showDone}
+            onClick={() => setShowDone((value) => !value)}
+            className={sourceFilterClass("done", showDone)}
+          >
+            {`DONE(${doneCount})`}
+          </button>
         </div>
         {error ? <Notice tone="error" message={error} /> : null}
         {isLoading ? <Notice tone="neutral" message="Loading tasks..." /> : null}
-        {!error && !isLoading && orderedTasks.length === 0 ? (
+        {!error && !isLoading && visibleTasks.length === 0 ? (
           <Notice tone="neutral" message="task は見つかりませんでした。" />
         ) : null}
-        {!isLoading && orderedTasks.length > 0 ? (
+        {!isLoading && visibleTasks.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="min-w-full border-separate border-spacing-y-2 text-left text-sm">
               <thead>
@@ -138,7 +159,7 @@ export function ProjectTasksPage() {
                 </tr>
               </thead>
               <tbody>
-                {orderedTasks.map((task) => (
+                {visibleTasks.map((task) => (
                   <tr key={`${task.source}-${task.id}`}>
                     <td className="rounded-l-md border-y border-l border-[var(--border)] bg-[var(--panel-strong)] px-3 py-3 text-[var(--muted)]">
                       <span
@@ -286,7 +307,7 @@ function sourceBadgeTone(source: TaskRecord["source"]) {
   if (source === "done") {
     return "bg-emerald-100 text-emerald-700";
   }
-  return "bg-amber-100 text-amber-700";
+  return "bg-sky-100 text-sky-700";
 }
 
 function sourceLabel(source: TaskRecord["source"]) {
@@ -300,10 +321,33 @@ function sourceTag(task: TaskRecord) {
   return `${sourceLabel(task.source)} #${task.id}`;
 }
 
+function sourceFilterClass(source: "todo" | "done", active: boolean) {
+  const tone =
+    source === "todo"
+      ? "border-sky-200 bg-sky-100 text-sky-700"
+      : "border-emerald-200 bg-emerald-100 text-emerald-700";
+  const inactive = "border-[var(--border)] bg-white text-[var(--muted)]";
+  const toneClass = active ? tone : inactive;
+  return `inline-flex h-8 items-center rounded-full border px-3 text-xs font-semibold uppercase tracking-[0.08em] transition ${toneClass}`;
+}
+
 function orderTasks(tasks: TaskRecord[]) {
   const actionTasks = tasks.filter((task) => task.source === "action");
   const doneTasks = tasks.filter((task) => task.source === "done").sort(compareTaskIdDesc);
   return [...actionTasks, ...doneTasks];
+}
+
+function filterTasks(tasks: TaskRecord[], showTodo: boolean, showDone: boolean) {
+  return tasks.filter((task) => {
+    if (task.source === "action") {
+      return showTodo;
+    }
+    return showDone;
+  });
+}
+
+function countTasks(tasks: TaskRecord[], source: TaskRecord["source"]) {
+  return tasks.filter((task) => task.source === source).length;
 }
 
 function compareTaskIdDesc(left: TaskRecord, right: TaskRecord) {
