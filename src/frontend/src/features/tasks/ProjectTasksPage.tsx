@@ -85,16 +85,16 @@ export function ProjectTasksPage() {
           to="/"
           className="rounded-sm transition hover:text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
         >
-          {project ? `${project.name} Tasks` : "Project Tasks"}
+          {project ? project.name : "Project"}
         </Link>
-      }
-      actions={
-        <PrimaryButton type="button" onClick={() => void handleCreate()} disabled={isCreating}>
-          {isCreating ? "作成中..." : "新規"}
-        </PrimaryButton>
       }
     >
       <section className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4 shadow-[0_18px_50px_rgba(31,43,46,0.08)] backdrop-blur">
+        <div className="mb-4 flex justify-end">
+          <PrimaryButton type="button" onClick={() => void handleCreate()} disabled={isCreating}>
+            {isCreating ? "作成中..." : "新規"}
+          </PrimaryButton>
+        </div>
         {error ? <Notice tone="error" message={error} /> : null}
         {isLoading ? <Notice tone="neutral" message="Loading tasks..." /> : null}
         {!error && !isLoading && tasks.length === 0 ? (
