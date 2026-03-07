@@ -92,9 +92,9 @@ export function ProjectTasksPage() {
       }
     >
       <section className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
-        <div className="mb-4 flex justify-end">
+        <div className="mb-4 flex justify-start">
           <PrimaryButton type="button" onClick={() => void handleCreate()} disabled={isCreating}>
-            {isCreating ? "作成中..." : "新規"}
+            {isCreating ? "作成中..." : "新規タスク"}
           </PrimaryButton>
         </div>
         {error ? <Notice tone="error" message={error} /> : null}
