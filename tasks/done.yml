@@ -232,3 +232,11 @@ task:
       TOP画面
       OpenProjectのリンクはボタンではなく、カード全体に効くほうがいい
       Project一覧をリンク選択してRootのリンクとしたい
+
+  - id: 24
+    url: https://github.com/sunb256/impl/pull/28
+    title: Project画面の新規タスクボタン配置と文言を調整
+    action: |
+      プロジェクト画面
+      新規ボタンは左寄せ
+      新規タスクボタンと名称を変える
