@@ -487,3 +487,12 @@ task:
       プロジェクト一覧のカードのタイトルの最初にSVGアイコンをつけたい
 
       アイコンはsrc/frontend/assets/images/code-xml.svg
+  - id: 58
+    url: https://github.com/sunb256/impl/pull/62
+    title: Monacoの日本語選択ハイライト崩れを修正
+    action: |-
+      monaco editor で日本語の場合、選択ハイライトがおかしい。全部表示ハイライトされてしまう
+
+      Monaco 側でも最近の issue で 「EditContext が原因っぽい。off にすると直るはず」 という案内が出ています
+
+      これをヒントに直してください
