@@ -125,6 +125,12 @@ test("does not render the removed project subtitle", async () => {
   expect(within(rows[3]).getByText("done-title-2")).toBeInTheDocument();
   expect(screen.getByText("first task")).toHaveClass("line-clamp-6");
   expect(screen.getByText("first task")).toHaveClass("max-w-[44rem]");
-  expect(within(rows[1]).getByText("1", { selector: "span" })).toBeInTheDocument();
-  expect(within(rows[2]).getByText("10", { selector: "span" })).toBeInTheDocument();
+  expect(screen.getByText("TODO #1", { selector: "span" })).toHaveClass(
+    "bg-amber-100",
+    "text-amber-700",
+  );
+  expect(screen.getByText("DONE #10", { selector: "span" })).toHaveClass(
+    "bg-emerald-100",
+    "text-emerald-700",
+  );
 });
