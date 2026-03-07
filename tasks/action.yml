@@ -42,8 +42,9 @@ task:
   - id: '43'
     url: '-'
     title: '-'
-    action: |-
+    action: |
       TOP画面にSetting画面を追加したい
+      新規プロジェクトの右隣につける
 
       Setting画面の機能
 
