@@ -135,6 +135,7 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
               value={action}
               onChange={(value) => onActionChange(value ?? "")}
               onMount={(editor, monaco) => {
+                editor.focus();
                 if (!enableShortcut) {
                   return;
                 }

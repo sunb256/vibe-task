@@ -9,10 +9,26 @@ vi.mock("@monaco-editor/react", () => ({
   default: (props: {
     value?: string;
     onChange?: (value: string) => void;
+    onMount?: (editor: { focus: () => void; addCommand: () => number }, monaco: unknown) => void;
   }) => (
     <textarea
       aria-label="task-editor"
       value={props.value ?? ""}
+      ref={(node) => {
+        if (!node || !props.onMount) {
+          return;
+        }
+        props.onMount(
+          {
+            focus: () => node.focus(),
+            addCommand: () => 0,
+          },
+          {
+            KeyMod: { CtrlCmd: 1 },
+            KeyCode: { Enter: 1, Escape: 2 },
+          },
+        );
+      }}
       onChange={(event) => props.onChange?.(event.target.value)}
     />
   ),
@@ -411,6 +427,7 @@ test("creates a new action task from modal editor", async () => {
 
   fireEvent.keyDown(window, { key: "n", ctrlKey: true });
   expect(screen.getByRole("dialog", { name: "新規タスク" })).toBeInTheDocument();
+  expect(screen.getByLabelText("task-editor")).toHaveFocus();
   fireEvent.keyDown(window, { key: "Escape" });
   expect(screen.queryByRole("dialog", { name: "新規タスク" })).not.toBeInTheDocument();
 
@@ -511,6 +528,7 @@ test("edits a task in modal editor and supports keyboard shortcuts", async () =>
 
   fireEvent.click(screen.getByRole("button", { name: "編集" }));
   expect(screen.getByRole("dialog", { name: "編集 - #1" })).toBeInTheDocument();
+  expect(screen.getByLabelText("task-editor")).toHaveFocus();
   fireEvent.change(screen.getByLabelText("task-editor"), {
     target: { value: "edited task" },
   });

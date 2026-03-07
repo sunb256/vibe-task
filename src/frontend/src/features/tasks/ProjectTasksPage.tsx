@@ -259,64 +259,64 @@ export function ProjectTasksPage() {
                   const downTargetId = swapTargetId(orderedTasks, task, "down");
                   return (
                     <tr key={`${task.source}-${task.id}`}>
-                    <td className="rounded-l-md border-y border-l border-[var(--border)] bg-[var(--panel-strong)] px-3 py-3 text-[var(--muted)]">
-                      <span
-                        className={`rounded-md px-3 py-1 text-xs font-semibold uppercase ${sourceBadgeTone(task.source)}`}
-                      >
-                        {sourceTag(task)}
-                      </span>
-                    </td>
-                    <td className="border-y border-[var(--border)] bg-[var(--panel-strong)]">
-                      <button
-                        type="button"
-                        aria-label={`task ${task.id} を編集`}
-                        onClick={() => openEditDialog(task)}
-                        className="block h-full w-full px-3 py-3 text-left transition hover:bg-zinc-50/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
-                      >
-                        <div className="space-y-1">
-                          {showTaskTitle(task.title) ? (
-                            <p className="font-semibold text-[var(--ink)]">{task.title}</p>
-                          ) : null}
-                          <p className="line-clamp-6 max-w-[44rem] whitespace-pre-wrap text-black">
-                            {task.action}
-                          </p>
-                        </div>
-                      </button>
-                    </td>
-                    <td className="border-y border-[var(--border)] bg-[var(--panel-strong)] pl-1 pr-3 py-3">
-                      <div className="flex items-center gap-2">
+                      <td className="rounded-l-md border-y border-l border-[var(--border)] bg-[var(--panel-strong)] px-3 py-3 text-[var(--muted)]">
+                        <span
+                          className={`rounded-md px-3 py-1 text-xs font-semibold uppercase ${sourceBadgeTone(task.source)}`}
+                        >
+                          {sourceTag(task)}
+                        </span>
+                      </td>
+                      <td className="border-y border-[var(--border)] bg-[var(--panel-strong)]">
                         <button
                           type="button"
+                          aria-label={`task ${task.id} を編集`}
                           onClick={() => openEditDialog(task)}
-                          className="inline-flex w-20 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 py-2 font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
+                          className="block h-full w-full px-3 py-3 text-left transition hover:bg-zinc-50/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
                         >
-                          編集
+                          <div className="space-y-1">
+                            {showTaskTitle(task.title) ? (
+                              <p className="font-semibold text-[var(--ink)]">{task.title}</p>
+                            ) : null}
+                            <p className="line-clamp-6 max-w-[44rem] whitespace-pre-wrap text-black">
+                              {task.action}
+                            </p>
+                          </div>
                         </button>
-                        <PrimaryButton
-                          type="button"
-                          className="w-20 border border-rose-200 bg-white !text-rose-700 hover:border-rose-300 hover:bg-rose-50 focus-visible:outline-rose-300"
-                          onClick={() => void handleDelete(task)}
-                        >
-                          削除
-                        </PrimaryButton>
-                        <SwapButton
-                          label="↑"
-                          ariaLabel={`task ${task.id} を上へ`}
-                          disabled={isSwapping || !upTargetId}
-                          onClick={() => void handleSwap(task, upTargetId)}
-                        />
-                        <SwapButton
-                          label="↓"
-                          ariaLabel={`task ${task.id} を下へ`}
-                          disabled={isSwapping || !downTargetId}
-                          onClick={() => void handleSwap(task, downTargetId)}
-                        />
-                      </div>
-                    </td>
-                    <td className="rounded-r-md border-y border-r border-[var(--border)] bg-[var(--panel-strong)] px-3 py-3 text-center">
-                      <TaskPrLink url={task.url} />
-                    </td>
-                  </tr>
+                      </td>
+                      <td className="border-y border-[var(--border)] bg-[var(--panel-strong)] pl-1 pr-3 py-3">
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => openEditDialog(task)}
+                            className="inline-flex w-20 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 py-2 font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
+                          >
+                            編集
+                          </button>
+                          <PrimaryButton
+                            type="button"
+                            className="w-20 border border-rose-200 bg-white !text-rose-700 hover:border-rose-300 hover:bg-rose-50 focus-visible:outline-rose-300"
+                            onClick={() => void handleDelete(task)}
+                          >
+                            削除
+                          </PrimaryButton>
+                          <SwapButton
+                            label="↑"
+                            ariaLabel={`task ${task.id} を上へ`}
+                            disabled={isSwapping || !upTargetId}
+                            onClick={() => void handleSwap(task, upTargetId)}
+                          />
+                          <SwapButton
+                            label="↓"
+                            ariaLabel={`task ${task.id} を下へ`}
+                            disabled={isSwapping || !downTargetId}
+                            onClick={() => void handleSwap(task, downTargetId)}
+                          />
+                        </div>
+                      </td>
+                      <td className="rounded-r-md border-y border-r border-[var(--border)] bg-[var(--panel-strong)] px-3 py-3 text-center">
+                        <TaskPrLink url={task.url} />
+                      </td>
+                    </tr>
                   );
                 })}
               </tbody>
