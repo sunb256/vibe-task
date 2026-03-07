@@ -65,7 +65,6 @@ export function ProjectTasksPage() {
   return (
     <PageFrame
       title={project ? `${project.name} Tasks` : "Project Tasks"}
-      subtitle="action と done の task をまとめて表示します。source 列で所属ファイルを判別できます。"
       actions={
         <Link
           to="/"
