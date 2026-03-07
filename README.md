@@ -1,10 +1,18 @@
 
 # Vibe Task
 
-Vibe Agentic Coding Management System
+Vibe Agentic Coding Task Management System
 
 
-## 実行
+## Environment
+
+ - VSCode
+ - codex
+ - git
+ - ghq
+
+
+## Run
 
 backend:
 
@@ -26,11 +34,12 @@ npm run dev
 ## Docker / docker-compose
 
 ```bash
+cp .env.local .env
 docker compose up --build -d
 ```
 
-- frontend: http://127.0.0.1:5555
 - backend: http://127.0.0.1:5000
+- frontend: http://127.0.0.1:5555
 - bind mount
   - `tasks/projects.yml`:  
   - `${HOME}/ghq`
