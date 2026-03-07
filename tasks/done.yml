@@ -287,3 +287,11 @@ task:
     action: |
       テーブル表は上下余白が多いので少し少なめ
       TASKの内容の文字がもう少し黒っぽく
+
+  - id: 31
+    url: https://github.com/sunb256/impl/pull/35
+    title: Project画面の新規タスクをモーダルMonaco編集に変更
+    action: |
+      新規タスクでモーダル表示して
+      TASK内容は編集できるようにしたい
+      エディタはmonaco editorね
