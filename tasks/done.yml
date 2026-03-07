@@ -379,3 +379,14 @@ task:
     title: プロジェクト画面の表カーソル表示を調整
     action: |-
       プロジェクト画面で表にカーソルがあってしまい、大きなカーソルが表示されてしまい気になる
+
+  - id: 43
+    url: https://github.com/sunb256/impl/pull/47
+    title: TOP画面にSettingを追加しprojects.yml入出力機能を実装
+    action: |
+      TOP画面にSetting画面を追加したい
+      新規プロジェクトの右隣につける
+
+      Setting画面の機能
+
+       - データエクスポート/インポート機能(projects.yml)

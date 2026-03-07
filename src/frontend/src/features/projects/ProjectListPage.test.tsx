@@ -42,6 +42,7 @@ test("renders project cards", async () => {
   expect(pageTitle).toHaveClass("text-xl");
   expect(screen.getByRole("link", { name: "Project 一覧" })).toHaveAttribute("href", "/");
   expect(screen.getByRole("button", { name: "新規プロジェクト" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Setting" })).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "NEW" })).not.toBeInTheDocument();
   expect(
     screen.queryByText(
@@ -61,4 +62,9 @@ test("renders project cards", async () => {
   ).not.toBeInTheDocument();
   expect(screen.getByRole("button", { name: "プロジェクト作成" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Close" })).toHaveClass("px-4", "py-2");
+
+  fireEvent.click(screen.getByRole("button", { name: "Setting" }));
+  expect(screen.getByRole("dialog", { name: "Setting" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "projects.yml をエクスポート" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "インポート" })).toBeDisabled();
 });

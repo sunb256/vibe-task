@@ -34,6 +34,12 @@ class ProjectService:
             done_list_path=done_list_path,
         )
 
+    def export_projects_text(self) -> str:
+        return self.project_repository.export_projects_text()
+
+    def import_projects_text(self, content: str) -> None:
+        self.project_repository.import_projects_text(content)
+
     def _resolve_repository_path(self, payload: dict) -> Path:
         repository_path = self._require_text(payload, "repositoryPath")
         resolved = Path(repository_path).expanduser().resolve()

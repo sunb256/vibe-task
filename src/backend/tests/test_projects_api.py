@@ -64,3 +64,50 @@ def test_rejects_missing_repository(client, tmp_path: Path):
 
     assert response.status_code == 400
     assert response.get_json()["error"] == "repositoryPath must be an existing directory"
+
+
+def test_exports_projects_file(client, project_repo: Path):
+    created = client.post(
+        "/api/projects",
+        json={
+            "name": "impl",
+            "repositoryPath": str(project_repo),
+            "actionListPath": "tasks/action.yml",
+            "doneListPath": "tasks/done.yml",
+        },
+    )
+
+    assert created.status_code == 201
+    response = client.get("/api/projects/export")
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert "projects:" in payload["content"]
+    assert "name: impl" in payload["content"]
+
+
+def test_imports_projects_file(client):
+    content = (
+        "projects:\n"
+        "  - id: 10\n"
+        "    name: imported\n"
+        "    repositoryPath: /tmp/imported\n"
+        "    actionListPath: tasks/action.yml\n"
+        "    doneListPath: tasks/done.yml\n"
+    )
+    response = client.post("/api/projects/import", json={"content": content})
+
+    assert response.status_code == 204
+    listed = client.get("/api/projects")
+
+    assert listed.status_code == 200
+    payload = listed.get_json()
+    assert payload["projects"][0]["id"] == "10"
+    assert payload["projects"][0]["name"] == "imported"
+
+
+def test_rejects_invalid_projects_import(client):
+    response = client.post("/api/projects/import", json={"content": "projects: invalid"})
+
+    assert response.status_code == 400
+    assert response.get_json()["error"] == "projects file is invalid"
