@@ -143,7 +143,7 @@ export function ProjectTasksPage() {
                         </Link>
                         <PrimaryButton
                           type="button"
-                          className="w-20 bg-rose-200 text-rose-700 hover:bg-rose-300 focus-visible:outline-rose-300"
+                          className="w-20 border border-pink-300 bg-pink-200 text-pink-800 hover:bg-pink-300 focus-visible:outline-pink-300"
                           onClick={() => void handleDelete(task)}
                         >
                           削除

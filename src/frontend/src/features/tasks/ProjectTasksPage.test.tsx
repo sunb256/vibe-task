@@ -108,6 +108,7 @@ test("does not render the removed project subtitle", async () => {
   expect(screen.getAllByRole("button", { name: "削除" })).toHaveLength(3);
   expect(editLinks[0]).toHaveClass("w-20");
   expect(screen.getAllByRole("button", { name: "削除" })[0]).toHaveClass("w-20");
+  expect(screen.getAllByRole("button", { name: "削除" })[0]).toHaveClass("bg-pink-200");
   const rows = screen.getAllByRole("row");
   expect(within(rows[1]).queryByText("-")).not.toBeInTheDocument();
   expect(within(rows[2]).getByText("done-title-10")).toBeInTheDocument();
