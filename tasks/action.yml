@@ -8,11 +8,6 @@ impl_rule: |
   5. KISS/DRY/リーダブルコードの原則を守る
 
 task:
-  - id: '60'
-    url: '-'
-    title: '-'
-    action: |-
-      TASK列の選択だけど行選択がいいな
   - id: '61'
     url: '-'
     title: '-'

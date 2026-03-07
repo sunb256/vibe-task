@@ -501,3 +501,8 @@ task:
     title: TASK MANAGER表記拡大とMonaco入力設定を調整
     action: |
       TASK MANAGER表記はもう一回り大きくてもいいかな
+  - id: 60
+    url: https://github.com/sunb256/impl/pull/63
+    title: TASK列を行選択化しCode Manager表記に変更
+    action: |-
+      TASK列の選択だけど行選択がいいな
