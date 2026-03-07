@@ -453,7 +453,11 @@ function compareTaskIdDesc(left: TaskRecord, right: TaskRecord) {
 }
 
 function isCreateShortcut(event: KeyboardEvent) {
-  return (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "n";
+  const key = event.key.toLowerCase();
+  if (key !== "n") {
+    return false;
+  }
+  return event.altKey || event.ctrlKey || event.metaKey;
 }
 
 function isEditableTarget(target: EventTarget | null) {
