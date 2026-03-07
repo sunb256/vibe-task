@@ -73,7 +73,7 @@ export function ProjectTasksPage() {
         </Link>
       }
     >
-      <section className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--panel)] p-4 shadow-[0_18px_50px_rgba(31,43,46,0.08)] backdrop-blur">
+      <section className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4 shadow-[0_18px_50px_rgba(31,43,46,0.08)] backdrop-blur">
         {error ? <Notice tone="error" message={error} /> : null}
         {isLoading ? <Notice tone="neutral" message="Loading tasks..." /> : null}
         {!error && !isLoading && tasks.length === 0 ? (
@@ -95,12 +95,12 @@ export function ProjectTasksPage() {
               <tbody>
                 {tasks.map((task) => (
                   <tr key={`${task.source}-${task.id}`}>
-                    <td className="rounded-l-xl border-y border-l border-[var(--border)] bg-white px-3 py-4 font-semibold">
+                    <td className="rounded-l-md border-y border-l border-[var(--border)] bg-white px-3 py-4 font-semibold">
                       {task.id}
                     </td>
                     <td className="border-y border-[var(--border)] bg-white px-3 py-4">
                       <span
-                        className={`rounded-lg px-3 py-1 text-xs font-semibold uppercase ${sourceBadgeTone(task.source)}`}
+                        className={`rounded-md px-3 py-1 text-xs font-semibold uppercase ${sourceBadgeTone(task.source)}`}
                       >
                         {task.source}
                       </span>
@@ -117,7 +117,7 @@ export function ProjectTasksPage() {
                       <div className="flex flex-wrap gap-2">
                         <Link
                           to={`/projects/${projectId}/tasks/${task.source}/${task.id}/edit`}
-                          className="inline-flex rounded-xl border border-[var(--border)] px-3 py-2 font-semibold text-[var(--accent)]"
+                          className="inline-flex rounded-md border border-[var(--border)] px-3 py-2 font-semibold text-[var(--accent)]"
                         >
                           編集
                         </Link>
@@ -130,7 +130,7 @@ export function ProjectTasksPage() {
                         </PrimaryButton>
                       </div>
                     </td>
-                    <td className="rounded-r-xl border-y border-r border-[var(--border)] bg-white px-3 py-4">
+                    <td className="rounded-r-md border-y border-r border-[var(--border)] bg-white px-3 py-4">
                       <TaskPrLink url={task.url} />
                     </td>
                   </tr>
@@ -174,7 +174,7 @@ function TaskPrLink(props: TaskPrLinkProps) {
       href={props.url}
       target="_blank"
       rel="noreferrer"
-      className="inline-flex rounded-full border border-[var(--border)] px-3 py-1 text-xs font-semibold text-[var(--accent)] transition hover:border-[var(--accent)] hover:bg-[var(--accent)]/8"
+      className="inline-flex rounded-md border border-[var(--border)] px-3 py-1 text-xs font-semibold text-[var(--accent)] transition hover:border-[var(--accent)] hover:bg-[var(--accent)]/8"
     >
       {prLabel(props.url)}
     </a>

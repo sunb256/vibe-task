@@ -13,7 +13,7 @@ export function TextInput(props: TextInputProps) {
       <input
         {...inputProps}
         id={id}
-        className={`rounded-xl border border-[var(--border)] bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 ${className}`}
+        className={`rounded-md border border-[var(--border)] bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 ${className}`}
       />
     </label>
   );

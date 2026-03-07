@@ -63,7 +63,7 @@ export function ProjectListPage() {
           {projects.map((project) => (
             <article
               key={project.id}
-              className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--panel)] p-5 shadow-[0_18px_50px_rgba(31,43,46,0.08)] backdrop-blur"
+              className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-[0_18px_50px_rgba(31,43,46,0.08)] backdrop-blur"
             >
               <div className="space-y-3">
                 <div>
@@ -84,7 +84,7 @@ export function ProjectListPage() {
                 </dl>
                 <Link
                   to={`/projects/${project.id}`}
-                  className="inline-flex rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-semibold text-[var(--accent)] transition hover:border-[var(--accent)] hover:bg-[var(--accent)]/8"
+                  className="inline-flex rounded-md border border-[var(--border)] px-4 py-2 text-sm font-semibold text-[var(--accent)] transition hover:border-[var(--accent)] hover:bg-[var(--accent)]/8"
                 >
                   Open Project
                 </Link>

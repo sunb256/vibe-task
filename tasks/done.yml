@@ -133,3 +133,9 @@ task:
     title: プロジェクト画面でACTIONとDONEの色を分ける
     action: |
       ACTIONとDONEの色合いは変えてほしい
+
+  - id: 12
+    url: https://github.com/sunb256/impl/pull/16
+    title: UIの角丸を弱めて角寄りの見た目に調整
+    action: |
+      UIの角丸を緩めて見た目を角っぽくして
