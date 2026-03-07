@@ -8,16 +8,6 @@ impl_rule: |
   5. KISS/DRY/リーダブルコードの原則を守る
 
 task:
-  - id: '43'
-    url: '-'
-    title: '-'
-    action: |
-      TOP画面にSetting画面を追加したい
-      新規プロジェクトの右隣につける
-
-      Setting画面の機能
-
-       - データエクスポート/インポート機能(projects.yml)
   - id: '44'
     url: '-'
     title: '-'
