@@ -147,7 +147,7 @@ test("does not render the removed project subtitle", async () => {
   expect(screen.queryByText("done-title-2")).not.toBeInTheDocument();
   expect(screen.getByText("first task")).toHaveClass("line-clamp-6");
   expect(screen.getByText("first task")).toHaveClass("max-w-[44rem]");
-  expect(screen.getByText("first task")).toHaveClass("text-zinc-900");
+  expect(screen.getByText("first task")).toHaveClass("text-black");
   const taskCellButton = screen.getByRole("button", { name: "task 1 を編集" });
   expect(taskCellButton).toHaveClass("text-left");
   fireEvent.click(taskCellButton);
