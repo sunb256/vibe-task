@@ -27,6 +27,13 @@ export function updateProject(projectId: string, payload: ProjectFormState) {
   });
 }
 
+export function reorderProjects(sourceId: string, targetId: string) {
+  return apiFetch<void>("/api/projects/reorder", {
+    method: "PATCH",
+    json: { sourceId, targetId },
+  });
+}
+
 export function exportProjectsFile() {
   return apiFetch<ProjectExportResponse>("/api/projects/export");
 }

@@ -68,6 +68,19 @@ class ProjectRepository:
         self._write_document(document)
         return project
 
+    def reorder_projects(self, source_id: str, target_id: str) -> None:
+        if source_id == target_id:
+            return
+        document = self._load_document()
+        projects = document.setdefault("projects", [])
+        source_index = self._find_project_index(projects, source_id)
+        target_index = self._find_project_index(projects, target_id)
+        projects[source_index], projects[target_index] = (
+            projects[target_index],
+            projects[source_index],
+        )
+        self._write_document(document)
+
     def export_projects_text(self) -> str:
         document = self._load_document()
         return self._dump_document(document)

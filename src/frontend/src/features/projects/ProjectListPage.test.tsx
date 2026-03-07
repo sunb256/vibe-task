@@ -93,3 +93,118 @@ test("renders project cards", async () => {
   expect(screen.getByDisplayValue("impl")).toBeInTheDocument();
   expect(screen.getByDisplayValue("/tmp/impl")).toBeInTheDocument();
 });
+
+test("reorders project cards by drag and drop", async () => {
+  const fetchMock = vi
+    .spyOn(globalThis, "fetch")
+    .mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          projects: [
+            {
+              id: "project-1",
+              name: "impl",
+              repositoryPath: "/tmp/impl",
+              actionListPath: "tasks/action.yml",
+              doneListPath: "tasks/done.yml",
+            },
+            {
+              id: "project-2",
+              name: "impl-2",
+              repositoryPath: "/tmp/impl-2",
+              actionListPath: "tasks/action.yml",
+              doneListPath: "tasks/done.yml",
+            },
+          ],
+        }),
+      ),
+    )
+    .mockResolvedValueOnce(new Response(null, { status: 204 }))
+    .mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          projects: [
+            {
+              id: "project-2",
+              name: "impl-2",
+              repositoryPath: "/tmp/impl-2",
+              actionListPath: "tasks/action.yml",
+              doneListPath: "tasks/done.yml",
+            },
+            {
+              id: "project-1",
+              name: "impl",
+              repositoryPath: "/tmp/impl",
+              actionListPath: "tasks/action.yml",
+              doneListPath: "tasks/done.yml",
+            },
+          ],
+        }),
+      ),
+    );
+
+  render(
+    <MemoryRouter>
+      <ProjectListPage />
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("impl")).toBeInTheDocument();
+    expect(screen.getByText("impl-2")).toBeInTheDocument();
+  });
+
+  const sourceCard = screen.getByText("impl").closest("article");
+  const targetCard = screen.getByText("impl-2").closest("article");
+  if (!sourceCard || !targetCard) {
+    throw new Error("project cards are missing");
+  }
+  const dataTransfer = createDataTransfer();
+  fireEvent.dragStart(sourceCard, { dataTransfer });
+  fireEvent.dragOver(targetCard, { dataTransfer });
+  fireEvent.drop(targetCard, { dataTransfer });
+  fireEvent.dragEnd(sourceCard, { dataTransfer });
+
+  await waitFor(() => {
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/projects/reorder",
+      expect.objectContaining({
+        method: "PATCH",
+        body: JSON.stringify({ sourceId: "project-1", targetId: "project-2" }),
+      }),
+    );
+  });
+
+  await waitFor(() => {
+    const cardTitles = screen
+      .getAllByRole("heading", { level: 2 })
+      .map((heading) => heading.textContent);
+    expect(cardTitles).toEqual(["impl-2", "impl"]);
+  });
+});
+
+function createDataTransfer(): DataTransfer {
+  const store: Record<string, string> = {};
+  return {
+    dropEffect: "none",
+    effectAllowed: "all",
+    files: [] as unknown as FileList,
+    items: [] as unknown as DataTransferItemList,
+    types: [],
+    clearData: (format?: string) => {
+      if (!format) {
+        for (const key of Object.keys(store)) {
+          delete store[key];
+        }
+        return;
+      }
+      delete store[format];
+    },
+    getData: (format: string) => store[format] ?? "",
+    setData: (format: string, data: string) => {
+      store[format] = data;
+    },
+    setDragImage: () => {},
+  } as unknown as DataTransfer;
+}
