@@ -8,9 +8,26 @@ impl_rule: |
   5. KISS/DRY/リーダブルコードの原則を守る
 
 task:
-  - id: '56'
+  - id: '57'
+    url: '-'
+    title: '-'
+    action: |-
+      TOP画面
+      プロジェクト一覧のカードのタイトルの最初にSVGアイコンをつけたい
+
+      アイコンはsrc/frontend/assets/images/code-xml.svg
+  - id: '58'
+    url: '-'
+    title: '-'
+    action: |-
+      monaco editor で日本語の場合、選択ハイライトがおかしい。全部表示ハイライトされてしまう
+
+      Monaco 側でも最近の issue で 「EditContext が原因っぽい。off にすると直るはず」 という案内が出ています
+
+      これをヒントに直してください
+  - id: '59'
     url: '-'
     title: '-'
     action: |
-      TOP画面
-      プロジェクトの削除機能が欲しいです
+      TASK MANAGER表記はもう一回り大きくてもいいかな
+      
