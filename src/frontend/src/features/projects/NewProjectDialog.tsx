@@ -62,7 +62,7 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
           </div>
         </div>
         <form className="grid gap-4" onSubmit={handleSubmit}>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4">
             <TextInput
               label="name"
               autoFocus

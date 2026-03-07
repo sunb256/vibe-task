@@ -60,6 +60,8 @@ test("renders project cards", async () => {
   expect(
     screen.queryByText("repositoryPath は実在するリポジトリのディレクトリを指定します。"),
   ).not.toBeInTheDocument();
+  const repositoryPathInput = screen.getByLabelText("repositoryPath");
+  expect(repositoryPathInput.parentElement?.parentElement).not.toHaveClass("md:grid-cols-2");
   expect(screen.getByRole("button", { name: "プロジェクト作成" })).toBeInTheDocument();
   const cancelButton = screen.getByRole("button", { name: "Cancel" });
   expect(cancelButton).toHaveClass("px-4", "py-2");
