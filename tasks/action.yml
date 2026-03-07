@@ -7,4 +7,51 @@ impl_rule: |
  4. 連切な改行を行う。
  5. KISS/DRY/リーダブルコードの原則を守る
 
-task: []
+task: 
+  - id: 3
+    url: -
+    title: -
+    action: |
+      Task YAML Manager
+      TOP画面ローカルリポジトリと task YAML を紐づけて、一覧表示と action 編集を行います。
+      の文字はいらない
+
+  - id: 4
+    url: -
+    title: -
+    action: |
+      プロジェクト画面
+      action と done の task をまとめて表示します。source 列で所属ファイルを判別できます。
+      の文字はいらない
+
+  - id: 5
+    url: -
+    title: -
+    action: |
+      プロジェクト画面
+      URLはURL文字列でなくPRとして
+      
+  - id: 6
+    url: -
+    title: -
+    action: |
+      プロジェクト画面
+      BACK TO TOPのリンクはいらない。
+      ヘッダ部のタイトルでTOPページに戻りたい
+
+  - id: 7
+    url: -
+    title: -
+    action: |
+      プロジェクト画面
+      id	title	url	source	action	actions
+      でなく
+      id	source  title	action  actions url
+      の順にして
+      
+  - id: 8
+    url: -
+    title: -
+    action: |
+      プロジェクト画面
+      EDITとDELETEは編集、削除にして

@@ -61,3 +61,8 @@ task:
       各レコードはEDITボタンとDELETEボタンを持ち、EDITボタンを押下すると、編集画面が表示されます。monaco-editorでこれを編集できます。
 
       UPDATEで対象レコードが所属するファイルが更新保存されます。
+  - id: 2
+    url: https://github.com/sunb256/impl/pull/2
+    title: UIの角丸を緩めて見た目を調整
+    action: |
+      角丸がきついのでもう少し緩めてください

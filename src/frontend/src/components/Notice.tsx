@@ -10,7 +10,7 @@ const toneClass = {
 
 export function Notice(props: NoticeProps) {
   return (
-    <div className={`rounded-2xl border px-4 py-3 text-sm ${toneClass[props.tone]}`}>
+    <div className={`rounded-xl border px-4 py-3 text-sm ${toneClass[props.tone]}`}>
       {props.message}
     </div>
   );

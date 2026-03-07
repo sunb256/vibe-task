@@ -69,13 +69,13 @@ export function ProjectTasksPage() {
       actions={
         <Link
           to="/"
-          className="inline-flex rounded-full border border-[var(--border)] px-4 py-2 text-sm font-semibold text-[var(--accent)]"
+          className="inline-flex rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-semibold text-[var(--accent)]"
         >
           Back to TOP
         </Link>
       }
     >
-      <section className="rounded-[2rem] border border-[var(--border)] bg-[var(--panel)] p-4 shadow-[0_18px_50px_rgba(31,43,46,0.08)] backdrop-blur">
+      <section className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--panel)] p-4 shadow-[0_18px_50px_rgba(31,43,46,0.08)] backdrop-blur">
         {error ? <Notice tone="error" message={error} /> : null}
         {isLoading ? <Notice tone="neutral" message="Loading tasks..." /> : null}
         {!error && !isLoading && tasks.length === 0 ? (
@@ -97,7 +97,7 @@ export function ProjectTasksPage() {
               <tbody>
                 {tasks.map((task) => (
                   <tr key={`${task.source}-${task.id}`}>
-                    <td className="rounded-l-2xl border-y border-l border-[var(--border)] bg-white px-3 py-4 font-semibold">
+                    <td className="rounded-l-xl border-y border-l border-[var(--border)] bg-white px-3 py-4 font-semibold">
                       {task.id}
                     </td>
                     <td className="border-y border-[var(--border)] bg-white px-3 py-4">
@@ -109,7 +109,7 @@ export function ProjectTasksPage() {
                       </span>
                     </td>
                     <td className="border-y border-[var(--border)] bg-white px-3 py-4">
-                      <span className="rounded-full bg-[var(--accent)]/10 px-3 py-1 text-xs font-semibold uppercase text-[var(--accent)]">
+                      <span className="rounded-lg bg-[var(--accent)]/10 px-3 py-1 text-xs font-semibold uppercase text-[var(--accent)]">
                         {task.source}
                       </span>
                     </td>
@@ -118,11 +118,11 @@ export function ProjectTasksPage() {
                         {task.action}
                       </p>
                     </td>
-                    <td className="rounded-r-2xl border-y border-r border-[var(--border)] bg-white px-3 py-4">
+                    <td className="rounded-r-xl border-y border-r border-[var(--border)] bg-white px-3 py-4">
                       <div className="flex flex-wrap gap-2">
                         <Link
                           to={`/projects/${projectId}/tasks/${task.source}/${task.id}/edit`}
-                          className="inline-flex rounded-full border border-[var(--border)] px-3 py-2 font-semibold text-[var(--accent)]"
+                          className="inline-flex rounded-xl border border-[var(--border)] px-3 py-2 font-semibold text-[var(--accent)]"
                         >
                           EDIT
                         </Link>
