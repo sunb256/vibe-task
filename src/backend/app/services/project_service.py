@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from app.errors import AppError
@@ -42,7 +43,8 @@ class ProjectService:
 
     def _resolve_repository_path(self, payload: dict) -> Path:
         repository_path = self._require_text(payload, "repositoryPath")
-        resolved = Path(repository_path).expanduser().resolve()
+        expanded = os.path.expandvars(repository_path)
+        resolved = Path(expanded).expanduser().resolve()
         if not resolved.exists() or not resolved.is_dir():
             raise AppError("repositoryPath must be an existing directory", 400)
         return resolved

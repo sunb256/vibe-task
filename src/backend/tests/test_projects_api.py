@@ -66,6 +66,23 @@ def test_rejects_missing_repository(client, tmp_path: Path):
     assert response.get_json()["error"] == "repositoryPath must be an existing directory"
 
 
+def test_accepts_repository_path_with_env_var(client, project_repo: Path, monkeypatch):
+    monkeypatch.setenv("PROJECT_REPO_ROOT", str(project_repo))
+    response = client.post(
+        "/api/projects",
+        json={
+            "name": "impl-env",
+            "repositoryPath": "$PROJECT_REPO_ROOT",
+            "actionListPath": "tasks/action.yml",
+            "doneListPath": "tasks/done.yml",
+        },
+    )
+
+    assert response.status_code == 201
+    created = response.get_json()
+    assert created["repositoryPath"] == str(project_repo.resolve())
+
+
 def test_exports_projects_file(client, project_repo: Path):
     created = client.post(
         "/api/projects",
