@@ -107,7 +107,7 @@ export function ProjectTasksPage() {
             <table className="min-w-full border-separate border-spacing-y-2.5 text-left text-sm">
               <thead>
                 <tr className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
-                  <th className="px-3">id/source</th>
+                  <th className="px-3">id</th>
                   <th className="px-3">task</th>
                   <th className="pl-1 pr-3">actions</th>
                   <th className="px-3 text-center">url</th>
@@ -117,11 +117,7 @@ export function ProjectTasksPage() {
                 {orderedTasks.map((task) => (
                   <tr key={`${task.source}-${task.id}`}>
                     <td className="rounded-l-md border-y border-l border-[var(--border)] bg-[var(--panel-strong)] px-3 py-4 text-[var(--muted)]">
-                      <span
-                        className={`rounded-md px-3 py-1 text-xs font-semibold uppercase ${sourceBadgeTone(task.source)}`}
-                      >
-                        {sourceTag(task)}
-                      </span>
+                      <span className="rounded-md px-3 py-1 text-xs font-semibold">{task.id}</span>
                     </td>
                     <td className="border-y border-[var(--border)] bg-[var(--panel-strong)] px-3 py-4">
                       <div className="space-y-1">
@@ -211,24 +207,6 @@ function prLabel(url: string) {
 
 function showTaskTitle(title: string) {
   return title.trim() !== "" && title.trim() !== "-";
-}
-
-function sourceBadgeTone(source: TaskRecord["source"]) {
-  if (source === "done") {
-    return "bg-emerald-100 text-emerald-700";
-  }
-  return "bg-amber-100 text-amber-700";
-}
-
-function sourceLabel(source: TaskRecord["source"]) {
-  if (source === "done") {
-    return "DONE";
-  }
-  return "TODO";
-}
-
-function sourceTag(task: TaskRecord) {
-  return `${sourceLabel(task.source)} #${task.id}`;
 }
 
 function orderTasks(tasks: TaskRecord[]) {
