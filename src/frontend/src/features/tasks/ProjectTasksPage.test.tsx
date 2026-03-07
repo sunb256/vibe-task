@@ -332,6 +332,12 @@ test("creates a new action task from modal editor", async () => {
 
   fireEvent.click(screen.getByRole("button", { name: "新規タスク" }));
   expect(screen.getByRole("dialog", { name: "新規タスク" })).toBeInTheDocument();
+  fireEvent.mouseDown(screen.getByRole("dialog", { name: "新規タスク" }).parentElement!);
+  expect(screen.queryByRole("dialog", { name: "新規タスク" })).not.toBeInTheDocument();
+  expect(createActionTask).not.toHaveBeenCalled();
+
+  fireEvent.click(screen.getByRole("button", { name: "新規タスク" }));
+  expect(screen.getByRole("dialog", { name: "新規タスク" })).toBeInTheDocument();
   fireEvent.keyDown(window, { key: "Escape" });
   expect(screen.queryByRole("dialog", { name: "新規タスク" })).not.toBeInTheDocument();
   expect(createActionTask).not.toHaveBeenCalled();
