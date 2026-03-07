@@ -8,27 +8,28 @@ impl_rule: |
  5. KISS/DRY/リーダブルコードの原則を守る
 
 task: 
-  - id: 13
-    url: -
-    title: -
-    action: |
-      Project画面
-      TITLEとACTIONは同一列にする
-      TITLEがない場合はTITLEは非表示
-      IDは薄い文字にする
-      編集ボタンと削除ボタンの横幅を合わせる
-      編集ボタンの背景が白は良くない、別の色
-      削除ボタンの背景が赤できつい、もう少し柔らかい赤
-      PR#xはリンクっぽくしたい
-
   - id: 14
     url: -
     title: -
     action: |
-      TITLEとACTIONは同一列にする
-      TITLEがない場合はTITLEは非表示
-      IDは薄い文字にする
-      編集ボタンと削除ボタンの横幅を合わせる
-      編集ボタンの背景が白は良くない、別の色
-      削除ボタンの背景が赤できつい、もう少し柔らかい赤
-      PR#xはリンクっぽくしたい
+      Project画面
+      新規ボタンを追加する
+      追加したデータはaction.ymlに追加する
+
+  - id: 15
+    url: -
+    title: -
+    action: |
+      TOP画面
+      Project画面と同じくTask YAML Managerを追加する
+
+  - id: 16
+    url: -
+    title: -
+    action: |
+      Project画面
+      削除ボタンの背景が赤できつい、薄い色でいい
+      PR#xはボタンっぽくして
+      id	source は同じ列にする
+      ex. DONE(xx) みたいなのがいい
+      ACTION/DONE はACTIONはTODOという文字にする
