@@ -62,35 +62,32 @@ export function ProjectListPage() {
             <Notice tone="neutral" message="Project はまだ登録されていません。" />
           ) : null}
           {projects.map((project) => (
-            <article
+            <Link
               key={project.id}
-              className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-5 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_1px_0_rgba(9,9,11,0.05),0_18px_42px_rgba(9,9,11,0.12)]"
+              to={`/projects/${project.id}`}
+              className="block rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
             >
-              <div className="space-y-3">
-                <div>
-                  <h2 className="text-xl font-semibold">{project.name}</h2>
-                  <p className="mt-1 break-all text-sm text-[var(--muted)]">
-                    {project.repositoryPath}
-                  </p>
+              <article className="h-full rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-5 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)] transition hover:-translate-y-0.5 hover:border-[var(--ink)] hover:shadow-[0_1px_0_rgba(9,9,11,0.05),0_18px_42px_rgba(9,9,11,0.12)]">
+                <div className="space-y-3">
+                  <div>
+                    <h2 className="text-xl font-semibold">{project.name}</h2>
+                    <p className="mt-1 break-all text-sm text-[var(--muted)]">
+                      {project.repositoryPath}
+                    </p>
+                  </div>
+                  <dl className="space-y-2 text-sm text-[var(--muted)]">
+                    <div>
+                      <dt className="font-medium text-[var(--ink)]">action-list</dt>
+                      <dd>{project.actionListPath}</dd>
+                    </div>
+                    <div>
+                      <dt className="font-medium text-[var(--ink)]">done-list</dt>
+                      <dd>{project.doneListPath}</dd>
+                    </div>
+                  </dl>
                 </div>
-                <dl className="space-y-2 text-sm text-[var(--muted)]">
-                  <div>
-                    <dt className="font-medium text-[var(--ink)]">action-list</dt>
-                    <dd>{project.actionListPath}</dd>
-                  </div>
-                  <div>
-                    <dt className="font-medium text-[var(--ink)]">done-list</dt>
-                    <dd>{project.doneListPath}</dd>
-                  </div>
-                </dl>
-                <Link
-                  to={`/projects/${project.id}`}
-                  className="inline-flex rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
-                >
-                  Open Project
-                </Link>
-              </div>
-            </article>
+              </article>
+            </Link>
           ))}
         </section>
       </PageFrame>

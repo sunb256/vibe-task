@@ -224,3 +224,11 @@ task:
     action: |
       デザインがダサいです。
       https://vercel.com/ みたいな見た目にしたい
+
+  - id: 23
+    url: https://github.com/sunb256/impl/pull/27
+    title: TOP画面のプロジェクトカード全体をリンク化
+    action: |
+      TOP画面
+      OpenProjectのリンクはボタンではなく、カード全体に効くほうがいい
+      Project一覧をリンク選択してRootのリンクとしたい
