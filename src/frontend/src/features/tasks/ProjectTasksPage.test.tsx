@@ -56,6 +56,14 @@ test("does not render the removed project subtitle", async () => {
   await waitFor(() => {
     expect(screen.getByText("impl Tasks")).toBeInTheDocument();
   });
+  expect(screen.getAllByRole("columnheader").map((header) => header.textContent)).toEqual([
+    "id",
+    "source",
+    "title",
+    "action",
+    "actions",
+    "url",
+  ]);
   expect(
     screen.queryByText(
       "action と done の task をまとめて表示します。source 列で所属ファイルを判別できます。",
