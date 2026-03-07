@@ -128,7 +128,7 @@ export function ProjectTasksPage() {
                         {showTaskTitle(task.title) ? (
                           <p className="font-semibold text-[var(--ink)]">{task.title}</p>
                         ) : null}
-                        <p className="line-clamp-3 max-w-[22rem] whitespace-pre-wrap text-[var(--muted)]">
+                        <p className="line-clamp-6 max-w-[22rem] whitespace-pre-wrap text-[var(--muted)]">
                           {task.action}
                         </p>
                       </div>
