@@ -74,7 +74,7 @@ test("does not render the removed project subtitle", async () => {
     expect(screen.getByText("Project: impl")).toBeInTheDocument();
   });
   expect(screen.getAllByRole("columnheader").map((header) => header.textContent)).toEqual([
-    "id/source",
+    "id",
     "task",
     "actions",
     "url",

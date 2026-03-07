@@ -107,7 +107,7 @@ export function ProjectTasksPage() {
             <table className="min-w-full border-separate border-spacing-y-2.5 text-left text-sm">
               <thead>
                 <tr className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
-                  <th className="px-3">id/source</th>
+                  <th className="px-3">id</th>
                   <th className="px-3">task</th>
                   <th className="pl-1 pr-3">actions</th>
                   <th className="px-3 text-center">url</th>
