@@ -8,14 +8,6 @@ impl_rule: |
  5. KISS/DRY/リーダブルコードの原則を守る
 
 task: 
-  - id: 4
-    url: -
-    title: -
-    action: |
-      プロジェクト画面
-      action と done の task をまとめて表示します。source 列で所属ファイルを判別できます。
-      の文字はいらない
-
   - id: 5
     url: -
     title: -
@@ -47,3 +39,10 @@ task:
     action: |
       プロジェクト画面
       EDITとDELETEは編集、削除にして
+
+  - id: 9
+    url: -
+    title: -
+    action: |
+      tasks/project.yml
+      idはただの連番でいい
