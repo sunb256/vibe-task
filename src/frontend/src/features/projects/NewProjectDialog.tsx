@@ -49,14 +49,11 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
             <h2 id="new-project-title" className="text-xl font-semibold">
               New Project
             </h2>
-            <p className="mt-1 text-sm text-[var(--muted)]">
-              repositoryPath は実在するリポジトリのディレクトリを指定します。
-            </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-[var(--border)] bg-white px-3 py-1 text-sm text-[var(--muted)] transition hover:text-[var(--ink)]"
+            className="rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--muted)] transition hover:text-[var(--ink)]"
           >
             Close
           </button>
@@ -94,7 +91,7 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
           {error ? <Notice tone="error" message={error} /> : null}
           <div className="flex justify-end">
             <PrimaryButton type="submit" disabled={isSaving}>
-              {isSaving ? "Saving..." : "Create Project"}
+              {isSaving ? "Saving..." : "プロジェクト作成"}
             </PrimaryButton>
           </div>
         </form>

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, vi } from "vitest";
 
@@ -48,4 +48,12 @@ test("renders project cards", async () => {
     "/projects/project-1",
   );
   expect(screen.queryByRole("link", { name: "Open Project" })).not.toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole("button", { name: "新規プロジェクト" }));
+  expect(screen.getByRole("dialog", { name: "New Project" })).toBeInTheDocument();
+  expect(
+    screen.queryByText("repositoryPath は実在するリポジトリのディレクトリを指定します。"),
+  ).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "プロジェクト作成" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Close" })).toHaveClass("px-4", "py-2");
 });
