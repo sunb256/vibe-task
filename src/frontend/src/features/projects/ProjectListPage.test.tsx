@@ -34,6 +34,12 @@ test("renders project cards", async () => {
   await waitFor(() => {
     expect(screen.getByText("impl")).toBeInTheDocument();
   });
+  expect(screen.queryByText("Task YAML Manager")).not.toBeInTheDocument();
+  expect(
+    screen.queryByText(
+      "ローカルリポジトリと task YAML を紐づけて、一覧表示と action 編集を行います。",
+    ),
+  ).not.toBeInTheDocument();
   expect(screen.getByRole("link", { name: "Open Project" })).toHaveAttribute(
     "href",
     "/projects/project-1",

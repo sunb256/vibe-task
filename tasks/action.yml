@@ -8,14 +8,6 @@ impl_rule: |
  5. KISS/DRY/リーダブルコードの原則を守る
 
 task: 
-  - id: 3
-    url: -
-    title: -
-    action: |
-      Task YAML Manager
-      TOP画面ローカルリポジトリと task YAML を紐づけて、一覧表示と action 編集を行います。
-      の文字はいらない
-
   - id: 4
     url: -
     title: -

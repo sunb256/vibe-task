@@ -51,7 +51,7 @@ export function ProjectListPage() {
     <>
       <PageFrame
         title="Projects"
-        subtitle="ローカルリポジトリと task YAML を紐づけて、一覧表示と action 編集を行います。"
+        eyebrow={null}
         actions={<PrimaryButton onClick={() => setIsDialogOpen(true)}>NEW</PrimaryButton>}
       >
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
