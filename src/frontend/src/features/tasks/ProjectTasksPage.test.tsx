@@ -9,7 +9,14 @@ vi.mock("@monaco-editor/react", () => ({
   default: (props: {
     value?: string;
     onChange?: (value: string) => void;
-    onMount?: (editor: { focus: () => void; addCommand: () => number }, monaco: unknown) => void;
+    onMount?: (
+      editor: {
+        focus: () => void;
+        addCommand: () => number;
+        updateOptions: (options: unknown) => void;
+      },
+      monaco: unknown,
+    ) => void;
     options?: { editContext?: boolean };
   }) => (
     <textarea
@@ -24,6 +31,7 @@ vi.mock("@monaco-editor/react", () => ({
           {
             focus: () => node.focus(),
             addCommand: () => 0,
+            updateOptions: () => {},
           },
           {
             KeyMod: { CtrlCmd: 1 },

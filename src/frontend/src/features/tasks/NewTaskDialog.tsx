@@ -135,6 +135,15 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
               value={action}
               onChange={(value) => onActionChange(value ?? "")}
               onMount={(editor, monaco) => {
+                editor.updateOptions({
+                  editContext: false,
+                  selectionHighlight: false,
+                  occurrencesHighlight: "off",
+                  renderLineHighlight: "none",
+                  wordSegmenterLocales: ["ja"],
+                  wordSeparators:
+                    "~!@#$%^&*()-=+[{]}\\|;:'\",.<>/?、。，．・：；？！…（）［］｛｝「」『』【】〈〉《》〔〕",
+                });
                 editor.focus();
                 if (!enableShortcut) {
                   return;
