@@ -390,3 +390,16 @@ task:
       Setting画面の機能
 
        - データエクスポート/インポート機能(projects.yml)
+
+  - id: 44
+    url: https://github.com/sunb256/impl/pull/48
+    title: 新規プロジェクトモーダルの文言と操作UIを調整
+    action: |-
+      プロジェクト新規作成画面
+
+      New Projectでなく新規作成に名称変更
+
+      編集側とUIを合わせる
+
+       - モーダル領域外でキャンセル
+       - Cancelボタンを右下に

@@ -8,18 +8,6 @@ impl_rule: |
   5. KISS/DRY/リーダブルコードの原則を守る
 
 task:
-  - id: '44'
-    url: '-'
-    title: '-'
-    action: |-
-      プロジェクト新規作成画面
-
-      New Projectでなく新規作成に名称変更
-
-      編集側とUIを合わせる
-
-       - モーダル領域外でキャンセル
-       - Cancelボタンを右下に
   - id: '45'
     url: '-'
     title: '-'

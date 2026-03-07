@@ -56,15 +56,32 @@ test("renders project cards", async () => {
   expect(screen.queryByRole("link", { name: "Open Project" })).not.toBeInTheDocument();
 
   fireEvent.click(screen.getByRole("button", { name: "新規プロジェクト" }));
-  expect(screen.getByRole("dialog", { name: "New Project" })).toBeInTheDocument();
+  expect(screen.getByRole("dialog", { name: "新規作成" })).toBeInTheDocument();
   expect(
     screen.queryByText("repositoryPath は実在するリポジトリのディレクトリを指定します。"),
   ).not.toBeInTheDocument();
   expect(screen.getByRole("button", { name: "プロジェクト作成" })).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "Close" })).toHaveClass("px-4", "py-2");
+  const cancelButton = screen.getByRole("button", { name: "Cancel" });
+  expect(cancelButton).toHaveClass("px-4", "py-2");
+  const createDialogOverlay = screen.getByRole("dialog", { name: "新規作成" }).parentElement;
+  expect(createDialogOverlay).not.toBeNull();
+  if (!createDialogOverlay) {
+    throw new Error("create dialog overlay is missing");
+  }
+  fireEvent.mouseDown(createDialogOverlay);
+  expect(screen.queryByRole("dialog", { name: "新規作成" })).not.toBeInTheDocument();
 
   fireEvent.click(screen.getByRole("button", { name: "Setting" }));
   expect(screen.getByRole("dialog", { name: "Setting" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "projects.yml をエクスポート" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "インポート" })).toBeDisabled();
+  const settingsCancelButton = screen.getByRole("button", { name: "Cancel" });
+  expect(settingsCancelButton).toHaveClass("px-4", "py-2");
+  const settingsDialogOverlay = screen.getByRole("dialog", { name: "Setting" }).parentElement;
+  expect(settingsDialogOverlay).not.toBeNull();
+  if (!settingsDialogOverlay) {
+    throw new Error("settings dialog overlay is missing");
+  }
+  fireEvent.mouseDown(settingsDialogOverlay);
+  expect(screen.queryByRole("dialog", { name: "Setting" })).not.toBeInTheDocument();
 });
