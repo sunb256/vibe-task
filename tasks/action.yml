@@ -7,12 +7,4 @@ impl_rule: |
   4. 連切な改行を行う。
   5. KISS/DRY/リーダブルコードの原則を守る
 
-task:
-  - id: '45'
-    url: '-'
-    title: '-'
-    action: |
-      faviconとタイトルを変更したい
-
-      タイトル: Task Manager: impl
-      favicon: src/frontend/assets/images.logs.svg
+task: []
