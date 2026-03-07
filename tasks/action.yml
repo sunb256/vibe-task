@@ -8,11 +8,6 @@ impl_rule: |
   5. KISS/DRY/リーダブルコードの原則を守る
 
 task:
-  - id: '54'
-    url: '-'
-    title: '-'
-    action: |-
-      TASK列に長い文字列が入った内容が入ると、ID列の表示が崩れます
   - id: '55'
     url: '-'
     title: '-'
