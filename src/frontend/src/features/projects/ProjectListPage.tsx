@@ -204,6 +204,7 @@ export function ProjectListPage() {
   return (
     <>
       <PageFrame
+        eyebrow="VIBE TASK"
         title={
           <Link
             to="/"
