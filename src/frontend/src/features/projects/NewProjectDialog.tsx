@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { type MouseEvent, useEffect, useState } from "react";
 
 import { Notice } from "../../components/Notice";
 import { PrimaryButton } from "../../components/PrimaryButton";
@@ -32,12 +32,22 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
     await onSubmit(form);
   }
 
+  function handleBackdropMouseDown(event: MouseEvent<HTMLDivElement>) {
+    if (event.target !== event.currentTarget) {
+      return;
+    }
+    onClose();
+  }
+
   function updateField(field: keyof ProjectFormState, value: string) {
     setForm((current) => ({ ...current, [field]: value }));
   }
 
   return (
-    <div className="fixed inset-0 z-10 flex items-center justify-center bg-black/45 px-4 py-8 backdrop-blur-[2px]">
+    <div
+      className="fixed inset-0 z-10 flex items-center justify-center bg-black/45 px-4 py-8 backdrop-blur-[2px]"
+      onMouseDown={handleBackdropMouseDown}
+    >
       <div
         role="dialog"
         aria-modal="true"
@@ -47,16 +57,9 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
             <h2 id="new-project-title" className="text-xl font-semibold">
-              New Project
+              新規作成
             </h2>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--muted)] transition hover:text-[var(--ink)]"
-          >
-            Close
-          </button>
         </div>
         <form className="grid gap-4" onSubmit={handleSubmit}>
           <div className="grid gap-4 md:grid-cols-2">
@@ -89,10 +92,17 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
             />
           </div>
           {error ? <Notice tone="error" message={error} /> : null}
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
             <PrimaryButton type="submit" disabled={isSaving}>
               {isSaving ? "Saving..." : "プロジェクト作成"}
             </PrimaryButton>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
+            >
+              Cancel
+            </button>
           </div>
         </form>
       </div>
