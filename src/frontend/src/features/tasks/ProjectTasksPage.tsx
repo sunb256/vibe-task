@@ -217,12 +217,12 @@ export function ProjectTasksPage() {
                         {sourceTag(task)}
                       </span>
                     </td>
-                    <td className="border-y border-[var(--border)] bg-[var(--panel-strong)] px-3 py-3">
+                    <td className="border-y border-[var(--border)] bg-[var(--panel-strong)]">
                       <button
                         type="button"
                         aria-label={`task ${task.id} を編集`}
                         onClick={() => openEditDialog(task)}
-                        className="w-full text-left transition hover:bg-zinc-50/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+                        className="block h-full w-full px-3 py-3 text-left transition hover:bg-zinc-50/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
                       >
                         <div className="space-y-1">
                           {showTaskTitle(task.title) ? (
