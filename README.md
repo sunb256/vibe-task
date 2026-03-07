@@ -1,7 +1,14 @@
 
 # Vibe Task
 
-Vibe Agentic Coding Management System
+Vibe Agentic Coding Task Management System
+
+
+## 動作環境
+
+ - VSCode
+ - codex
+ - ghq
 
 
 ## 実行
