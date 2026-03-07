@@ -120,14 +120,14 @@ export function ProjectTasksPage() {
                           to={`/projects/${projectId}/tasks/${task.source}/${task.id}/edit`}
                           className="inline-flex rounded-xl border border-[var(--border)] px-3 py-2 font-semibold text-[var(--accent)]"
                         >
-                          EDIT
+                          編集
                         </Link>
                         <PrimaryButton
                           type="button"
                           className="bg-rose-600 hover:bg-rose-700 focus-visible:outline-rose-600"
                           onClick={() => void handleDelete(task)}
                         >
-                          DELETE
+                          削除
                         </PrimaryButton>
                       </div>
                     </td>

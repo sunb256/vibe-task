@@ -70,4 +70,9 @@ test("does not render the removed project subtitle", async () => {
     "href",
     "https://github.com/sunb256/impl/pull/4",
   );
+  expect(screen.getByRole("link", { name: "編集" })).toHaveAttribute(
+    "href",
+    "/projects/project-1/tasks/action/1/edit",
+  );
+  expect(screen.getByRole("button", { name: "削除" })).toBeInTheDocument();
 });
