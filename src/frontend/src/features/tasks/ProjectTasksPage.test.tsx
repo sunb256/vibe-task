@@ -116,7 +116,7 @@ test("does not render the removed project subtitle", async () => {
   const doneToggle = screen.getByRole("button", { name: "DONE(2)" });
   expect(todoToggle).toHaveAttribute("aria-pressed", "true");
   expect(doneToggle).toHaveAttribute("aria-pressed", "false");
-  expect(todoToggle).toHaveClass("bg-sky-100", "text-sky-700", "rounded-full");
+  expect(todoToggle).toHaveClass("bg-blue-100", "text-blue-700", "rounded-full");
   expect(doneToggle).toHaveClass("rounded-full");
   expect(screen.getByRole("columnheader", { name: "actions" })).toHaveClass("pl-1", "pr-3");
   expect(screen.getByRole("columnheader", { name: "url" })).toHaveClass("text-center");
@@ -150,8 +150,8 @@ test("does not render the removed project subtitle", async () => {
   expect(screen.getByText("first task")).toHaveClass("max-w-[44rem]");
   expect(screen.getByText("first task")).toHaveClass("text-zinc-700");
   expect(screen.getByText("TODO #1", { selector: "span" })).toHaveClass(
-    "bg-sky-100",
-    "text-sky-700",
+    "bg-blue-100",
+    "text-blue-700",
   );
   expect(screen.queryByText("DONE #10", { selector: "span" })).not.toBeInTheDocument();
 

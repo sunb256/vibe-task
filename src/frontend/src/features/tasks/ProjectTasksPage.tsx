@@ -307,7 +307,7 @@ function sourceBadgeTone(source: TaskRecord["source"]) {
   if (source === "done") {
     return "bg-emerald-100 text-emerald-700";
   }
-  return "bg-sky-100 text-sky-700";
+  return "bg-blue-100 text-blue-700";
 }
 
 function sourceLabel(source: TaskRecord["source"]) {
@@ -324,7 +324,7 @@ function sourceTag(task: TaskRecord) {
 function sourceFilterClass(source: "todo" | "done", active: boolean) {
   const tone =
     source === "todo"
-      ? "border-sky-200 bg-sky-100 text-sky-700"
+      ? "border-blue-200 bg-blue-100 text-blue-700"
       : "border-emerald-200 bg-emerald-100 text-emerald-700";
   const inactive = "border-[var(--border)] bg-white text-[var(--muted)]";
   const toneClass = active ? tone : inactive;
