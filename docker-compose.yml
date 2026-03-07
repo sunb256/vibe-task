@@ -19,6 +19,6 @@ services:
     environment:
       VITE_API_PROXY_TARGET: http://backend:5000
     ports:
-      - "5555:5555"
+      - "${FRONTEND_PORT}:5555"
     depends_on:
       - backend

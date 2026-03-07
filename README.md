@@ -1,7 +1,7 @@
 
-# Vive Task
+# Vibe Task
 
-Vive Agentic Coding Management System
+Vibe Agentic Coding Management System
 
 
 ## 実行
