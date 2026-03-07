@@ -247,7 +247,7 @@ export function ProjectTasksPage() {
             <table className="min-w-full border-separate border-spacing-y-2 text-left text-sm">
               <thead>
                 <tr className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
-                  <th className="px-3">id</th>
+                  <th className="px-3 whitespace-nowrap">id</th>
                   <th className="px-3">task</th>
                   <th className="pl-1 pr-3">actions</th>
                   <th className="px-3 text-center">url</th>
@@ -259,7 +259,7 @@ export function ProjectTasksPage() {
                   const downTargetId = swapTargetId(orderedTasks, task, "down");
                   return (
                     <tr key={`${task.source}-${task.id}`}>
-                      <td className="rounded-l-md border-y border-l border-[var(--border)] bg-[var(--panel-strong)] px-3 py-3 text-[var(--muted)]">
+                      <td className="rounded-l-md border-y border-l border-[var(--border)] bg-[var(--panel-strong)] px-3 py-3 text-[var(--muted)] whitespace-nowrap">
                         <span
                           className={`rounded-md px-3 py-1 text-xs font-semibold uppercase ${sourceBadgeTone(task.source)}`}
                         >
@@ -277,7 +277,7 @@ export function ProjectTasksPage() {
                             {showTaskTitle(task.title) ? (
                               <p className="font-semibold text-[var(--ink)]">{task.title}</p>
                             ) : null}
-                            <p className="line-clamp-6 max-w-[44rem] whitespace-pre-wrap text-black">
+                            <p className="line-clamp-6 max-w-[44rem] whitespace-pre-wrap break-all text-black">
                               {task.action}
                             </p>
                           </div>

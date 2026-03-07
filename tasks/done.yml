@@ -463,3 +463,8 @@ task:
     title: 新規タスク作成時のTODO初期値を削除
     action: |-
       新規タスク作成時にTODOと既定で入っているがこれは不要
+  - id: 54
+    url: https://github.com/sunb256/impl/pull/58
+    title: TASK列の長文でID列が崩れる表示不具合を修正
+    action: |-
+      TASK列に長い文字列が入った内容が入ると、ID列の表示が崩れます

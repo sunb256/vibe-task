@@ -135,6 +135,7 @@ test("does not render the removed project subtitle", async () => {
   expect(doneToggle).toHaveAttribute("aria-pressed", "false");
   expect(todoToggle).toHaveClass("bg-blue-100", "text-blue-700", "rounded-full");
   expect(doneToggle).toHaveClass("rounded-full");
+  expect(screen.getByRole("columnheader", { name: "id" })).toHaveClass("whitespace-nowrap");
   expect(screen.getByRole("columnheader", { name: "actions" })).toHaveClass("pl-1", "pr-3");
   expect(screen.getByRole("columnheader", { name: "url" })).toHaveClass("text-center");
   expect(screen.getByRole("link", { name: "PR#4" })).toHaveAttribute(
@@ -160,12 +161,13 @@ test("does not render the removed project subtitle", async () => {
   expect(screen.getByRole("button", { name: "task 1 を下へ" })).toBeDisabled();
   const rows = screen.getAllByRole("row");
   expect(rows).toHaveLength(2);
-  expect(rows[1].querySelector("td")).toHaveClass("py-3");
+  expect(rows[1].querySelector("td")).toHaveClass("py-3", "whitespace-nowrap");
   expect(within(rows[1]).queryByText("-")).not.toBeInTheDocument();
   expect(screen.queryByText("done-title-10")).not.toBeInTheDocument();
   expect(screen.queryByText("done-title-2")).not.toBeInTheDocument();
   expect(screen.getByText("first task")).toHaveClass("line-clamp-6");
   expect(screen.getByText("first task")).toHaveClass("max-w-[44rem]");
+  expect(screen.getByText("first task")).toHaveClass("break-all");
   expect(screen.getByText("first task")).toHaveClass("text-black");
   const taskCellButton = screen.getByRole("button", { name: "task 1 を編集" });
   expect(taskCellButton).toHaveClass("text-left");
