@@ -55,6 +55,20 @@ class TaskRepository:
         del tasks[index]
         self._write_yaml(path, document)
 
+    def create_task(self, project: ProjectRecord, source: str) -> TaskRecord:
+        path = self._resolve_source_path(project, source)
+        document = self._load_yaml(path)
+        tasks = self._get_task_items(document)
+        task = {
+            "id": self._next_task_id(tasks),
+            "url": "-",
+            "title": "-",
+            "action": LiteralScalarString("TODO\n"),
+        }
+        tasks.append(task)
+        self._write_yaml(path, document)
+        return self._to_task_record(project.id, source, task)
+
     def _to_task_records(
         self,
         project_id: str,
@@ -114,6 +128,22 @@ class TaskRepository:
             if isinstance(item, dict) and str(item.get("id", "")) == task_id:
                 return index
         raise AppError("task not found", 404)
+
+    def _next_task_id(self, tasks: MutableSequence) -> str:
+        return str(self._max_task_id(tasks) + 1)
+
+    def _max_task_id(self, tasks: MutableSequence) -> int:
+        max_id = 0
+        for item in tasks:
+            if not isinstance(item, dict):
+                continue
+            value = item.get("id")
+            if isinstance(value, int):
+                max_id = max(max_id, value)
+                continue
+            if isinstance(value, str) and value.isdigit():
+                max_id = max(max_id, int(value))
+        return max_id
 
     def _get_task_items(self, document: dict) -> MutableSequence:
         tasks = document.get("task", [])

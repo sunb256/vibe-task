@@ -9,6 +9,12 @@ export function fetchTasks(projectId: string) {
   return apiFetch<TaskListResponse>(`/api/projects/${projectId}/tasks`);
 }
 
+export function createActionTask(projectId: string) {
+  return apiFetch<TaskRecord>(`/api/projects/${projectId}/tasks/action`, {
+    method: "POST",
+  });
+}
+
 export function fetchTask(projectId: string, source: TaskSource, taskId: string) {
   return apiFetch<TaskRecord>(`/api/projects/${projectId}/tasks/${source}/${taskId}`);
 }

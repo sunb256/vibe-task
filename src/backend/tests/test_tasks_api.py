@@ -39,6 +39,23 @@ def test_updates_action_text(client, project_repo: Path):
     assert "updated action" in action_text
 
 
+def test_creates_action_task(client, project_repo: Path):
+    project_id = create_project(client, project_repo)
+
+    response = client.post(f"/api/projects/{project_id}/tasks/action")
+
+    assert response.status_code == 201
+    created = response.get_json()
+    assert created["source"] == "action"
+    assert created["id"] == "2"
+    assert created["title"] == "-"
+    assert created["url"] == "-"
+    assert created["action"] == "TODO\n"
+    action_text = (project_repo / "tasks" / "action.yml").read_text(encoding="utf-8")
+    assert "id:" in action_text
+    assert "TODO" in action_text
+
+
 def test_deletes_task(client, project_repo: Path):
     project_id = create_project(client, project_repo)
 

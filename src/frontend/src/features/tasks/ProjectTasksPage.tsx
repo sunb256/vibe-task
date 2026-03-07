@@ -6,7 +6,7 @@ import { PageFrame } from "../../components/PageFrame";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { fetchProjects } from "../projects/projectApi";
 import type { Project } from "../projects/types";
-import { deleteTask, fetchTasks } from "./taskApi";
+import { createActionTask, deleteTask, fetchTasks } from "./taskApi";
 import type { TaskRecord } from "./types";
 
 export function ProjectTasksPage() {
@@ -15,6 +15,7 @@ export function ProjectTasksPage() {
   const [tasks, setTasks] = useState<TaskRecord[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -62,6 +63,21 @@ export function ProjectTasksPage() {
     }
   }
 
+  async function handleCreate() {
+    setIsCreating(true);
+    setError("");
+    try {
+      await createActionTask(projectId);
+      const data = await readProjectPage(projectId);
+      setProject(data.project);
+      setTasks(data.tasks);
+    } catch (createError) {
+      setError(readError(createError, "task の作成に失敗しました。"));
+    } finally {
+      setIsCreating(false);
+    }
+  }
+
   return (
     <PageFrame
       title={
@@ -71,6 +87,11 @@ export function ProjectTasksPage() {
         >
           {project ? `${project.name} Tasks` : "Project Tasks"}
         </Link>
+      }
+      actions={
+        <PrimaryButton type="button" onClick={() => void handleCreate()} disabled={isCreating}>
+          {isCreating ? "作成中..." : "新規"}
+        </PrimaryButton>
       }
     >
       <section className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4 shadow-[0_18px_50px_rgba(31,43,46,0.08)] backdrop-blur">

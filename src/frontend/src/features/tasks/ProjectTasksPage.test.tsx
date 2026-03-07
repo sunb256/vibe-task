@@ -9,6 +9,7 @@ vi.mock("../projects/projectApi", () => ({
 }));
 
 vi.mock("./taskApi", () => ({
+  createActionTask: vi.fn(),
   deleteTask: vi.fn(),
   fetchTasks: vi.fn(),
 }));
@@ -77,6 +78,7 @@ test("does not render the removed project subtitle", async () => {
     ),
   ).not.toBeInTheDocument();
   expect(screen.queryByRole("link", { name: "Back to TOP" })).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "新規" })).toBeInTheDocument();
   expect(screen.getByRole("link", { name: "impl Tasks" })).toHaveAttribute(
     "href",
     "/",
