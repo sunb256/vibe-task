@@ -104,7 +104,7 @@ export function ProjectTasksPage() {
         ) : null}
         {!isLoading && orderedTasks.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="min-w-full border-separate border-spacing-y-2.5 text-left text-sm">
+            <table className="min-w-full border-separate border-spacing-y-2 text-left text-sm">
               <thead>
                 <tr className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
                   <th className="px-3">id</th>
@@ -116,24 +116,24 @@ export function ProjectTasksPage() {
               <tbody>
                 {orderedTasks.map((task) => (
                   <tr key={`${task.source}-${task.id}`}>
-                    <td className="rounded-l-md border-y border-l border-[var(--border)] bg-[var(--panel-strong)] px-3 py-4 text-[var(--muted)]">
+                    <td className="rounded-l-md border-y border-l border-[var(--border)] bg-[var(--panel-strong)] px-3 py-3 text-[var(--muted)]">
                       <span
                         className={`rounded-md px-3 py-1 text-xs font-semibold uppercase ${sourceBadgeTone(task.source)}`}
                       >
                         {sourceTag(task)}
                       </span>
                     </td>
-                    <td className="border-y border-[var(--border)] bg-[var(--panel-strong)] px-3 py-4">
+                    <td className="border-y border-[var(--border)] bg-[var(--panel-strong)] px-3 py-3">
                       <div className="space-y-1">
                         {showTaskTitle(task.title) ? (
                           <p className="font-semibold text-[var(--ink)]">{task.title}</p>
                         ) : null}
-                        <p className="line-clamp-6 max-w-[44rem] whitespace-pre-wrap text-[var(--muted)]">
+                        <p className="line-clamp-6 max-w-[44rem] whitespace-pre-wrap text-zinc-700">
                           {task.action}
                         </p>
                       </div>
                     </td>
-                    <td className="border-y border-[var(--border)] bg-[var(--panel-strong)] pl-1 pr-3 py-4">
+                    <td className="border-y border-[var(--border)] bg-[var(--panel-strong)] pl-1 pr-3 py-3">
                       <div className="flex items-center gap-2">
                         <Link
                           to={`/projects/${projectId}/tasks/${task.source}/${task.id}/edit`}
@@ -150,7 +150,7 @@ export function ProjectTasksPage() {
                         </PrimaryButton>
                       </div>
                     </td>
-                    <td className="rounded-r-md border-y border-r border-[var(--border)] bg-[var(--panel-strong)] px-3 py-4 text-center">
+                    <td className="rounded-r-md border-y border-r border-[var(--border)] bg-[var(--panel-strong)] px-3 py-3 text-center">
                       <TaskPrLink url={task.url} />
                     </td>
                   </tr>
