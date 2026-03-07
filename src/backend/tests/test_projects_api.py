@@ -148,6 +148,38 @@ def test_updates_project_with_env_var_path(
     assert tasks == []
 
 
+def test_reorders_projects(client, project_repo: Path):
+    first = client.post(
+        "/api/projects",
+        json={
+            "name": "impl-1",
+            "repositoryPath": str(project_repo),
+            "actionListPath": "tasks/action.yml",
+            "doneListPath": "tasks/done.yml",
+        },
+    )
+    second = client.post(
+        "/api/projects",
+        json={
+            "name": "impl-2",
+            "repositoryPath": str(project_repo),
+            "actionListPath": "tasks/action.yml",
+            "doneListPath": "tasks/done.yml",
+        },
+    )
+
+    swapped = client.patch(
+        "/api/projects/reorder",
+        json={"sourceId": first.get_json()["id"], "targetId": second.get_json()["id"]},
+    )
+
+    assert swapped.status_code == 204
+    listed = client.get("/api/projects")
+    assert listed.status_code == 200
+    projects = listed.get_json()["projects"]
+    assert [project["id"] for project in projects] == ["2", "1"]
+
+
 def test_accepts_repository_path_with_env_var(client, project_repo: Path, monkeypatch):
     monkeypatch.setenv("PROJECT_REPO_ROOT", str(project_repo))
     response = client.post(

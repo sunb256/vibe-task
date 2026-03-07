@@ -37,6 +37,16 @@ def update_project(project_id: str):
     return jsonify(project.to_dict())
 
 
+@api_bp.patch("/projects/reorder")
+def reorder_projects():
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        raise AppError("request body must be an object", 400)
+    service = ProjectService(_project_repository())
+    service.reorder_projects(payload)
+    return "", 204
+
+
 @api_bp.get("/projects/export")
 def export_projects():
     service = ProjectService(_project_repository())

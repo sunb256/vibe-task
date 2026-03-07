@@ -56,6 +56,11 @@ class ProjectService:
             done_list_path=done_list_path,
         )
 
+    def reorder_projects(self, payload: dict) -> None:
+        source_id = self._require_text(payload, "sourceId")
+        target_id = self._require_text(payload, "targetId")
+        self.project_repository.reorder_projects(source_id, target_id)
+
     def export_projects_text(self) -> str:
         return self.project_repository.export_projects_text()
 

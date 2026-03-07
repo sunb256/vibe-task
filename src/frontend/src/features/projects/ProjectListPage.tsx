@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { type DragEvent, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { Notice } from "../../components/Notice";
 import { PageFrame } from "../../components/PageFrame";
 import { PrimaryButton } from "../../components/PrimaryButton";
-import { createProject, fetchProjects, updateProject } from "./projectApi";
+import { createProject, fetchProjects, reorderProjects, updateProject } from "./projectApi";
 import { NewProjectDialog } from "./NewProjectDialog";
 import { ProjectSettingsDialog } from "./ProjectSettingsDialog";
 import { defaultProjectForm, type Project, type ProjectFormState } from "./types";
@@ -20,7 +20,10 @@ export function ProjectListPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isReordering, setIsReordering] = useState(false);
   const [editProject, setEditProject] = useState<Project | null>(null);
+  const [dragProjectId, setDragProjectId] = useState<string | null>(null);
+  const [dropProjectId, setDropProjectId] = useState<string | null>(null);
   const editForm = useMemo(
     () => (editProject ? toFormState(editProject) : defaultProjectForm),
     [editProject],
@@ -90,6 +93,57 @@ export function ProjectListPage() {
     }
   }
 
+  async function handleReorder(sourceId: string, targetId: string) {
+    if (sourceId === targetId) {
+      return;
+    }
+    setIsReordering(true);
+    setError("");
+    try {
+      await reorderProjects(sourceId, targetId);
+      await loadProjects();
+    } catch (reorderError) {
+      setError(readError(reorderError, "プロジェクトの並び替えに失敗しました。"));
+    } finally {
+      setIsReordering(false);
+    }
+  }
+
+  function handleDragStart(event: DragEvent<HTMLElement>, projectId: string) {
+    if (isReordering) {
+      event.preventDefault();
+      return;
+    }
+    setDragProjectId(projectId);
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", projectId);
+  }
+
+  function handleDragOver(event: DragEvent<HTMLElement>, projectId: string) {
+    if (!dragProjectId || dragProjectId === projectId) {
+      return;
+    }
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    setDropProjectId(projectId);
+  }
+
+  async function handleDrop(event: DragEvent<HTMLElement>, targetId: string) {
+    event.preventDefault();
+    const sourceId = dragProjectId || event.dataTransfer.getData("text/plain");
+    setDragProjectId(null);
+    setDropProjectId(null);
+    if (!sourceId || sourceId === targetId) {
+      return;
+    }
+    await handleReorder(sourceId, targetId);
+  }
+
+  function handleDragEnd() {
+    setDragProjectId(null);
+    setDropProjectId(null);
+  }
+
   return (
     <>
       <PageFrame
@@ -123,7 +177,16 @@ export function ProjectListPage() {
           {projects.map((project) => (
             <article
               key={project.id}
-              className="h-full rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-5 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)] transition hover:-translate-y-0.5 hover:border-[var(--ink)] hover:shadow-[0_1px_0_rgba(9,9,11,0.05),0_18px_42px_rgba(9,9,11,0.12)]"
+              draggable={!isReordering}
+              onDragStart={(event) => handleDragStart(event, project.id)}
+              onDragOver={(event) => handleDragOver(event, project.id)}
+              onDrop={(event) => void handleDrop(event, project.id)}
+              onDragEnd={handleDragEnd}
+              className={`h-full rounded-xl border bg-[var(--panel-strong)] p-5 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)] transition hover:-translate-y-0.5 hover:border-[var(--ink)] hover:shadow-[0_1px_0_rgba(9,9,11,0.05),0_18px_42px_rgba(9,9,11,0.12)] ${
+                dropProjectId === project.id && dragProjectId !== project.id
+                  ? "border-[var(--accent)] ring-2 ring-[var(--accent)]/30"
+                  : "border-[var(--border)]"
+              }`}
             >
               <Link
                 to={`/projects/${project.id}`}
