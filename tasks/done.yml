@@ -328,3 +328,9 @@ task:
 
       エディタ画面ではCtrl+ENTERで保存するショートカット
       ESCでキャンセルして戻る
+
+  - id: 36
+    url: https://github.com/sunb256/impl/pull/40
+    title: Project画面のTASK列クリックで編集モーダルを開けるように調整
+    action: |
+      プロジェクト画面でタスク列のコンテンツを選択したときに編集画面を表示する

@@ -217,15 +217,22 @@ export function ProjectTasksPage() {
                         {sourceTag(task)}
                       </span>
                     </td>
-                    <td className="border-y border-[var(--border)] bg-[var(--panel-strong)] px-3 py-3">
-                      <div className="space-y-1">
-                        {showTaskTitle(task.title) ? (
-                          <p className="font-semibold text-[var(--ink)]">{task.title}</p>
-                        ) : null}
-                        <p className="line-clamp-6 max-w-[44rem] whitespace-pre-wrap text-zinc-700">
-                          {task.action}
-                        </p>
-                      </div>
+                    <td className="border-y border-[var(--border)] bg-[var(--panel-strong)]">
+                      <button
+                        type="button"
+                        aria-label={`task ${task.id} を編集`}
+                        onClick={() => openEditDialog(task)}
+                        className="block h-full w-full px-3 py-3 text-left transition hover:bg-zinc-50/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+                      >
+                        <div className="space-y-1">
+                          {showTaskTitle(task.title) ? (
+                            <p className="font-semibold text-[var(--ink)]">{task.title}</p>
+                          ) : null}
+                          <p className="line-clamp-6 max-w-[44rem] whitespace-pre-wrap text-black">
+                            {task.action}
+                          </p>
+                        </div>
+                      </button>
                     </td>
                     <td className="border-y border-[var(--border)] bg-[var(--panel-strong)] pl-1 pr-3 py-3">
                       <div className="flex items-center gap-2">
@@ -274,7 +281,7 @@ export function ProjectTasksPage() {
         isSaving={isEditing}
         error={editError}
         action={editTaskAction}
-        title={editTask ? `Edit Task ${editTask.id}` : "Edit Task"}
+        title={editTask ? `編集 - #${editTask.id}` : "編集"}
         description=""
         submitLabel="更新"
         submittingLabel="更新中..."

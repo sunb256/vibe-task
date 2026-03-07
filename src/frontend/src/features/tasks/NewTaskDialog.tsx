@@ -1,5 +1,5 @@
 import Editor from "@monaco-editor/react";
-import { type FormEvent, useEffect, useRef } from "react";
+import { type FormEvent, type MouseEvent, useEffect, useRef } from "react";
 
 import { Notice } from "../../components/Notice";
 import { PrimaryButton } from "../../components/PrimaryButton";
@@ -101,8 +101,18 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
     await triggerSubmit();
   }
 
+  function handleBackdropMouseDown(event: MouseEvent<HTMLDivElement>) {
+    if (event.target !== event.currentTarget) {
+      return;
+    }
+    onClose();
+  }
+
   return (
-    <div className="fixed inset-0 z-10 flex items-center justify-center bg-black/45 px-4 py-8 backdrop-blur-[2px]">
+    <div
+      className="fixed inset-0 z-10 flex items-center justify-center bg-black/45 px-4 py-8 backdrop-blur-[2px]"
+      onMouseDown={handleBackdropMouseDown}
+    >
       <div
         role="dialog"
         aria-modal="true"
