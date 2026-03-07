@@ -74,6 +74,7 @@ task:
       Task YAML Manager
       TOP画面ローカルリポジトリと task YAML を紐づけて、一覧表示と action 編集を行います。
       の文字はいらない
+      
   - id: 4
     url: https://github.com/sunb256/impl/pull/4
     title: プロジェクト画面の不要な説明文を削除
