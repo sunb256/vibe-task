@@ -541,3 +541,8 @@ task:
     title: ヘッダーのCode Manager表記をVIBE TASKに変更
     action: |
       CODE MANAGER でなくて  VIBE TASK にして
+  - id: 68
+    url: https://github.com/sunb256/vibe-task/pull/73
+    title: 背景の色合いの彩度をもう少し落とす
+    action: |
+      背景の色合いの彩度をもう少し落としたい
