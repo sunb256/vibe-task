@@ -277,16 +277,16 @@ export function ProjectTasksPage() {
                     <tr
                       key={`${task.source}-${task.id}`}
                       onClick={() => openEditDialog(task)}
-                      className="cursor-pointer"
+                      className="group cursor-pointer"
                     >
-                      <td className="rounded-l-md border-y border-l border-[var(--border)] bg-[var(--panel-strong)] px-3 py-3 text-[var(--muted)] whitespace-nowrap">
+                      <td className="rounded-l-md border-y border-l border-[var(--border)] bg-[var(--panel-strong)] px-3 py-3 text-[var(--muted)] whitespace-nowrap transition group-hover:bg-zinc-50/70 group-focus-within:bg-zinc-50/70">
                         <span
                           className={`rounded-md px-3 py-1 text-xs font-semibold uppercase ${sourceBadgeTone(task.source)}`}
                         >
                           {sourceTag(task)}
                         </span>
                       </td>
-                      <td className="border-y border-[var(--border)] bg-[var(--panel-strong)]">
+                      <td className="border-y border-[var(--border)] bg-[var(--panel-strong)] transition group-hover:bg-zinc-50/70 group-focus-within:bg-zinc-50/70">
                         <button
                           type="button"
                           aria-label={`task ${task.id} を編集`}
@@ -294,7 +294,7 @@ export function ProjectTasksPage() {
                             event.stopPropagation();
                             openEditDialog(task);
                           }}
-                          className="block h-full w-full px-3 py-3 text-left transition hover:bg-zinc-50/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+                          className="block h-full w-full px-3 py-3 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
                         >
                           <div className="space-y-1">
                             {showTaskTitle(task.title) ? (
@@ -306,7 +306,7 @@ export function ProjectTasksPage() {
                           </div>
                         </button>
                       </td>
-                      <td className="border-y border-[var(--border)] bg-[var(--panel-strong)] pl-1 pr-3 py-3">
+                      <td className="border-y border-[var(--border)] bg-[var(--panel-strong)] pl-1 pr-3 py-3 transition group-hover:bg-zinc-50/70 group-focus-within:bg-zinc-50/70">
                         <div className="flex items-center gap-2">
                           <button
                             type="button"
@@ -342,7 +342,7 @@ export function ProjectTasksPage() {
                           />
                         </div>
                       </td>
-                      <td className="rounded-r-md border-y border-r border-[var(--border)] bg-[var(--panel-strong)] px-3 py-3 text-center">
+                      <td className="rounded-r-md border-y border-r border-[var(--border)] bg-[var(--panel-strong)] px-3 py-3 text-center transition group-hover:bg-zinc-50/70 group-focus-within:bg-zinc-50/70">
                         <TaskPrLink url={task.url} />
                       </td>
                     </tr>
