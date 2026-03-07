@@ -27,3 +27,9 @@ task:
     title: -
     action: |
       ACTIONとDONEの色合いは変えてほしい
+
+  - id: 11
+    url: -
+    title: -
+    action: |
+      UIの角丸を緩めて見た目を角っぽくして
