@@ -32,3 +32,24 @@ task:
       Project画面
       DONE側はID降順に表示する
       
+  - id: 20
+    url: -
+    title: -
+    action: |
+      Project画面
+      TASKの内容が長いと...になるが、もう少し表示量を増やしたい
+      今の2倍がいい
+
+  - id: 21
+    url: -
+    title: -
+    action: |
+      Task YAML ManagerでなくTask Managerとしたい
+      Project画面のタイトルは Project: `<プロジェクト名>` としたい
+
+  - id: 22
+    url: -
+    title: -
+    action: |
+      デザインがダサいです。
+      https://vercel.com/ みたいな見た目にしたい
