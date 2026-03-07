@@ -85,11 +85,11 @@ export function ProjectTasksPage() {
               <thead>
                 <tr className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
                   <th className="px-3">id</th>
-                  <th className="px-3">title</th>
-                  <th className="px-3">url</th>
                   <th className="px-3">source</th>
+                  <th className="px-3">title</th>
                   <th className="px-3">action</th>
                   <th className="px-3">actions</th>
+                  <th className="px-3">url</th>
                 </tr>
               </thead>
               <tbody>
@@ -99,22 +99,19 @@ export function ProjectTasksPage() {
                       {task.id}
                     </td>
                     <td className="border-y border-[var(--border)] bg-white px-3 py-4">
-                      {task.title}
-                    </td>
-                    <td className="border-y border-[var(--border)] bg-white px-3 py-4">
-                      <TaskPrLink url={task.url} />
-                    </td>
-                    <td className="border-y border-[var(--border)] bg-white px-3 py-4">
                       <span className="rounded-lg bg-[var(--accent)]/10 px-3 py-1 text-xs font-semibold uppercase text-[var(--accent)]">
                         {task.source}
                       </span>
+                    </td>
+                    <td className="border-y border-[var(--border)] bg-white px-3 py-4">
+                      {task.title}
                     </td>
                     <td className="border-y border-[var(--border)] bg-white px-3 py-4">
                       <p className="line-clamp-3 max-w-[22rem] whitespace-pre-wrap text-[var(--muted)]">
                         {task.action}
                       </p>
                     </td>
-                    <td className="rounded-r-xl border-y border-r border-[var(--border)] bg-white px-3 py-4">
+                    <td className="border-y border-[var(--border)] bg-white px-3 py-4">
                       <div className="flex flex-wrap gap-2">
                         <Link
                           to={`/projects/${projectId}/tasks/${task.source}/${task.id}/edit`}
@@ -130,6 +127,9 @@ export function ProjectTasksPage() {
                           削除
                         </PrimaryButton>
                       </div>
+                    </td>
+                    <td className="rounded-r-xl border-y border-r border-[var(--border)] bg-white px-3 py-4">
+                      <TaskPrLink url={task.url} />
                     </td>
                   </tr>
                 ))}
