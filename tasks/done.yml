@@ -273,3 +273,10 @@ task:
       プロジェクト画面
       Project一覧は
       Project 一覧 とスペースを空ける
+
+  - id: 29
+    url: https://github.com/sunb256/impl/pull/33
+    title: Project画面のid/source列をidのみ表示に変更
+    action: |
+      id/source
+      はidのみの表示でいい
