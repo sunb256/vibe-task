@@ -18,13 +18,6 @@ task:
       id	source  title	action  actions url
       の順にして
       
-  - id: 8
-    url: -
-    title: -
-    action: |
-      プロジェクト画面
-      EDITとDELETEは編集、削除にして
-
   - id: 9
     url: -
     title: -

@@ -95,3 +95,9 @@ task:
       プロジェクト画面
       BACK TO TOPのリンクはいらない。
       ヘッダ部のタイトルでTOPページに戻りたい
+  - id: 8
+    url: https://github.com/sunb256/impl/pull/11
+    title: プロジェクト画面の操作文言を日本語化
+    action: |
+      プロジェクト画面
+      EDITとDELETEは編集、削除にして
