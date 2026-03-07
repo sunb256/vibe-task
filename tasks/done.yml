@@ -302,3 +302,12 @@ task:
     action: |-
       LoadingTaskが長い、もっと早くならないのか
       データ量は少ないのでもっと早くなるはず
+
+  - id: 33
+    url: https://github.com/sunb256/impl/pull/37
+    title: TOP画面の新規プロジェクトモーダル文言と操作を調整
+    action: |-
+      TOP画面
+      repositoryPath は実在するリポジトリのディレクトリを指定します。は不要
+      このモーダルのCLOSEボタンが小さい
+      Create Projectでなくプロジェクト作成ボタン

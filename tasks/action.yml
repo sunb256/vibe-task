@@ -8,14 +8,6 @@ impl_rule: |
   5. KISS/DRY/リーダブルコードの原則を守る
 
 task:
-  - id: '33'
-    url: '-'
-    title: '-'
-    action: |-
-      TOP画面
-      repositoryPath は実在するリポジトリのディレクトリを指定します。は不要
-      このモーダルのCLOSEボタンが小さい
-      Create Projectでなくプロジェクト作成ボタン
   - id: '34'
     url: '-'
     title: '-'
@@ -25,9 +17,14 @@ task:
   - id: '35'
     url: '-'
     title: '-'
-    action: |
+    action: |-
       編集時もモーダル表示にしたい。別画面表示は廃止。
       新規作成と同じでいいです
 
       Ctrl+ENTERでタスク作成するショートカット
       ESCでキャンセル
+  - id: '36'
+    url: '-'
+    title: '-'
+    action: |
+      プロジェクト画面でタスク列のコンテンツを選択したときに編集画面を表示する
