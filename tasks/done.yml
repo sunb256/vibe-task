@@ -210,3 +210,10 @@ task:
       Project画面
       TASKの内容が長いと...になるが、もう少し表示量を増やしたい
       今の2倍がいい
+
+  - id: 21
+    url: https://github.com/sunb256/impl/pull/25
+    title: ヘッダー文言をTask Managerに統一しProject画面タイトルを変更
+    action: |
+      Task YAML ManagerでなくTask Managerとしたい
+      Project画面のタイトルは Project: `<プロジェクト名>` としたい
