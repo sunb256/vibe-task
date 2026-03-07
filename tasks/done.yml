@@ -127,3 +127,9 @@ task:
     action: |
       tasks/project.yml
       idはただの連番でいい
+
+  - id: 11
+    url: https://github.com/sunb256/impl/pull/15
+    title: プロジェクト画面でACTIONとDONEの色を分ける
+    action: |
+      ACTIONとDONEの色合いは変えてほしい
