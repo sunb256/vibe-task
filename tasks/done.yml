@@ -412,3 +412,10 @@ task:
 
       タイトル: Task Manager: impl
       favicon: src/frontend/assets/images.logs.svg
+
+  - id: 46
+    url: https://github.com/sunb256/impl/pull/50
+    title: 新規プロジェクト画面のrepositoryPath入力を1カラム化
+    action: |-
+      新規プロジェクト画面
+      repositoryPathは長くなることが多いので２カラムにしないようにしたい
