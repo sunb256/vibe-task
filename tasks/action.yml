@@ -8,14 +8,6 @@ impl_rule: |
  5. KISS/DRY/リーダブルコードの原則を守る
 
 task: 
-  - id: 24
-    url: -
-    title: -
-    action: |
-      プロジェクト画面
-      新規ボタンは左寄せ
-      新規タスクボタンと名称を変える
-
   - id: 25
     url: -
     title: -
