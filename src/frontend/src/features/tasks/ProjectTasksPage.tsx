@@ -99,7 +99,9 @@ export function ProjectTasksPage() {
                       {task.id}
                     </td>
                     <td className="border-y border-[var(--border)] bg-white px-3 py-4">
-                      <span className="rounded-lg bg-[var(--accent)]/10 px-3 py-1 text-xs font-semibold uppercase text-[var(--accent)]">
+                      <span
+                        className={`rounded-lg px-3 py-1 text-xs font-semibold uppercase ${sourceBadgeTone(task.source)}`}
+                      >
                         {task.source}
                       </span>
                     </td>
@@ -185,4 +187,11 @@ function prLabel(url: string) {
     return "PR";
   }
   return `PR #${matched[1]}`;
+}
+
+function sourceBadgeTone(source: TaskRecord["source"]) {
+  if (source === "done") {
+    return "bg-emerald-100 text-emerald-700";
+  }
+  return "bg-amber-100 text-amber-700";
 }

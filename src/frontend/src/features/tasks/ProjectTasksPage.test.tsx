@@ -42,6 +42,14 @@ test("does not render the removed project subtitle", async () => {
         url: "https://github.com/sunb256/impl/pull/4",
         action: "first task",
       },
+      {
+        projectId: "project-1",
+        source: "done",
+        id: "2",
+        title: "done-title",
+        url: "-",
+        action: "done task",
+      },
     ],
   });
 
@@ -78,9 +86,17 @@ test("does not render the removed project subtitle", async () => {
     "href",
     "https://github.com/sunb256/impl/pull/4",
   );
-  expect(screen.getByRole("link", { name: "編集" })).toHaveAttribute(
-    "href",
-    "/projects/project-1/tasks/action/1/edit",
+  const editLinks = screen.getAllByRole("link", { name: "編集" });
+  expect(editLinks).toHaveLength(2);
+  expect(editLinks[0]).toHaveAttribute("href", "/projects/project-1/tasks/action/1/edit");
+  expect(editLinks[1]).toHaveAttribute("href", "/projects/project-1/tasks/done/2/edit");
+  expect(screen.getAllByRole("button", { name: "削除" })).toHaveLength(2);
+  expect(screen.getByText("action", { selector: "span" })).toHaveClass(
+    "bg-amber-100",
+    "text-amber-700",
   );
-  expect(screen.getByRole("button", { name: "削除" })).toBeInTheDocument();
+  expect(screen.getByText("done", { selector: "span" })).toHaveClass(
+    "bg-emerald-100",
+    "text-emerald-700",
+  );
 });
