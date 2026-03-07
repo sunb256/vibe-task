@@ -39,7 +39,7 @@ task:
       BACK TO TOPのリンクはいらない。
       ヘッダ部のタイトルでTOPページに戻りたい
 
-  - id: 6
+  - id: 7
     url: -
     title: -
     action: |
@@ -49,3 +49,9 @@ task:
       id	source  title	action  actions url
       の順にして
       
+  - id: 8
+    url: -
+    title: -
+    action: |
+      プロジェクト画面
+      EDITとDELETEは編集、削除にして
