@@ -8,11 +8,6 @@ impl_rule: |
   5. KISS/DRY/リーダブルコードの原則を守る
 
 task:
-  - id: '39'
-    url: '-'
-    title: '-'
-    action: |
-      起動するPort番号は5555にする。5174だとかぶるので変えたい
   - id: '40'
     url: '-'
     title: '-'
