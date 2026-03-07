@@ -8,13 +8,6 @@ impl_rule: |
  5. KISS/DRY/リーダブルコードの原則を守る
 
 task: 
-  - id: 15
-    url: -
-    title: -
-    action: |
-      TOP画面
-      Project画面と同じくTask YAML Managerを追加する
-
   - id: 16
     url: -
     title: -

@@ -160,3 +160,10 @@ task:
       Project画面
       新規ボタンを追加する
       追加したデータはaction.ymlに追加する
+
+  - id: 15
+    url: https://github.com/sunb256/impl/pull/19
+    title: TOP画面にTask YAML Managerを表示する
+    action: |
+      TOP画面
+      Project画面と同じくTask YAML Managerを追加する
