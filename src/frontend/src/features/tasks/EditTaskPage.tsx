@@ -1,5 +1,5 @@
 import Editor from "@monaco-editor/react";
-import { useEffect, useEffectEvent, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { Notice } from "../../components/Notice";
@@ -17,25 +17,36 @@ export function EditTaskPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  const loadTask = useEffectEvent(async () => {
-    setIsLoading(true);
-    setError("");
-    setTask(null);
-    setAction("");
-    try {
-      const response = await fetchTask(projectId, source as TaskSource, taskId);
-      setTask(response);
-      setAction(response.action);
-    } catch (loadError) {
-      setError(readError(loadError, "task の取得に失敗しました。"));
-    } finally {
-      setIsLoading(false);
-    }
-  });
-
   useEffect(() => {
+    let cancelled = false;
+
+    async function loadTask() {
+      setIsLoading(true);
+      setError("");
+      setTask(null);
+      setAction("");
+      try {
+        const response = await fetchTask(projectId, source as TaskSource, taskId);
+        if (!cancelled) {
+          setTask(response);
+          setAction(response.action);
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setError(readError(loadError, "task の取得に失敗しました。"));
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
     void loadTask();
-  }, [projectId, source, taskId, loadTask]);
+    return () => {
+      cancelled = true;
+    };
+  }, [projectId, source, taskId]);
 
   async function handleSave() {
     setIsSaving(true);

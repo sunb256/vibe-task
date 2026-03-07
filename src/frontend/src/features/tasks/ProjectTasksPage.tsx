@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import { Notice } from "../../components/Notice";
@@ -16,28 +16,36 @@ export function ProjectTasksPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadPage = useEffectEvent(async () => {
-    setIsLoading(true);
-    setError("");
-    setProject(null);
-    setTasks([]);
-    try {
-      const [projectResponse, taskResponse] = await Promise.all([
-        fetchProjects(),
-        fetchTasks(projectId),
-      ]);
-      setProject(projectResponse.projects.find((item) => item.id === projectId) ?? null);
-      setTasks(taskResponse.tasks);
-    } catch (loadError) {
-      setError(readError(loadError, "タスク一覧の取得に失敗しました。"));
-    } finally {
-      setIsLoading(false);
-    }
-  });
-
   useEffect(() => {
+    let cancelled = false;
+
+    async function loadPage() {
+      setIsLoading(true);
+      setError("");
+      setProject(null);
+      setTasks([]);
+      try {
+        const data = await readProjectPage(projectId);
+        if (!cancelled) {
+          setProject(data.project);
+          setTasks(data.tasks);
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setError(readError(loadError, "タスク一覧の取得に失敗しました。"));
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
     void loadPage();
-  }, [projectId, loadPage]);
+    return () => {
+      cancelled = true;
+    };
+  }, [projectId]);
 
   async function handleDelete(task: TaskRecord) {
     const ok = window.confirm(`task ${task.id} を削除しますか？`);
@@ -46,7 +54,9 @@ export function ProjectTasksPage() {
     }
     try {
       await deleteTask(projectId, task.source, task.id);
-      await loadPage();
+      const data = await readProjectPage(projectId);
+      setProject(data.project);
+      setTasks(data.tasks);
     } catch (deleteError) {
       setError(readError(deleteError, "タスクの削除に失敗しました。"));
     }
@@ -141,4 +151,13 @@ function readError(error: unknown, fallback: string) {
     return error.message;
   }
   return fallback;
+}
+
+async function readProjectPage(projectId: string) {
+  const [projectResponse, taskResponse] = await Promise.all([
+    fetchProjects(),
+    fetchTasks(projectId),
+  ]);
+  const project = projectResponse.projects.find((item) => item.id === projectId) ?? null;
+  return { project, tasks: taskResponse.tasks };
 }
