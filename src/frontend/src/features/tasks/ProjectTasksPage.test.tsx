@@ -63,7 +63,7 @@ test("does not render the removed project subtitle", async () => {
   );
 
   await waitFor(() => {
-    expect(screen.getByText("impl Tasks")).toBeInTheDocument();
+    expect(screen.getByText("impl")).toBeInTheDocument();
   });
   expect(screen.getAllByRole("columnheader").map((header) => header.textContent)).toEqual([
     "id/source",
@@ -77,11 +77,14 @@ test("does not render the removed project subtitle", async () => {
     ),
   ).not.toBeInTheDocument();
   expect(screen.queryByRole("link", { name: "Back to TOP" })).not.toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "新規" })).toBeInTheDocument();
-  expect(screen.getByRole("link", { name: "impl Tasks" })).toHaveAttribute(
+  const createButton = screen.getByRole("button", { name: "新規" });
+  expect(createButton).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "impl" })).toHaveAttribute(
     "href",
     "/",
   );
+  const table = screen.getByRole("table");
+  expect(createButton.compareDocumentPosition(table) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   expect(screen.getByRole("link", { name: "PR#4" })).toHaveAttribute(
     "href",
     "https://github.com/sunb256/impl/pull/4",
