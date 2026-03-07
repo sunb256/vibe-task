@@ -178,3 +178,12 @@ task:
       id	source は同じ列にする
       ex. DONE(xx) みたいなのがいい
       ACTION/DONE はACTIONはTODOという文字にする
+
+  - id: 17
+    url: https://github.com/sunb256/impl/pull/21
+    title: Project画面のタイトル文言と新規ボタン位置を調整
+    action: |
+      TOP画面
+      impl Tasks というタイトルになっている
+      プロジェクト名にしたい
+      新規ボタンの位置がおかしいテーブル表の上に配置したい

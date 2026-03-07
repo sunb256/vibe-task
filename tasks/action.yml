@@ -8,15 +8,6 @@ impl_rule: |
  5. KISS/DRY/リーダブルコードの原則を守る
 
 task: 
-  - id: 17
-    url: -
-    title: -
-    action: |
-      TOP画面
-      impl Tasks というタイトルになっている
-      プロジェクト名にしたい
-      新規ボタンの位置がおかしいテーブル表の上に配置したい
-      
   - id: 18
     url: -
     title: -
