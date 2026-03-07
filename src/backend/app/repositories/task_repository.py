@@ -1,3 +1,4 @@
+import os
 import re
 from collections.abc import MutableSequence
 from pathlib import Path
@@ -168,7 +169,8 @@ class TaskRepository:
         relative_path = self._source_path_value(project, source)
         if Path(relative_path).is_absolute():
             raise AppError("task file path must be relative", 400)
-        repo_root = Path(project.repository_path).expanduser().resolve()
+        expanded = os.path.expandvars(project.repository_path)
+        repo_root = Path(expanded).expanduser().resolve()
         file_path = (repo_root / relative_path).resolve()
         if repo_root not in file_path.parents and file_path != repo_root:
             raise AppError("task file path must stay inside repository", 400)
