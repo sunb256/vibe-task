@@ -8,30 +8,26 @@ impl_rule: |
  5. KISS/DRY/リーダブルコードの原則を守る
 
 task: 
-  - id: 8
+  - id: 9
     url: -
     title: -
     action: |
-      プロジェクト画面
-      id	title	url	source	action	actions
-      でなく
-      id	source  title	action  actions url
-      の順にして
-      
-  - id: 9
+      projects file is invalid になる。直して
+
+  - id: 10
     url: -
     title: -
     action: |
       tasks/project.yml
       idはただの連番でいい
 
-  - id: 10
+  - id: 11
     url: -
     title: -
     action: |
       ACTIONとDONEの色合いは変えてほしい
 
-  - id: 11
+  - id: 12
     url: -
     title: -
     action: |
