@@ -5,6 +5,8 @@ services:
       dockerfile: src/backend/Dockerfile
     ports:
       - "5000:5000"
+    volumes:
+      - ./tasks/projects.yml:/app/tasks/projects.yml
 
   frontend:
     build:
