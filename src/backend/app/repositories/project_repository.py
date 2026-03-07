@@ -120,7 +120,9 @@ class ProjectRepository:
 
     def _load_document(self) -> dict:
         if not self.projects_file.exists():
-            return {"projects": []}
+            document = {"projects": []}
+            self._write_document(document)
+            return document
         with self.projects_file.open("r", encoding="utf-8") as handle:
             try:
                 document = self.yaml.load(handle) or {}

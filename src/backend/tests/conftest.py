@@ -25,8 +25,12 @@ def project_repo(tmp_path: Path) -> Path:
 
 
 @pytest.fixture()
-def client(tmp_path: Path):
-    projects_file = tmp_path / "projects.yml"
+def projects_file(tmp_path: Path) -> Path:
+    return tmp_path / "projects.yml"
+
+
+@pytest.fixture()
+def client(projects_file: Path):
     app = create_app({"TESTING": True, "PROJECTS_FILE": str(projects_file)})
     with app.test_client() as client:
         yield client
