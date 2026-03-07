@@ -479,3 +479,11 @@ task:
     action: |-
       TOP画面
       プロジェクトの削除機能が欲しいです
+  - id: 57
+    url: https://github.com/sunb256/impl/pull/61
+    title: TOP画面カードタイトル先頭にSVGアイコンを追加
+    action: |-
+      TOP画面
+      プロジェクト一覧のカードのタイトルの最初にSVGアイコンをつけたい
+
+      アイコンはsrc/frontend/assets/images/code-xml.svg
