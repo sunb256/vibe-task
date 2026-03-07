@@ -161,7 +161,7 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
                 fontSize: 15,
                 minimap: { enabled: false },
                 wordWrap: "on",
-                padding: { top: 8 },
+                padding: { top: 18 },
                 renderLineHighlight: "none",
                 editContext: false,
               }}

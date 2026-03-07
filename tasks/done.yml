@@ -506,3 +506,8 @@ task:
     title: TASK列を行選択化しCode Manager表記に変更
     action: |-
       TASK列の選択だけど行選択がいいな
+  - id: 61
+    url: https://github.com/sunb256/impl/pull/63
+    title: プロジェクト一覧カードをコンパクト化し詳細パス表示を削除
+    action: |-
+      プロジェクト一覧のカードだけど、もう少し小さくなるようにaction-list, done-listの情報はなくてもいいかな、編集ボタンで見れるし
