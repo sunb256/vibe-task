@@ -343,3 +343,13 @@ task:
 
       ショートカットキーを追加したい
       Ctrl+N: 新規タスク
+
+  - id: 38
+    url: https://github.com/sunb256/impl/pull/42
+    title: Task Manager見出しの配色・サイズ・余白を調整
+    action: |
+      Task Manager というタイトルに色を付けたい。今はグレーなので殺風景です
+      ただしあまり目立たない色がいい
+
+      タイトルのフォントは一回り小さくしたい
+      上下の余白を一回り小さく
