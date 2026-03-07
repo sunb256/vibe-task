@@ -34,6 +34,13 @@ def list_tasks(project_id: str):
     return jsonify({"tasks": tasks})
 
 
+@api_bp.post("/projects/<project_id>/tasks/action")
+def create_action_task(project_id: str):
+    service = TaskService(_project_repository())
+    task = service.create_action_task(project_id)
+    return jsonify(task.to_dict()), 201
+
+
 @api_bp.get("/projects/<project_id>/tasks/<source>/<task_id>")
 def get_task(project_id: str, source: str, task_id: str):
     service = TaskService(_project_repository())
