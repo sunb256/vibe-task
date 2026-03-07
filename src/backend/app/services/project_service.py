@@ -56,6 +56,9 @@ class ProjectService:
             done_list_path=done_list_path,
         )
 
+    def delete_project(self, project_id: str) -> None:
+        self.project_repository.delete_project(project_id)
+
     def reorder_projects(self, payload: dict) -> None:
         source_id = self._require_text(payload, "sourceId")
         target_id = self._require_text(payload, "targetId")

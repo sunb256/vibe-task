@@ -4,7 +4,13 @@ import { Link } from "react-router-dom";
 import { Notice } from "../../components/Notice";
 import { PageFrame } from "../../components/PageFrame";
 import { PrimaryButton } from "../../components/PrimaryButton";
-import { createProject, fetchProjects, reorderProjects, updateProject } from "./projectApi";
+import {
+  createProject,
+  deleteProject,
+  fetchProjects,
+  reorderProjects,
+  updateProject,
+} from "./projectApi";
 import { NewProjectDialog } from "./NewProjectDialog";
 import { ProjectSettingsDialog } from "./ProjectSettingsDialog";
 import { defaultProjectForm, type Project, type ProjectFormState } from "./types";
@@ -20,6 +26,7 @@ export function ProjectListPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isReordering, setIsReordering] = useState(false);
   const [editProject, setEditProject] = useState<Project | null>(null);
   const [dragProjectId, setDragProjectId] = useState<string | null>(null);
@@ -91,6 +98,23 @@ export function ProjectListPage() {
       setEditError(readError(saveError, "プロジェクトの更新に失敗しました。"));
     } finally {
       setIsUpdating(false);
+    }
+  }
+
+  async function handleDelete(project: Project) {
+    const ok = window.confirm(`プロジェクト #${project.id} (${project.name}) を削除しますか？`);
+    if (!ok) {
+      return;
+    }
+    setIsDeleting(true);
+    setError("");
+    try {
+      await deleteProject(project.id);
+      await loadProjects();
+    } catch (deleteError) {
+      setError(readError(deleteError, "プロジェクトの削除に失敗しました。"));
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -217,13 +241,21 @@ export function ProjectListPage() {
                   </dl>
                 </div>
               </Link>
-              <div className="mt-4 flex justify-end">
+              <div className="mt-4 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => openEditDialog(project)}
                   className="rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
                 >
                   編集
+                </button>
+                <button
+                  type="button"
+                  disabled={isDeleting}
+                  onClick={() => void handleDelete(project)}
+                  className="rounded-lg border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-700 transition hover:border-rose-300 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  削除
                 </button>
               </div>
             </article>
