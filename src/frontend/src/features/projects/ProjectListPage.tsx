@@ -1,5 +1,6 @@
 import {
   type DragEvent,
+  type KeyboardEvent,
   type MouseEvent,
   useEffect,
   useMemo,
@@ -189,6 +190,17 @@ export function ProjectListPage() {
     navigate(`/projects/${projectId}`);
   }
 
+  function handleCardKeyDown(event: KeyboardEvent<HTMLElement>, projectId: string) {
+    if (isInteractiveTarget(event.target)) {
+      return;
+    }
+    if (event.key !== "Enter" && event.key !== " ") {
+      return;
+    }
+    event.preventDefault();
+    navigate(`/projects/${projectId}`);
+  }
+
   return (
     <>
       <PageFrame
@@ -234,16 +246,17 @@ export function ProjectListPage() {
               onDrop={(event) => void handleDrop(event, project.id)}
               onDragEnd={handleDragEnd}
               onClick={(event) => handleCardClick(event, project.id)}
-              className={`h-full rounded-xl border bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)] transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_1px_0_rgba(9,9,11,0.05),0_18px_42px_rgba(9,9,11,0.12)] ${
+              onKeyDown={(event) => handleCardKeyDown(event, project.id)}
+              role="link"
+              tabIndex={0}
+              aria-label={`${project.name} を開く`}
+              className={`h-full cursor-pointer rounded-xl border bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)] transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_1px_0_rgba(9,9,11,0.05),0_18px_42px_rgba(9,9,11,0.12)] ${
                 dropProjectId === project.id && dragProjectId !== project.id
                   ? "border-[var(--accent)] ring-2 ring-[var(--accent)]/30"
                   : "border-[var(--border)]"
               }`}
             >
-              <Link
-                to={`/projects/${project.id}`}
-                className="block rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400"
-              >
+              <div className="block rounded-lg">
                 <div>
                   <h2 className="flex items-center gap-2 text-xl font-semibold">
                     <img
@@ -264,7 +277,7 @@ export function ProjectListPage() {
                     <span>{project.repositoryPath}</span>
                   </p>
                 </div>
-              </Link>
+              </div>
               <div className="mt-4 flex justify-end gap-2">
                 <button
                   type="button"
@@ -346,5 +359,5 @@ function isInteractiveTarget(target: EventTarget | null) {
   if (!(target instanceof HTMLElement)) {
     return false;
   }
-  return Boolean(target.closest("a,button,input,textarea,select,label,[role='button']"));
+  return Boolean(target.closest("button,input,textarea,select,label,[role='button']"));
 }
