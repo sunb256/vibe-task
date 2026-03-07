@@ -238,8 +238,14 @@ export function ProjectListPage() {
                     />
                     <span>{project.name}</span>
                   </h2>
-                  <p className="mt-1 break-all text-sm text-[var(--muted)]">
-                    {project.repositoryPath}
+                  <p className="mt-3 pl-1 flex items-start gap-2 break-all text-sm text-[var(--muted)]">
+                    <img
+                      src="/assets/images/git-branch.svg"
+                      alt=""
+                      aria-hidden="true"
+                      className="mt-[2px] h-4 w-4 shrink-0"
+                    />
+                    <span>{project.repositoryPath}</span>
                   </p>
                 </div>
               </Link>

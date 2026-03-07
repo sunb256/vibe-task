@@ -61,6 +61,7 @@ test("renders project cards", async () => {
   expect(screen.queryByText("done-list")).not.toBeInTheDocument();
   const projectCard = screen.getByText("impl").closest("article");
   expect(projectCard?.querySelector('img[src="/assets/images/code-xml.svg"]')).not.toBeNull();
+  expect(projectCard?.querySelector('img[src="/assets/images/git-branch.svg"]')).not.toBeNull();
   expect(projectCard).toHaveClass("p-4");
   expect(screen.queryByRole("link", { name: "Open Project" })).not.toBeInTheDocument();
 
