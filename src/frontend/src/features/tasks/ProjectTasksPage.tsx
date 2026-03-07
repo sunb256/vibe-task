@@ -7,6 +7,12 @@ import { PrimaryButton } from "../../components/PrimaryButton";
 import { fetchProjects } from "../projects/projectApi";
 import { NewTaskDialog } from "./NewTaskDialog";
 import type { Project } from "../projects/types";
+import {
+  readCachedProject,
+  readCachedTasks,
+  saveProjectCache,
+  saveTaskCache,
+} from "./projectTasksPageCache";
 import { createActionTask, deleteTask, fetchTasks, updateTaskAction } from "./taskApi";
 import type { TaskRecord } from "./types";
 
@@ -27,22 +33,30 @@ export function ProjectTasksPage() {
     let cancelled = false;
 
     async function loadPage() {
-      setIsLoading(true);
       setError("");
-      setProject(null);
-      setTasks([]);
+      applyCache(projectId, setProject, setTasks, setIsLoading);
       try {
-        const data = await readProjectPage(projectId);
-        if (!cancelled) {
-          setProject(data.project);
-          setTasks(data.tasks);
+        const loadedTasks = await readTasks(projectId);
+        if (cancelled) {
+          return;
+        }
+        saveTaskCache(projectId, loadedTasks);
+        setTasks(loadedTasks);
+        setIsLoading(false);
+        try {
+          const loadedProject = await readProject(projectId);
+          if (!cancelled) {
+            saveProjectCache(projectId, loadedProject);
+            setProject(loadedProject);
+          }
+        } catch {
+          if (!cancelled) {
+            setProject(null);
+          }
         }
       } catch (loadError) {
         if (!cancelled) {
           setError(readError(loadError, "タスク一覧の取得に失敗しました。"));
-        }
-      } finally {
-        if (!cancelled) {
           setIsLoading(false);
         }
       }
@@ -61,9 +75,7 @@ export function ProjectTasksPage() {
     }
     try {
       await deleteTask(projectId, task.source, task.id);
-      const data = await readProjectPage(projectId);
-      setProject(data.project);
-      setTasks(data.tasks);
+      await refreshTasks(projectId, setTasks);
     } catch (deleteError) {
       setError(readError(deleteError, "タスクの削除に失敗しました。"));
     }
@@ -81,9 +93,7 @@ export function ProjectTasksPage() {
     try {
       const created = await createActionTask(projectId);
       await updateTaskAction(projectId, "action", created.id, newTaskAction);
-      const data = await readProjectPage(projectId);
-      setProject(data.project);
-      setTasks(data.tasks);
+      await refreshTasks(projectId, setTasks);
       setIsDialogOpen(false);
     } catch (createError) {
       setDialogError(readError(createError, "task の作成に失敗しました。"));
@@ -200,13 +210,43 @@ function readError(error: unknown, fallback: string) {
   return fallback;
 }
 
-async function readProjectPage(projectId: string) {
-  const [projectResponse, taskResponse] = await Promise.all([
-    fetchProjects(),
-    fetchTasks(projectId),
-  ]);
+async function readProject(projectId: string) {
+  const projectResponse = await fetchProjects();
   const project = projectResponse.projects.find((item) => item.id === projectId) ?? null;
-  return { project, tasks: taskResponse.tasks };
+  return project;
+}
+
+async function readTasks(projectId: string) {
+  const taskResponse = await fetchTasks(projectId);
+  return taskResponse.tasks;
+}
+
+async function refreshTasks(projectId: string, setTasks: (tasks: TaskRecord[]) => void) {
+  const tasks = await readTasks(projectId);
+  saveTaskCache(projectId, tasks);
+  setTasks(tasks);
+}
+
+function applyCache(
+  projectId: string,
+  setProject: (project: Project | null) => void,
+  setTasks: (tasks: TaskRecord[]) => void,
+  setIsLoading: (isLoading: boolean) => void,
+) {
+  const cachedTasks = readCachedTasks(projectId);
+  if (cachedTasks) {
+    setTasks(cachedTasks);
+    setIsLoading(false);
+  } else {
+    setTasks([]);
+    setIsLoading(true);
+  }
+  const cachedProject = readCachedProject(projectId);
+  if (cachedProject !== undefined) {
+    setProject(cachedProject);
+  } else {
+    setProject(null);
+  }
 }
 
 type TaskPrLinkProps = {
