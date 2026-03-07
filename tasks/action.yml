@@ -8,15 +8,6 @@ impl_rule: |
   5. KISS/DRY/リーダブルコードの原則を守る
 
 task:
-  - id: 26
-    url: "-"
-    title: "-"
-    action: |
-      プロジェクト画面
-      TODO(xx)/DONE(xx)は
-      TODO #xx
-      DONE #xx とする
-
   - id: 27
     url: "-"
     title: "-"

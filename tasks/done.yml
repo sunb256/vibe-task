@@ -248,3 +248,12 @@ task:
       プロジェクト画面
       Task列は横幅が狭くすぐ折り返される
       もっと横幅を広げてすぐに折り返しされないようにする
+
+  - id: 26
+    url: https://github.com/sunb256/impl/pull/30
+    title: Project画面のTODO/DONE表記を # 形式に変更
+    action: |
+      プロジェクト画面
+      TODO(xx)/DONE(xx)は
+      TODO #xx
+      DONE #xx とする

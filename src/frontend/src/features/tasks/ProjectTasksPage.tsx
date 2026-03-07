@@ -228,7 +228,7 @@ function sourceLabel(source: TaskRecord["source"]) {
 }
 
 function sourceTag(task: TaskRecord) {
-  return `${sourceLabel(task.source)}(${task.id})`;
+  return `${sourceLabel(task.source)} #${task.id}`;
 }
 
 function orderTasks(tasks: TaskRecord[]) {
