@@ -35,6 +35,9 @@ test("renders project cards", async () => {
     expect(screen.getByText("impl")).toBeInTheDocument();
   });
   expect(screen.getByText("Task YAML Manager")).toBeInTheDocument();
+  expect(screen.getByRole("heading", { level: 1, name: "Project一覧" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "新規プロジェクト" })).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "NEW" })).not.toBeInTheDocument();
   expect(
     screen.queryByText(
       "ローカルリポジトリと task YAML を紐づけて、一覧表示と action 編集を行います。",

@@ -50,8 +50,10 @@ export function ProjectListPage() {
   return (
     <>
       <PageFrame
-        title="Projects"
-        actions={<PrimaryButton onClick={() => setIsDialogOpen(true)}>NEW</PrimaryButton>}
+        title="Project一覧"
+        actions={
+          <PrimaryButton onClick={() => setIsDialogOpen(true)}>新規プロジェクト</PrimaryButton>
+        }
       >
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {error ? <Notice tone="error" message={error} /> : null}
