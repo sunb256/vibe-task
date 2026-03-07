@@ -8,14 +8,6 @@ impl_rule: |
   5. KISS/DRY/リーダブルコードの原則を守る
 
 task:
-  - id: '37'
-    url: '-'
-    title: '-'
-    action: |-
-      プロジェクト画面
-
-      ショートカットキーを追加したい
-      Ctrl+N: 新規タスク
   - id: '38'
     url: '-'
     title: '-'
@@ -47,9 +39,16 @@ task:
   - id: '43'
     url: '-'
     title: '-'
-    action: |
+    action: |-
       TOP画面にSetting画面を追加したい
 
       Setting画面の機能
 
        - データエクスポート/インポート機能(projects.yml)
+  - id: '44'
+    url: '-'
+    title: '-'
+    action: |
+      プロジェクト新規作成画面
+
+      New Projectでなく新規作成に名称変更
