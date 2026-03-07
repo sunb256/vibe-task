@@ -50,7 +50,14 @@ export function ProjectListPage() {
   return (
     <>
       <PageFrame
-        title="Project 一覧"
+        title={
+          <Link
+            to="/"
+            className="rounded-sm transition hover:text-[var(--muted)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
+          >
+            Project 一覧
+          </Link>
+        }
         actions={
           <PrimaryButton onClick={() => setIsDialogOpen(true)}>新規プロジェクト</PrimaryButton>
         }
