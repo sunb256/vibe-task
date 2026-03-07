@@ -64,13 +64,12 @@ export function ProjectTasksPage() {
 
   return (
     <PageFrame
-      title={project ? `${project.name} Tasks` : "Project Tasks"}
-      actions={
+      title={
         <Link
           to="/"
-          className="inline-flex rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-semibold text-[var(--accent)]"
+          className="rounded-sm transition hover:text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
         >
-          Back to TOP
+          {project ? `${project.name} Tasks` : "Project Tasks"}
         </Link>
       }
     >
