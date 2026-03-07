@@ -59,8 +59,9 @@ class TaskRepository:
         path = self._resolve_source_path(project, source)
         document = self._load_yaml(path)
         tasks = self._get_task_items(document)
+        task_id = self._create_task_id(project, source, tasks)
         task = {
-            "id": self._next_task_id(tasks),
+            "id": task_id,
             "url": "-",
             "title": "-",
             "action": LiteralScalarString("TODO\n"),
@@ -68,6 +69,18 @@ class TaskRepository:
         tasks.append(task)
         self._write_yaml(path, document)
         return self._to_task_record(project.id, source, task)
+
+    def _create_task_id(
+        self,
+        project: ProjectRecord,
+        source: str,
+        tasks: MutableSequence,
+    ) -> str:
+        if source != "action" or len(tasks) > 0:
+            return self._next_task_id(tasks)
+        done_document = self._load_source(project, "done")
+        done_tasks = self._get_task_items(done_document)
+        return str(self._max_task_id(done_tasks) + 1)
 
     def _to_task_records(
         self,

@@ -56,6 +56,24 @@ def test_creates_action_task(client, project_repo: Path):
     assert "TODO" in action_text
 
 
+def test_creates_action_task_after_done_max_when_action_is_empty(client, project_repo: Path):
+    action_file = project_repo / "tasks" / "action.yml"
+    done_file = project_repo / "tasks" / "done.yml"
+    action_file.write_text("impl_rule: |\n  sample\n\ntask: []\n", encoding="utf-8")
+    done_file.write_text(
+        "task:\n  - id: 12\n    url: done-url\n    title: done-title\n    action: |\n      done task\n",
+        encoding="utf-8",
+    )
+    project_id = create_project(client, project_repo)
+
+    response = client.post(f"/api/projects/{project_id}/tasks/action")
+
+    assert response.status_code == 201
+    created = response.get_json()
+    assert created["source"] == "action"
+    assert created["id"] == "13"
+
+
 def test_deletes_task(client, project_repo: Path):
     project_id = create_project(client, project_repo)
 
