@@ -61,6 +61,11 @@ test("does not render the removed project subtitle", async () => {
       "action と done の task をまとめて表示します。source 列で所属ファイルを判別できます。",
     ),
   ).not.toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: "Back to TOP" })).not.toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "impl Tasks" })).toHaveAttribute(
+    "href",
+    "/",
+  );
   expect(screen.getByRole("link", { name: "PR #4" })).toHaveAttribute(
     "href",
     "https://github.com/sunb256/impl/pull/4",
