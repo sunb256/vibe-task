@@ -43,8 +43,9 @@ test("renders project cards", async () => {
       "ローカルリポジトリと task YAML を紐づけて、一覧表示と action 編集を行います。",
     ),
   ).not.toBeInTheDocument();
-  expect(screen.getByRole("link", { name: "Open Project" })).toHaveAttribute(
+  expect(screen.getByRole("link", { name: /impl/ })).toHaveAttribute(
     "href",
     "/projects/project-1",
   );
+  expect(screen.queryByRole("link", { name: "Open Project" })).not.toBeInTheDocument();
 });
