@@ -8,17 +8,6 @@ impl_rule: |
  5. KISS/DRY/リーダブルコードの原則を守る
 
 task: 
-  - id: 16
-    url: -
-    title: -
-    action: |
-      Project画面
-      削除ボタンの背景が赤できつい、薄い色でいい
-      PR#xはボタンっぽくして
-      id	source は同じ列にする
-      ex. DONE(xx) みたいなのがいい
-      ACTION/DONE はACTIONはTODOという文字にする
-
   - id: 17
     url: -
     title: -
