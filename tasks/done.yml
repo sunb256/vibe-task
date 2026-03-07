@@ -531,3 +531,8 @@ task:
     title: Docker/docker-compose対応とprojects.yml永続化を追加
     action: |
       Docker/docker-compose 対応をしたい
+  - id: 66
+    url: https://github.com/sunb256/impl/pull/69
+    title: projects.yml欠損時に初期ファイルを自動作成
+    action: |
+      /app/tasks/projects.yml がなかったら新規作成するみたいな方式にしておきたい。dockerで使用するので
