@@ -110,7 +110,7 @@ test("does not render the removed project subtitle", async () => {
     "/",
   );
   const table = screen.getByRole("table");
-  expect(table).toHaveClass("border-spacing-y-2");
+  expect(table).toHaveClass("border-spacing-y-2", "cursor-default");
   expect(createButton.compareDocumentPosition(table) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   const todoToggle = screen.getByRole("button", { name: "TODO(1)" });
   const doneToggle = screen.getByRole("button", { name: "DONE(2)" });
