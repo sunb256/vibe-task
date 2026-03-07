@@ -222,7 +222,7 @@ export function ProjectTasksPage() {
                         type="button"
                         aria-label={`task ${task.id} を編集`}
                         onClick={() => openEditDialog(task)}
-                        className="w-full rounded-md text-left transition hover:bg-zinc-50/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+                        className="w-full text-left transition hover:bg-zinc-50/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
                       >
                         <div className="space-y-1">
                           {showTaskTitle(task.title) ? (
