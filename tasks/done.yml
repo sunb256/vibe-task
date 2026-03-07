@@ -295,3 +295,10 @@ task:
       新規タスクでモーダル表示して
       TASK内容は編集できるようにしたい
       エディタはmonaco editorね
+
+  - id: 32
+    url: https://github.com/sunb256/impl/pull/36
+    title: Project画面のタスク一覧読み込み待ちを短縮
+    action: |-
+      LoadingTaskが長い、もっと早くならないのか
+      データ量は少ないのでもっと早くなるはず
