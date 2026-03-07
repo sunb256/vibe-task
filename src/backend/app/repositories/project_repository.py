@@ -46,6 +46,28 @@ class ProjectRepository:
         self._write_document(document)
         return project
 
+    def update_project(
+        self,
+        project_id: str,
+        name: str,
+        repository_path: str,
+        action_list_path: str,
+        done_list_path: str,
+    ) -> ProjectRecord:
+        document = self._load_document()
+        projects = document.setdefault("projects", [])
+        index = self._find_project_index(projects, project_id)
+        project = ProjectRecord(
+            id=project_id,
+            name=name,
+            repository_path=repository_path,
+            action_list_path=action_list_path,
+            done_list_path=done_list_path,
+        )
+        projects[index] = project.to_dict()
+        self._write_document(document)
+        return project
+
     def export_projects_text(self) -> str:
         document = self._load_document()
         return self._dump_document(document)
@@ -69,6 +91,12 @@ class ProjectRepository:
             if isinstance(value, str) and value.isdigit():
                 max_id = max(max_id, int(value))
         return max_id
+
+    def _find_project_index(self, projects: list[dict], project_id: str) -> int:
+        for index, item in enumerate(projects):
+            if isinstance(item, dict) and str(item.get("id", "")) == project_id:
+                return index
+        raise AppError("project not found", 404)
 
     def _load_document(self) -> dict:
         if not self.projects_file.exists():

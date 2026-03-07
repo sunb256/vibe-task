@@ -35,6 +35,27 @@ class ProjectService:
             done_list_path=done_list_path,
         )
 
+    def update_project(self, project_id: str, payload: dict) -> ProjectRecord:
+        name = self._require_text(payload, "name")
+        repository_path = self._resolve_repository_path(payload)
+        action_list_path = self._require_relative_path(payload, "actionListPath")
+        done_list_path = self._require_relative_path(payload, "doneListPath")
+        preview = ProjectRecord(
+            id=project_id,
+            name=name,
+            repository_path=str(repository_path),
+            action_list_path=action_list_path,
+            done_list_path=done_list_path,
+        )
+        self.task_repository.list_tasks(preview)
+        return self.project_repository.update_project(
+            project_id=project_id,
+            name=name,
+            repository_path=str(repository_path),
+            action_list_path=action_list_path,
+            done_list_path=done_list_path,
+        )
+
     def export_projects_text(self) -> str:
         return self.project_repository.export_projects_text()
 
