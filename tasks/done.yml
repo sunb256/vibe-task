@@ -94,3 +94,12 @@ task:
       プロジェクト画面
       BACK TO TOPのリンクはいらない。
       ヘッダ部のタイトルでTOPページに戻りたい
+  - id: 7
+    url: https://github.com/sunb256/impl/pull/7
+    title: プロジェクト画面のタスク一覧の列順を調整
+    action: |
+      プロジェクト画面
+      id	title	url	source	action	actions
+      でなく
+      id	source  title	action  actions url
+      の順にして

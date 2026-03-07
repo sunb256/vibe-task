@@ -8,16 +8,6 @@ impl_rule: |
  5. KISS/DRY/リーダブルコードの原則を守る
 
 task: 
-  - id: 7
-    url: -
-    title: -
-    action: |
-      プロジェクト画面
-      id	title	url	source	action	actions
-      でなく
-      id	source  title	action  actions url
-      の順にして
-      
   - id: 8
     url: -
     title: -
