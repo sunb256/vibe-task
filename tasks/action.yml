@@ -8,13 +8,6 @@ impl_rule: |
  5. KISS/DRY/リーダブルコードの原則を守る
 
 task: 
-  - id: 22
-    url: -
-    title: -
-    action: |
-      デザインがダサいです。
-      https://vercel.com/ みたいな見た目にしたい
-
   - id: 23
     url: -
     title: -
@@ -63,5 +56,4 @@ task:
       プロジェクト画面
       Project一覧は
       Project 一覧 とスペースを空ける
-
 

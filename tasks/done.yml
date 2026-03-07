@@ -217,3 +217,10 @@ task:
     action: |
       Task YAML ManagerでなくTask Managerとしたい
       Project画面のタイトルは Project: `<プロジェクト名>` としたい
+
+  - id: 22
+    url: https://github.com/sunb256/impl/pull/26
+    title: Vercel風のモノトーンデザインにUIを調整
+    action: |
+      デザインがダサいです。
+      https://vercel.com/ みたいな見た目にしたい
