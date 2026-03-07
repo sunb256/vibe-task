@@ -101,7 +101,7 @@ test("does not render the removed project subtitle", async () => {
     ),
   ).not.toBeInTheDocument();
   expect(screen.queryByRole("link", { name: "Back to TOP" })).not.toBeInTheDocument();
-  const createButton = screen.getByRole("button", { name: "新規タスク" });
+  const createButton = screen.getByRole("button", { name: "新規タスク(N)" });
   expect(createButton).toBeInTheDocument();
   expect(createButton.parentElement).toHaveClass("justify-start");
   expect(screen.queryByRole("button", { name: "新規" })).not.toBeInTheDocument();
@@ -330,19 +330,29 @@ test("creates a new action task from modal editor", async () => {
     expect(screen.getByText("Project: impl")).toBeInTheDocument();
   });
 
-  fireEvent.click(screen.getByRole("button", { name: "新規タスク" }));
+  fireEvent.keyDown(window, { key: "n", ctrlKey: true });
+  expect(screen.getByRole("dialog", { name: "新規タスク" })).toBeInTheDocument();
+  fireEvent.keyDown(window, { key: "Escape" });
+  expect(screen.queryByRole("dialog", { name: "新規タスク" })).not.toBeInTheDocument();
+
+  fireEvent.keyDown(window, { key: "n", altKey: true });
+  expect(screen.getByRole("dialog", { name: "新規タスク" })).toBeInTheDocument();
+  fireEvent.keyDown(window, { key: "Escape" });
+  expect(screen.queryByRole("dialog", { name: "新規タスク" })).not.toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole("button", { name: "新規タスク(N)" }));
   expect(screen.getByRole("dialog", { name: "新規タスク" })).toBeInTheDocument();
   fireEvent.mouseDown(screen.getByRole("dialog", { name: "新規タスク" }).parentElement!);
   expect(screen.queryByRole("dialog", { name: "新規タスク" })).not.toBeInTheDocument();
   expect(createActionTask).not.toHaveBeenCalled();
 
-  fireEvent.click(screen.getByRole("button", { name: "新規タスク" }));
+  fireEvent.click(screen.getByRole("button", { name: "新規タスク(N)" }));
   expect(screen.getByRole("dialog", { name: "新規タスク" })).toBeInTheDocument();
   fireEvent.keyDown(window, { key: "Escape" });
   expect(screen.queryByRole("dialog", { name: "新規タスク" })).not.toBeInTheDocument();
   expect(createActionTask).not.toHaveBeenCalled();
 
-  fireEvent.click(screen.getByRole("button", { name: "新規タスク" }));
+  fireEvent.click(screen.getByRole("button", { name: "新規タスク(N)" }));
   expect(screen.getByRole("dialog", { name: "新規タスク" })).toBeInTheDocument();
   fireEvent.change(screen.getByLabelText("task-editor"), {
     target: { value: "newly created task" },

@@ -8,20 +8,15 @@ impl_rule: |
   5. KISS/DRY/リーダブルコードの原則を守る
 
 task:
-  - id: '37'
-    url: '-'
-    title: '-'
-    action: |-
-      プロジェクト画面
-
-      ショートカットキーを追加したい
-      Ctrl+N: 新規タスク
   - id: '38'
     url: '-'
     title: '-'
-    action: |-
+    action: |
       Task Manager というタイトルに色を付けたい。今はグレーなので殺風景です
       ただしあまり目立たない色がいい
+
+      タイトルのフォントは一回り小さくしたい
+      上下の余白を一回り小さく
   - id: '39'
     url: '-'
     title: '-'
@@ -42,5 +37,26 @@ task:
   - id: '42'
     url: '-'
     title: '-'
-    action: |
+    action: |-
       プロジェクト画面で表にカーソルがあってしまい、大きなカーソルが表示されてしまい気になる
+  - id: '43'
+    url: '-'
+    title: '-'
+    action: |-
+      TOP画面にSetting画面を追加したい
+
+      Setting画面の機能
+
+       - データエクスポート/インポート機能(projects.yml)
+  - id: '44'
+    url: '-'
+    title: '-'
+    action: |-
+      プロジェクト新規作成画面
+
+      New Projectでなく新規作成に名称変更
+
+      編集側とUIを合わせる
+
+       - モーダル領域外でキャンセル
+       - Cancelボタンを右下に

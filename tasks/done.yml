@@ -334,3 +334,12 @@ task:
     title: Project画面のTASK列クリックで編集モーダルを開けるように調整
     action: |
       プロジェクト画面でタスク列のコンテンツを選択したときに編集画面を表示する
+
+  - id: 37
+    url: https://github.com/sunb256/impl/pull/41
+    title: Project画面にCtrl+Nで新規タスク作成ショートカットを追加
+    action: |-
+      プロジェクト画面
+
+      ショートカットキーを追加したい
+      Ctrl+N: 新規タスク

@@ -94,6 +94,29 @@ export function ProjectTasksPage() {
     setIsCreateOpen(true);
   }
 
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.repeat || !isCreateShortcut(event)) {
+        return;
+      }
+      if (isCreateOpen || isEditOpen || isCreating || isEditing) {
+        return;
+      }
+      if (isEditableTarget(event.target)) {
+        return;
+      }
+      event.preventDefault();
+      setCreateError("");
+      setNewTaskAction(defaultTaskAction);
+      setIsCreateOpen(true);
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isCreateOpen, isEditOpen, isCreating, isEditing]);
+
   function closeCreateDialog() {
     if (isCreating) {
       return;
@@ -172,7 +195,7 @@ export function ProjectTasksPage() {
       <section className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
         <div className="mb-4 flex items-center justify-start gap-2">
           <PrimaryButton type="button" onClick={openCreateDialog} disabled={isCreating}>
-            新規タスク
+            新規タスク(N)
           </PrimaryButton>
           <button
             type="button"
@@ -427,4 +450,23 @@ function compareTaskIdDesc(left: TaskRecord, right: TaskRecord) {
     return rightId - leftId;
   }
   return right.id.localeCompare(left.id, undefined, { numeric: true, sensitivity: "base" });
+}
+
+function isCreateShortcut(event: KeyboardEvent) {
+  const key = event.key.toLowerCase();
+  if (key !== "n") {
+    return false;
+  }
+  return event.altKey || event.ctrlKey || event.metaKey;
+}
+
+function isEditableTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+  const tag = target.tagName.toLowerCase();
+  if (tag === "input" || tag === "textarea" || tag === "select") {
+    return true;
+  }
+  return target.isContentEditable;
 }
