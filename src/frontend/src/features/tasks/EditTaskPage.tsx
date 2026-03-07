@@ -68,14 +68,14 @@ export function EditTaskPage() {
       actions={
         <Link
           to={`/projects/${projectId}`}
-          className="inline-flex rounded-md border border-[var(--border)] px-4 py-2 text-sm font-semibold text-[var(--accent)]"
+          className="inline-flex rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
         >
           Back to Project
         </Link>
       }
     >
       <section className="grid gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
-        <aside className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-[0_18px_50px_rgba(31,43,46,0.08)] backdrop-blur">
+        <aside className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-5 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
           {task ? (
             <dl className="grid gap-4 text-sm">
               <MetaRow label="id" value={task.id} />
@@ -87,7 +87,7 @@ export function EditTaskPage() {
           {error ? <Notice tone="error" message={error} /> : null}
           {isLoading ? <Notice tone="neutral" message="Loading task..." /> : null}
         </aside>
-        <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4 shadow-[0_18px_50px_rgba(31,43,46,0.08)] backdrop-blur">
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
           <Editor
             height="68vh"
             language="markdown"
@@ -121,7 +121,7 @@ type MetaRowProps = {
 
 function MetaRow(props: MetaRowProps) {
   return (
-    <div className="rounded-md border border-[var(--border)] bg-white px-4 py-3">
+    <div className="rounded-lg border border-[var(--border)] bg-white px-4 py-3">
       <dt className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
         {props.label}
       </dt>

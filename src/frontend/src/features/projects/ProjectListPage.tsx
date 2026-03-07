@@ -55,7 +55,7 @@ export function ProjectListPage() {
           <PrimaryButton onClick={() => setIsDialogOpen(true)}>新規プロジェクト</PrimaryButton>
         }
       >
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {error ? <Notice tone="error" message={error} /> : null}
           {isLoading ? <Notice tone="neutral" message="Loading projects..." /> : null}
           {!error && !isLoading && projects.length === 0 ? (
@@ -64,7 +64,7 @@ export function ProjectListPage() {
           {projects.map((project) => (
             <article
               key={project.id}
-              className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 shadow-[0_18px_50px_rgba(31,43,46,0.08)] backdrop-blur"
+              className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-5 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_1px_0_rgba(9,9,11,0.05),0_18px_42px_rgba(9,9,11,0.12)]"
             >
               <div className="space-y-3">
                 <div>
@@ -85,7 +85,7 @@ export function ProjectListPage() {
                 </dl>
                 <Link
                   to={`/projects/${project.id}`}
-                  className="inline-flex rounded-md border border-[var(--border)] px-4 py-2 text-sm font-semibold text-[var(--accent)] transition hover:border-[var(--accent)] hover:bg-[var(--accent)]/8"
+                  className="inline-flex rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
                 >
                   Open Project
                 </Link>

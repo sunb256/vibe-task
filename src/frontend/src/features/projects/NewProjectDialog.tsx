@@ -37,12 +37,12 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-10 flex items-center justify-center bg-slate-950/35 px-4 py-8">
+    <div className="fixed inset-0 z-10 flex items-center justify-center bg-black/45 px-4 py-8 backdrop-blur-[2px]">
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="new-project-title"
-        className="w-full max-w-2xl rounded-lg border border-[var(--border)] bg-[var(--panel-strong)] p-6 shadow-[0_24px_80px_rgba(31,43,46,0.18)]"
+        className="w-full max-w-2xl rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-6 shadow-[0_1px_0_rgba(9,9,11,0.06),0_24px_70px_rgba(9,9,11,0.28)]"
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
@@ -56,7 +56,7 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md border border-[var(--border)] px-3 py-1 text-sm"
+            className="rounded-lg border border-[var(--border)] bg-white px-3 py-1 text-sm text-[var(--muted)] transition hover:text-[var(--ink)]"
           >
             Close
           </button>
