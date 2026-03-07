@@ -148,6 +148,41 @@ def test_updates_project_with_env_var_path(
     assert tasks == []
 
 
+def test_deletes_project(client, project_repo: Path):
+    first = client.post(
+        "/api/projects",
+        json={
+            "name": "impl-1",
+            "repositoryPath": str(project_repo),
+            "actionListPath": "tasks/action.yml",
+            "doneListPath": "tasks/done.yml",
+        },
+    )
+    second = client.post(
+        "/api/projects",
+        json={
+            "name": "impl-2",
+            "repositoryPath": str(project_repo),
+            "actionListPath": "tasks/action.yml",
+            "doneListPath": "tasks/done.yml",
+        },
+    )
+
+    deleted = client.delete(f"/api/projects/{first.get_json()['id']}")
+
+    assert deleted.status_code == 204
+    listed = client.get("/api/projects")
+    projects = listed.get_json()["projects"]
+    assert [project["id"] for project in projects] == [second.get_json()["id"]]
+
+
+def test_returns_not_found_when_deleting_missing_project(client):
+    response = client.delete("/api/projects/404")
+
+    assert response.status_code == 404
+    assert response.get_json()["error"] == "project not found"
+
+
 def test_reorders_projects(client, project_repo: Path):
     first = client.post(
         "/api/projects",

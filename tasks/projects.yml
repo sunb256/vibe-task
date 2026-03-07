@@ -4,3 +4,8 @@ projects:
     repositoryPath: $HOME/ghq/github.com/sunb256/impl
     actionListPath: tasks/action.yml
     doneListPath: tasks/done.yml
+  - id: '2'
+    name: test
+    repositoryPath: $HOME/ghq/github.com/sunb256/impl
+    actionListPath: tasks/action.yml
+    doneListPath: tasks/done.yml

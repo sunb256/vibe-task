@@ -81,6 +81,13 @@ class ProjectRepository:
         )
         self._write_document(document)
 
+    def delete_project(self, project_id: str) -> None:
+        document = self._load_document()
+        projects = document.setdefault("projects", [])
+        index = self._find_project_index(projects, project_id)
+        del projects[index]
+        self._write_document(document)
+
     def export_projects_text(self) -> str:
         document = self._load_document()
         return self._dump_document(document)

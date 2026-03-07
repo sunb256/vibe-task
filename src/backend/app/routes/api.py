@@ -37,6 +37,13 @@ def update_project(project_id: str):
     return jsonify(project.to_dict())
 
 
+@api_bp.delete("/projects/<project_id>")
+def delete_project(project_id: str):
+    service = ProjectService(_project_repository())
+    service.delete_project(project_id)
+    return "", 204
+
+
 @api_bp.patch("/projects/reorder")
 def reorder_projects():
     payload = request.get_json(silent=True)

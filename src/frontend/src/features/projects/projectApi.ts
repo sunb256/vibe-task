@@ -27,6 +27,12 @@ export function updateProject(projectId: string, payload: ProjectFormState) {
   });
 }
 
+export function deleteProject(projectId: string) {
+  return apiFetch<void>(`/api/projects/${projectId}`, {
+    method: "DELETE",
+  });
+}
+
 export function reorderProjects(sourceId: string, targetId: string) {
   return apiFetch<void>("/api/projects/reorder", {
     method: "PATCH",

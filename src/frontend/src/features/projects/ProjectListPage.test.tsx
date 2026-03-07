@@ -44,6 +44,7 @@ test("renders project cards", async () => {
   expect(screen.getByRole("button", { name: "新規プロジェクト" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Setting" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "編集" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "削除" })).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "NEW" })).not.toBeInTheDocument();
   expect(
     screen.queryByText(
@@ -92,6 +93,86 @@ test("renders project cards", async () => {
   expect(screen.getByRole("dialog", { name: "プロジェクト編集 - #project-1" })).toBeInTheDocument();
   expect(screen.getByDisplayValue("impl")).toBeInTheDocument();
   expect(screen.getByDisplayValue("/tmp/impl")).toBeInTheDocument();
+});
+
+test("deletes a project from the top page card", async () => {
+  const fetchMock = vi
+    .spyOn(globalThis, "fetch")
+    .mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          projects: [
+            {
+              id: "project-1",
+              name: "impl",
+              repositoryPath: "/tmp/impl",
+              actionListPath: "tasks/action.yml",
+              doneListPath: "tasks/done.yml",
+            },
+          ],
+        }),
+      ),
+    )
+    .mockResolvedValueOnce(new Response(null, { status: 204 }))
+    .mockResolvedValueOnce(new Response(JSON.stringify({ projects: [] })));
+  const confirmMock = vi.spyOn(window, "confirm").mockReturnValue(true);
+
+  render(
+    <MemoryRouter>
+      <ProjectListPage />
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("impl")).toBeInTheDocument();
+  });
+
+  fireEvent.click(screen.getByRole("button", { name: "削除" }));
+
+  expect(confirmMock).toHaveBeenCalledTimes(1);
+  await waitFor(() => {
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/projects/project-1",
+      expect.objectContaining({ method: "DELETE" }),
+    );
+  });
+  await waitFor(() => {
+    expect(screen.getByText("Project はまだ登録されていません。")).toBeInTheDocument();
+  });
+});
+
+test("does not call delete api when deletion is canceled", async () => {
+  const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+    new Response(
+      JSON.stringify({
+        projects: [
+          {
+            id: "project-1",
+            name: "impl",
+            repositoryPath: "/tmp/impl",
+            actionListPath: "tasks/action.yml",
+            doneListPath: "tasks/done.yml",
+          },
+        ],
+      }),
+    ),
+  );
+  vi.spyOn(window, "confirm").mockReturnValue(false);
+
+  render(
+    <MemoryRouter>
+      <ProjectListPage />
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("impl")).toBeInTheDocument();
+  });
+
+  fireEvent.click(screen.getByRole("button", { name: "削除" }));
+
+  expect(fetchMock).toHaveBeenCalledTimes(1);
 });
 
 test("reorders project cards by drag and drop", async () => {
