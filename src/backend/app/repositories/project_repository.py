@@ -1,5 +1,4 @@
 from pathlib import Path
-from uuid import uuid4
 
 from ruamel.yaml import YAML
 
@@ -33,16 +32,33 @@ class ProjectRepository:
         done_list_path: str,
     ) -> ProjectRecord:
         document = self._load_document()
+        projects = document.setdefault("projects", [])
         project = ProjectRecord(
-            id=uuid4().hex,
+            id=self._next_project_id(projects),
             name=name,
             repository_path=repository_path,
             action_list_path=action_list_path,
             done_list_path=done_list_path,
         )
-        document.setdefault("projects", []).append(project.to_dict())
+        projects.append(project.to_dict())
         self._write_document(document)
         return project
+
+    def _next_project_id(self, projects: list[dict]) -> str:
+        return str(self._max_project_id(projects) + 1)
+
+    def _max_project_id(self, projects: list[dict]) -> int:
+        max_id = 0
+        for item in projects:
+            if not isinstance(item, dict):
+                continue
+            value = item.get("id")
+            if isinstance(value, int):
+                max_id = max(max_id, value)
+                continue
+            if isinstance(value, str) and value.isdigit():
+                max_id = max(max_id, int(value))
+        return max_id
 
     def _load_document(self) -> dict:
         if not self.projects_file.exists():
