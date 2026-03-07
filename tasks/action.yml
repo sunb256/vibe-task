@@ -8,13 +8,6 @@ impl_rule: |
  5. KISS/DRY/リーダブルコードの原則を守る
 
 task: 
-  - id: 19
-    url: -
-    title: -
-    action: |
-      Project画面
-      DONE側はID降順に表示する
-      
   - id: 20
     url: -
     title: -

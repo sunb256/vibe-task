@@ -78,6 +78,8 @@ export function ProjectTasksPage() {
     }
   }
 
+  const orderedTasks = orderTasks(tasks);
+
   return (
     <PageFrame
       title={
@@ -97,10 +99,10 @@ export function ProjectTasksPage() {
         </div>
         {error ? <Notice tone="error" message={error} /> : null}
         {isLoading ? <Notice tone="neutral" message="Loading tasks..." /> : null}
-        {!error && !isLoading && tasks.length === 0 ? (
+        {!error && !isLoading && orderedTasks.length === 0 ? (
           <Notice tone="neutral" message="task は見つかりませんでした。" />
         ) : null}
-        {!isLoading && tasks.length > 0 ? (
+        {!isLoading && orderedTasks.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="min-w-full border-separate border-spacing-y-3 text-left text-sm">
               <thead>
@@ -112,7 +114,7 @@ export function ProjectTasksPage() {
                 </tr>
               </thead>
               <tbody>
-                {tasks.map((task) => (
+                {orderedTasks.map((task) => (
                   <tr key={`${task.source}-${task.id}`}>
                     <td className="rounded-l-md border-y border-l border-[var(--border)] bg-white px-3 py-4 text-[var(--muted)]">
                       <span
@@ -227,4 +229,19 @@ function sourceLabel(source: TaskRecord["source"]) {
 
 function sourceTag(task: TaskRecord) {
   return `${sourceLabel(task.source)}(${task.id})`;
+}
+
+function orderTasks(tasks: TaskRecord[]) {
+  const actionTasks = tasks.filter((task) => task.source === "action");
+  const doneTasks = tasks.filter((task) => task.source === "done").sort(compareTaskIdDesc);
+  return [...actionTasks, ...doneTasks];
+}
+
+function compareTaskIdDesc(left: TaskRecord, right: TaskRecord) {
+  const leftId = Number(left.id);
+  const rightId = Number(right.id);
+  if (Number.isFinite(leftId) && Number.isFinite(rightId)) {
+    return rightId - leftId;
+  }
+  return right.id.localeCompare(left.id, undefined, { numeric: true, sensitivity: "base" });
 }

@@ -47,9 +47,17 @@ test("does not render the removed project subtitle", async () => {
         projectId: "project-1",
         source: "done",
         id: "2",
-        title: "done-title",
+        title: "done-title-2",
         url: "-",
-        action: "done task",
+        action: "done task 2",
+      },
+      {
+        projectId: "project-1",
+        source: "done",
+        id: "10",
+        title: "done-title-10",
+        url: "-",
+        action: "done task 10",
       },
     ],
   });
@@ -91,20 +99,22 @@ test("does not render the removed project subtitle", async () => {
   );
   expect(screen.getByRole("link", { name: "PR#4" })).toHaveClass("rounded-md");
   const editLinks = screen.getAllByRole("link", { name: "編集" });
-  expect(editLinks).toHaveLength(2);
+  expect(editLinks).toHaveLength(3);
   expect(editLinks[0]).toHaveAttribute("href", "/projects/project-1/tasks/action/1/edit");
-  expect(editLinks[1]).toHaveAttribute("href", "/projects/project-1/tasks/done/2/edit");
-  expect(screen.getAllByRole("button", { name: "削除" })).toHaveLength(2);
+  expect(editLinks[1]).toHaveAttribute("href", "/projects/project-1/tasks/done/10/edit");
+  expect(editLinks[2]).toHaveAttribute("href", "/projects/project-1/tasks/done/2/edit");
+  expect(screen.getAllByRole("button", { name: "削除" })).toHaveLength(3);
   expect(editLinks[0]).toHaveClass("w-20");
   expect(screen.getAllByRole("button", { name: "削除" })[0]).toHaveClass("w-20");
   const rows = screen.getAllByRole("row");
   expect(within(rows[1]).queryByText("-")).not.toBeInTheDocument();
-  expect(within(rows[2]).getByText("done-title")).toBeInTheDocument();
+  expect(within(rows[2]).getByText("done-title-10")).toBeInTheDocument();
+  expect(within(rows[3]).getByText("done-title-2")).toBeInTheDocument();
   expect(screen.getByText("TODO(1)", { selector: "span" })).toHaveClass(
     "bg-amber-100",
     "text-amber-700",
   );
-  expect(screen.getByText("DONE(2)", { selector: "span" })).toHaveClass(
+  expect(screen.getByText("DONE(10)", { selector: "span" })).toHaveClass(
     "bg-emerald-100",
     "text-emerald-700",
   );

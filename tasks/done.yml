@@ -195,3 +195,10 @@ task:
       TOP画面
       Projectsというタイトル名でなくProject一覧としたい
       NEWボタンでなくて新規プロジェクトというボタンにしたい
+
+  - id: 19
+    url: https://github.com/sunb256/impl/pull/23
+    title: Project画面のDONEタスク表示をID降順に変更
+    action: |
+      Project画面
+      DONE側はID降順に表示する
