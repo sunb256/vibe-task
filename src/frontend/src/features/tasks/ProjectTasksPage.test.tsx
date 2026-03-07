@@ -103,7 +103,7 @@ test("does not render the removed project subtitle", async () => {
   expect(screen.queryByRole("link", { name: "Back to TOP" })).not.toBeInTheDocument();
   const createButton = screen.getByRole("button", { name: "新規タスク(N)" });
   expect(createButton).toBeInTheDocument();
-  expect(createButton.parentElement).toHaveClass("justify-start");
+  expect(createButton.parentElement).toHaveClass("justify-start", "pl-2");
   expect(screen.queryByRole("button", { name: "新規" })).not.toBeInTheDocument();
   expect(screen.getByRole("link", { name: "Project: impl" })).toHaveAttribute(
     "href",
