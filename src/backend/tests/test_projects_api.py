@@ -1,6 +1,17 @@
 from pathlib import Path
 
 
+def test_creates_projects_file_when_missing(client, projects_file: Path):
+    assert not projects_file.exists()
+
+    response = client.get("/api/projects")
+
+    assert response.status_code == 200
+    assert response.get_json()["projects"] == []
+    assert projects_file.exists()
+    assert "projects" in projects_file.read_text(encoding="utf-8")
+
+
 def test_create_and_list_projects(client, project_repo: Path):
     response = client.post(
         "/api/projects",
