@@ -1,4 +1,5 @@
 projects:
+  - id: 1
     name: impl
     repositoryPath: /home/sunb/ghq/github.com/sunb256/impl
     actionListPath: tasks/action.yml
