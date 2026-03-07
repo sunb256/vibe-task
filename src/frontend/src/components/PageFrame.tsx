@@ -18,11 +18,11 @@ export function PageFrame(props: PageFrameProps) {
         <header className="mb-4 flex flex-col gap-5 rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] px-6 py-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_18px_40px_rgba(9,9,11,0.08)] md:flex-row md:items-end md:justify-between">
           <div className="space-y-2">
             {eyebrow ? (
-              <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-sky-700/60">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-sky-700/60">
                 {eyebrow}
               </p>
             ) : null}
-            <h1 className="text-3xl font-semibold tracking-[-0.02em]">{title}</h1>
+            <h1 className="text-2xl font-semibold tracking-[-0.02em]">{title}</h1>
             {subtitle ? (
               <p className="max-w-2xl text-sm leading-6 text-[var(--muted)]">
                 {subtitle}

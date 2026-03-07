@@ -36,8 +36,10 @@ test("renders project cards", async () => {
   });
   const taskManagerTitle = screen.getByText("Task Manager");
   expect(taskManagerTitle).toBeInTheDocument();
-  expect(taskManagerTitle).toHaveClass("text-[10px]", "text-sky-700/60");
-  expect(screen.getByRole("heading", { level: 1, name: "Project 一覧" })).toBeInTheDocument();
+  expect(taskManagerTitle).toHaveClass("text-[11px]", "text-sky-700/60");
+  const pageTitle = screen.getByRole("heading", { level: 1, name: "Project 一覧" });
+  expect(pageTitle).toBeInTheDocument();
+  expect(pageTitle).toHaveClass("text-2xl");
   expect(screen.getByRole("button", { name: "新規プロジェクト" })).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "NEW" })).not.toBeInTheDocument();
   expect(
