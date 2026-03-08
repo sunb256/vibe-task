@@ -232,7 +232,7 @@ export function ProjectListPage() {
           </div>
         }
       >
-        <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        <section className="space-y-3">
           {error ? <Notice tone="error" message={error} /> : null}
           {isLoading ? <Notice tone="neutral" message="Loading projects..." /> : null}
           {!error && !isLoading && projects.length === 0 ? (
@@ -251,24 +251,24 @@ export function ProjectListPage() {
               role="link"
               tabIndex={0}
               aria-label={`${project.name} を開く`}
-              className={`h-full cursor-pointer rounded-xl border bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)] transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_1px_0_rgba(9,9,11,0.05),0_18px_42px_rgba(9,9,11,0.12)] ${
+              className={`cursor-pointer rounded-xl border bg-[var(--panel-strong)] px-4 py-3 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)] transition hover:border-slate-300 hover:bg-zinc-50/40 hover:shadow-[0_1px_0_rgba(9,9,11,0.05),0_18px_42px_rgba(9,9,11,0.12)] ${
                 dropProjectId === project.id && dragProjectId !== project.id
                   ? "border-[var(--accent)] ring-2 ring-[var(--accent)]/30"
                   : "border-[var(--border)]"
               }`}
             >
-              <div className="block rounded-lg">
-                <div>
-                  <h2 className="flex items-center gap-2 text-xl font-semibold">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <h2 className="flex items-center gap-2 text-base font-semibold">
                     <img
                       src="/assets/images/code-xml.svg"
                       alt=""
                       aria-hidden="true"
-                      className="h-5 w-5 shrink-0 mt-[3px] text-[var(--muted)]"
+                      className="mt-[2px] h-5 w-5 shrink-0 text-[var(--muted)]"
                     />
-                    <span>{project.name}</span>
+                    <span className="truncate">{project.name}</span>
                   </h2>
-                  <p className="mt-3 pl-1 flex items-start gap-2 break-all text-sm text-[var(--muted)]">
+                  <p className="mt-2 pl-1 flex items-start gap-2 break-all text-sm text-[var(--muted)]">
                     <img
                       src="/assets/images/git-branch.svg"
                       alt=""
@@ -278,29 +278,29 @@ export function ProjectListPage() {
                     <span>{project.repositoryPath}</span>
                   </p>
                 </div>
-              </div>
-              <div className="mt-4 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    openEditDialog(project);
-                  }}
-                  className="rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
-                >
-                  編集
-                </button>
-                <button
-                  type="button"
-                  disabled={isDeleting}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    void handleDelete(project);
-                  }}
-                  className="rounded-lg border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-700 transition hover:border-rose-300 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  削除
-                </button>
+                <div className="flex shrink-0 justify-end gap-2 sm:pt-1">
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      openEditDialog(project);
+                    }}
+                    className="rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
+                  >
+                    編集
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isDeleting}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      void handleDelete(project);
+                    }}
+                    className="rounded-lg border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-700 transition hover:border-rose-300 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    削除
+                  </button>
+                </div>
               </div>
             </article>
           ))}

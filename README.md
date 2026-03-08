@@ -46,3 +46,10 @@ docker compose up --build -d
     - `repositoryPath`
       - `$HOME/ghq/github.com/...` 
       - `$HOME/ghq/gitlab.com/...` 
+
+
+## Misc
+
+### icons
+
+ - [Lucide](https://lucide.dev/)

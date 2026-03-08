@@ -546,3 +546,9 @@ task:
     title: 背景の色合いの彩度をもう少し落とす
     action: |
       背景の色合いの彩度をもう少し落としたい
+  - id: 69
+    url: https://github.com/sunb256/vibe-task/pull/73
+    title: TOP画面のProject一覧をリスト形式に変更
+    action: |
+      TOP画面
+      Project一覧はカードタイプでなくリスト形式にしたい。数が増えてきたら見にくいので
