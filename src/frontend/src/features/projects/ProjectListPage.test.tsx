@@ -77,7 +77,9 @@ test("renders project list", async () => {
   expect(screen.queryByRole("link", { name: "Open Project" })).not.toBeInTheDocument();
 
   fireEvent.click(screen.getByRole("button", { name: "新規プロジェクト" }));
-  expect(screen.getByRole("dialog", { name: "新規作成" })).toBeInTheDocument();
+  const createDialog = screen.getByRole("dialog", { name: "新規作成" });
+  expect(createDialog).toBeInTheDocument();
+  expect(createDialog).toHaveClass("max-w-5xl");
   expect(
     screen.queryByText("repositoryPath は実在するリポジトリのディレクトリを指定します。"),
   ).not.toBeInTheDocument();
@@ -102,7 +104,9 @@ test("renders project list", async () => {
   expect(screen.queryByRole("dialog", { name: "新規作成" })).not.toBeInTheDocument();
 
   fireEvent.click(screen.getByRole("button", { name: "Setting" }));
-  expect(screen.getByRole("dialog", { name: "Setting" })).toBeInTheDocument();
+  const settingsDialog = screen.getByRole("dialog", { name: "Setting" });
+  expect(settingsDialog).toBeInTheDocument();
+  expect(settingsDialog).toHaveClass("max-w-5xl");
   expect(screen.getByRole("button", { name: "projects.yml をエクスポート" })).toBeInTheDocument();
   expect(screen.queryByText("projects.yml を読み込んで置き換えます。")).not.toBeInTheDocument();
   expect(screen.getByRole("button", { name: "インポート" })).toBeDisabled();
@@ -117,7 +121,9 @@ test("renders project list", async () => {
   expect(screen.queryByRole("dialog", { name: "Setting" })).not.toBeInTheDocument();
 
   fireEvent.click(screen.getByRole("button", { name: "編集" }));
-  expect(screen.getByRole("dialog", { name: "プロジェクト編集 - #project-1" })).toBeInTheDocument();
+  const editDialog = screen.getByRole("dialog", { name: "プロジェクト編集 - #project-1" });
+  expect(editDialog).toBeInTheDocument();
+  expect(editDialog).toHaveClass("max-w-5xl");
   expect(screen.getByDisplayValue("impl")).toBeInTheDocument();
   expect(screen.getByDisplayValue("/tmp/impl")).toBeInTheDocument();
 });
