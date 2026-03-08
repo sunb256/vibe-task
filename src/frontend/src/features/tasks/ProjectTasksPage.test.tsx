@@ -187,8 +187,16 @@ test("does not render the removed project subtitle", async () => {
   expect(screen.getByText("first task")).toHaveClass("text-black");
   fireEvent.click(screen.getByText("TODO #1", { selector: "span" }));
   expect(screen.getByRole("dialog", { name: "編集 - #1" })).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "更新" })).toHaveClass("w-[4.5rem]");
-  expect(screen.getByRole("button", { name: "Cancel" })).toHaveClass("w-[4.5rem]");
+  expect(screen.getByRole("button", { name: "更新" })).toHaveClass(
+    "min-w-[4.5rem]",
+    "whitespace-nowrap",
+    "bg-[var(--accent)]",
+    "text-white",
+  );
+  expect(screen.getByRole("button", { name: "Cancel" })).toHaveClass(
+    "min-w-[4.5rem]",
+    "whitespace-nowrap",
+  );
   fireEvent.keyDown(window, { key: "Escape" });
   expect(screen.queryByRole("dialog", { name: "編集 - #1" })).not.toBeInTheDocument();
   const taskCellButton = screen.getByRole("button", { name: "task 1 を編集" });
@@ -460,8 +468,16 @@ test("creates a new action task from modal editor", async () => {
   fireEvent.keyDown(window, { key: "n", ctrlKey: true });
   expect(screen.getByRole("dialog", { name: "新規タスク" })).toBeInTheDocument();
   expect(screen.getByLabelText("task-editor")).toHaveFocus();
-  expect(screen.getByRole("button", { name: "新規作成" })).toHaveClass("w-[4.5rem]");
-  expect(screen.getByRole("button", { name: "Cancel" })).toHaveClass("w-[4.5rem]");
+  expect(screen.getByRole("button", { name: "新規作成" })).toHaveClass(
+    "min-w-[4.5rem]",
+    "whitespace-nowrap",
+    "bg-[var(--accent)]",
+    "text-white",
+  );
+  expect(screen.getByRole("button", { name: "Cancel" })).toHaveClass(
+    "min-w-[4.5rem]",
+    "whitespace-nowrap",
+  );
   expect(screen.getByLabelText("task-editor")).toHaveValue("");
   expect(screen.getByLabelText("task-editor")).toHaveAttribute("data-edit-context", "false");
   fireEvent.keyDown(window, { key: "Escape" });

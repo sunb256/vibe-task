@@ -2,6 +2,7 @@ import Editor from "@monaco-editor/react";
 import { type FormEvent, type MouseEvent, useEffect, useRef } from "react";
 
 import { Notice } from "../../components/Notice";
+import { PrimaryButton } from "../../components/PrimaryButton";
 
 type NewTaskDialogProps = {
   isOpen: boolean;
@@ -168,13 +169,13 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
           </div>
           {error ? <Notice tone="error" message={error} /> : null}
           <div className="flex justify-end gap-2">
-            <button type="submit" disabled={isSaving} className={dialogButtonClass()}>
+            <PrimaryButton type="submit" disabled={isSaving} className={dialogSubmitButtonClass()}>
               {isSaving ? submittingLabel : submitLabel}
-            </button>
+            </PrimaryButton>
             <button
               type="button"
               onClick={onClose}
-              className={dialogButtonClass()}
+              className={dialogCancelButtonClass()}
             >
               Cancel
             </button>
@@ -189,6 +190,10 @@ function isSaveShortcut(event: KeyboardEvent) {
   return (event.ctrlKey || event.metaKey) && event.key === "Enter";
 }
 
-function dialogButtonClass() {
-  return "inline-flex h-9 w-[4.5rem] items-center justify-center rounded-md border border-[var(--border)] bg-white px-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60";
+function dialogSubmitButtonClass() {
+  return "h-9 min-w-[4.5rem] whitespace-nowrap px-3";
+}
+
+function dialogCancelButtonClass() {
+  return "inline-flex h-9 min-w-[4.5rem] items-center justify-center whitespace-nowrap rounded-md border border-[var(--border)] bg-white px-3 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60";
 }

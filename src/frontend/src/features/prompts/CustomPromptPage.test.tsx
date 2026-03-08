@@ -140,8 +140,16 @@ test("edits prompt content in modal editor", async () => {
   await waitFor(() => {
     expect(screen.getByRole("dialog", { name: "編集 - alpha.md" })).toBeInTheDocument();
   });
-  expect(screen.getByRole("button", { name: "更新" })).toHaveClass("w-[4.5rem]");
-  expect(screen.getByRole("button", { name: "Cancel" })).toHaveClass("w-[4.5rem]");
+  expect(screen.getByRole("button", { name: "更新" })).toHaveClass(
+    "min-w-[4.5rem]",
+    "whitespace-nowrap",
+    "bg-[var(--accent)]",
+    "text-white",
+  );
+  expect(screen.getByRole("button", { name: "Cancel" })).toHaveClass(
+    "min-w-[4.5rem]",
+    "whitespace-nowrap",
+  );
 
   fireEvent.change(screen.getByLabelText("task-editor"), {
     target: { value: "# Updated\n" },
