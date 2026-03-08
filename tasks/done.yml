@@ -687,3 +687,14 @@ task:
     title: Custom Prompt編集で最新内容を確実に再取得するよう修正
     action: |-
       Custom Promptの編集でファイル内容が更新されていない気がする
+  - id: 87
+    url: https://github.com/sunb256/vibe-task/pull/88
+    title: Skills画面を追加しSkillの新規作成・編集機能を実装
+    action: |-
+      SKILLSを新規作成、編集する機能を作りたい
+
+      SKILLSはMarkdownファイルで以下に格納されている
+
+      `$HOME/.codex/skills/<slill名フォルダ>/SKILL.md`
+
+      これを現行のCustom Prompt画面のように、MENUにSkillsを追加して表示できるようにしたい
