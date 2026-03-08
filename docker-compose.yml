@@ -9,7 +9,7 @@ services:
     environment:
       HOME: ${HOME}
     volumes:
-      - ./tasks/projects.yml:/app/tasks/projects.yml
+      - ./tasks:/app/tasks
       - ${HOME}/ghq:${HOME}/ghq
 
   frontend:
