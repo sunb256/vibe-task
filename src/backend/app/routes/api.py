@@ -4,7 +4,9 @@ from flask import Blueprint, current_app, jsonify, request
 
 from app.errors import AppError
 from app.repositories.project_repository import ProjectRepository
+from app.repositories.prompt_repository import PromptRepository
 from app.services.project_service import ProjectService
+from app.services.prompt_service import PromptService
 from app.services.task_service import TaskService
 
 api_bp = Blueprint("api", __name__)
@@ -128,6 +130,48 @@ def swap_task_id(project_id: str, source: str, task_id: str):
     return "", 204
 
 
+@api_bp.get("/prompts")
+def list_prompts():
+    service = PromptService(_prompt_repository())
+    prompts = [
+        {"name": prompt.name, "path": prompt.path}
+        for prompt in service.list_prompts()
+    ]
+    return jsonify({"prompts": prompts})
+
+
+@api_bp.get("/prompts/<path:prompt_name>")
+def get_prompt(prompt_name: str):
+    service = PromptService(_prompt_repository())
+    prompt = service.get_prompt(prompt_name)
+    return jsonify(prompt.to_dict())
+
+
+@api_bp.patch("/prompts/<path:prompt_name>")
+def update_prompt(prompt_name: str):
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        raise AppError("request body must be an object", 400)
+    content = payload.get("content")
+    if not isinstance(content, str):
+        raise AppError("content is required", 400)
+    service = PromptService(_prompt_repository())
+    prompt = service.update_prompt(prompt_name, content)
+    return jsonify(prompt.to_dict())
+
+
+@api_bp.delete("/prompts/<path:prompt_name>")
+def delete_prompt(prompt_name: str):
+    service = PromptService(_prompt_repository())
+    service.delete_prompt(prompt_name)
+    return "", 204
+
+
 def _project_repository() -> ProjectRepository:
     projects_file = Path(current_app.config["PROJECTS_FILE"])
     return ProjectRepository(projects_file)
+
+
+def _prompt_repository() -> PromptRepository:
+    prompts_dir = Path(current_app.config["PROMPTS_DIR"])
+    return PromptRepository(prompts_dir)

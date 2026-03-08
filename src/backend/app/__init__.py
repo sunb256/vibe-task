@@ -8,7 +8,10 @@ from app.routes.api import api_bp
 
 def create_app(test_config: dict[str, object] | None = None) -> Flask:
     app = Flask(__name__)
-    app.config.from_mapping(PROJECTS_FILE=str(_default_projects_file()))
+    app.config.from_mapping(
+        PROJECTS_FILE=str(_default_projects_file()),
+        PROMPTS_DIR=str(_default_prompts_dir()),
+    )
     if test_config:
         app.config.update(test_config)
     register_error_handlers(app)
@@ -18,3 +21,7 @@ def create_app(test_config: dict[str, object] | None = None) -> Flask:
 
 def _default_projects_file() -> Path:
     return Path(__file__).resolve().parents[3] / "tasks" / "projects.yml"
+
+
+def _default_prompts_dir() -> Path:
+    return Path.home() / ".codex" / "prompts"

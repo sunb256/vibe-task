@@ -1,14 +1,75 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
+import { afterEach, vi } from "vitest";
 
 import { CustomPromptPage } from "./CustomPromptPage";
 
-test("renders custom prompt page with global menu", () => {
+vi.mock("@monaco-editor/react", () => ({
+  default: (props: {
+    value?: string;
+    onChange?: (value: string) => void;
+    onMount?: (
+      editor: {
+        focus: () => void;
+        addCommand: () => number;
+        updateOptions: (options: unknown) => void;
+      },
+      monaco: unknown,
+    ) => void;
+    options?: { editContext?: boolean };
+  }) => (
+    <textarea
+      aria-label="task-editor"
+      data-edit-context={String(props.options?.editContext)}
+      value={props.value ?? ""}
+      ref={(node) => {
+        if (!node || !props.onMount) {
+          return;
+        }
+        props.onMount(
+          {
+            focus: () => node.focus(),
+            addCommand: () => 0,
+            updateOptions: () => {},
+          },
+          {
+            KeyMod: { CtrlCmd: 1 },
+            KeyCode: { Enter: 1, Escape: 2 },
+          },
+        );
+      }}
+      onChange={(event) => props.onChange?.(event.target.value)}
+    />
+  ),
+}));
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
+test("renders custom prompt list with menu", async () => {
+  vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+    new Response(
+      JSON.stringify({
+        prompts: [
+          {
+            name: "alpha.md",
+            path: "/tmp/.codex/prompts/alpha.md",
+          },
+        ],
+      }),
+    ),
+  );
+
   render(
     <MemoryRouter initialEntries={["/custom-prompt"]}>
       <CustomPromptPage />
     </MemoryRouter>,
   );
+
+  await waitFor(() => {
+    expect(screen.getByText("alpha.md")).toBeInTheDocument();
+  });
 
   expect(screen.getByRole("link", { name: "Project" })).toHaveAttribute("href", "/");
   expect(screen.getByRole("link", { name: "Custom Prompt" })).toHaveAttribute(
@@ -16,5 +77,116 @@ test("renders custom prompt page with global menu", () => {
     "/custom-prompt",
   );
   expect(screen.getByRole("heading", { level: 1, name: "Custom Prompt" })).toBeInTheDocument();
-  expect(screen.getByText("Custom Prompt 画面は準備中です。")).toBeInTheDocument();
+  expect(screen.getByText("/tmp/.codex/prompts/alpha.md")).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "編集" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "削除" })).toBeInTheDocument();
+});
+
+test("edits prompt content in modal editor", async () => {
+  const fetchMock = vi
+    .spyOn(globalThis, "fetch")
+    .mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          prompts: [{ name: "alpha.md", path: "/tmp/.codex/prompts/alpha.md" }],
+        }),
+      ),
+    )
+    .mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          name: "alpha.md",
+          path: "/tmp/.codex/prompts/alpha.md",
+          content: "# Alpha\n",
+        }),
+      ),
+    )
+    .mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          name: "alpha.md",
+          path: "/tmp/.codex/prompts/alpha.md",
+          content: "# Updated\n",
+        }),
+      ),
+    )
+    .mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          prompts: [{ name: "alpha.md", path: "/tmp/.codex/prompts/alpha.md" }],
+        }),
+      ),
+    );
+
+  render(
+    <MemoryRouter initialEntries={["/custom-prompt"]}>
+      <CustomPromptPage />
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("alpha.md")).toBeInTheDocument();
+  });
+
+  fireEvent.click(screen.getByRole("button", { name: "編集" }));
+  await waitFor(() => {
+    expect(screen.getByRole("dialog", { name: "編集 - alpha.md" })).toBeInTheDocument();
+  });
+
+  fireEvent.change(screen.getByLabelText("task-editor"), {
+    target: { value: "# Updated\n" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "更新" }));
+
+  await waitFor(() => {
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      3,
+      "/api/prompts/alpha.md",
+      expect.objectContaining({
+        method: "PATCH",
+        body: JSON.stringify({ content: "# Updated\n" }),
+      }),
+    );
+  });
+  await waitFor(() => {
+    expect(screen.queryByRole("dialog", { name: "編集 - alpha.md" })).not.toBeInTheDocument();
+  });
+});
+
+test("deletes prompt from list", async () => {
+  const fetchMock = vi
+    .spyOn(globalThis, "fetch")
+    .mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          prompts: [{ name: "alpha.md", path: "/tmp/.codex/prompts/alpha.md" }],
+        }),
+      ),
+    )
+    .mockResolvedValueOnce(new Response(null, { status: 204 }))
+    .mockResolvedValueOnce(new Response(JSON.stringify({ prompts: [] })));
+  vi.spyOn(window, "confirm").mockReturnValue(true);
+
+  render(
+    <MemoryRouter initialEntries={["/custom-prompt"]}>
+      <CustomPromptPage />
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("alpha.md")).toBeInTheDocument();
+  });
+
+  fireEvent.click(screen.getByRole("button", { name: "削除" }));
+
+  await waitFor(() => {
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/prompts/alpha.md",
+      expect.objectContaining({ method: "DELETE" }),
+    );
+  });
+  await waitFor(() => {
+    expect(screen.getByText("Prompt は見つかりませんでした。")).toBeInTheDocument();
+  });
 });

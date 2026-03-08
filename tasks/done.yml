@@ -581,3 +581,18 @@ task:
        - Custom Prompt
 
        としたい
+  - id: 74
+    url: https://github.com/sunb256/vibe-task/pull/77
+    title: Custom Prompt画面に~/.codex/prompts一覧・編集・削除を実装
+    action: |-
+      CustomPrompt編集画面を作りたい
+
+      本システムはcodexのCustomPrompt機能と密接な関係がある
+
+      ~/.codex/prompts/*.md
+
+      ファイルを一覧表示できる画面をCustom Prompt画面に作る
+
+       - Project一覧と同様にリスト表示とする
+       - 編集、削除がある
+       - 開くとモーダルでMarkdown編集ができる
