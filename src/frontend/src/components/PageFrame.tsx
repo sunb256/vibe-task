@@ -15,7 +15,7 @@ export function PageFrame(props: PageFrameProps) {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-[var(--border)] bg-[rgba(252,252,253,0.9)] backdrop-blur">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-zinc-800 bg-[rgba(9,9,11,0.94)] text-white backdrop-blur">
         <div className="mx-auto flex h-10 max-w-6xl items-center px-4 sm:px-6 lg:px-8">
           <nav className="flex items-center gap-4" aria-label="global menu">
             <NavLink to="/" end className={({ isActive }) => menuLinkClass(isActive)}>
@@ -56,7 +56,7 @@ export function PageFrame(props: PageFrameProps) {
 }
 
 function menuLinkClass(isActive: boolean) {
-  const activeTone = "border-[var(--ink)] text-[var(--ink)]";
-  const inactiveTone = "border-transparent text-[var(--muted)] hover:text-[var(--ink)]";
-  return `inline-flex h-6 items-center border-b-2 px-0.5 text-sm font-semibold transition ${isActive ? activeTone : inactiveTone}`;
+  const activeTone = "text-white";
+  const inactiveTone = "text-zinc-400 hover:text-zinc-200";
+  return `inline-flex h-6 items-center px-0.5 text-sm font-semibold transition ${isActive ? activeTone : inactiveTone}`;
 }
