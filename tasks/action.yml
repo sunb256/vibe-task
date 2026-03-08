@@ -8,13 +8,16 @@ impl_rule: |
   5. KISS/DRY/リーダブルコードの原則を守る
 
 task:
-  - id: '75'
+  - id: '76'
+    url: '-'
+    title: '-'
+    action: |-
+      ロゴを作ったので固定ヘッダに使ってさい
+
+      src/frontend/assets/images/vibe_task_logo.png
+  - id: '77'
     url: '-'
     title: '-'
     action: |
-      固定ヘッダを導入したのでヘッダ部はここまで大きな領域をとらなくてよくなった
-      
-      TOP画面は検索と新規プロジェクトSettingは横並びで
-      右寄せは新規プロジェクトSetting
-      
-      ヘッダ部のVIBE TASK表記はなしにしてヘッダと検索を統合するUI
+      CustomPRomptのファイルに使っているアイコンはgitアイコンでなく以下がいいです
+      src/frontend/assets/images/file-text.svg

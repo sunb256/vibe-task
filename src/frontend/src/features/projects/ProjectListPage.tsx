@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { Notice } from "../../components/Notice";
 import { PageFrame } from "../../components/PageFrame";
@@ -209,52 +209,44 @@ export function ProjectListPage() {
   return (
     <>
       <PageFrame
-        eyebrow="VIBE TASK"
-        title={
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 rounded-sm transition hover:text-[var(--muted)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
-          >
-            <img
-              src="/assets/images/logs.svg"
-              alt=""
-              aria-hidden="true"
-              className="h-5 w-5 shrink-0 mt-[3px]"
-            />
-            <span>Project 一覧</span>
-          </Link>
-        }
+        eyebrow={null}
+        headerStyle="plain"
+        title={<span className="inline-flex h-9 items-center pl-1">Project 一覧</span>}
         actions={
-          <div className="flex items-center gap-2">
-            <PrimaryButton onClick={() => setIsDialogOpen(true)}>新規プロジェクト</PrimaryButton>
-            <button
-              type="button"
-              onClick={() => setIsSettingsOpen(true)}
-              className="rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
-            >
-              Setting
-            </button>
+          <div className="flex w-full items-center justify-between gap-2">
+            <div className="relative w-full min-w-48 max-w-64">
+              <img
+                src="/assets/images/search.svg"
+                alt=""
+                aria-hidden="true"
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-65"
+              />
+              <input
+                id="project-search"
+                type="search"
+                aria-label="Search"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Search"
+                className="h-9 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12"
+              />
+            </div>
+            <div className="flex shrink-0 items-center justify-end gap-2">
+              <PrimaryButton className="whitespace-nowrap" onClick={() => setIsDialogOpen(true)}>
+                新規プロジェクト
+              </PrimaryButton>
+              <button
+                type="button"
+                onClick={() => setIsSettingsOpen(true)}
+                className="whitespace-nowrap rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
+              >
+                Setting
+              </button>
+            </div>
           </div>
         }
       >
         <section className="space-y-3">
-          <div className="relative w-full max-w-64">
-            <img
-              src="/assets/images/search.svg"
-              alt=""
-              aria-hidden="true"
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-65"
-            />
-            <input
-              id="project-search"
-              type="search"
-              aria-label="Search"
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder="Search"
-              className="h-9 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-sm outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12"
-            />
-          </div>
           {error ? <Notice tone="error" message={error} /> : null}
           {isLoading ? <Notice tone="neutral" message="Loading projects..." /> : null}
           {!error && !isLoading && projects.length === 0 ? (
@@ -276,7 +268,7 @@ export function ProjectListPage() {
               role="link"
               tabIndex={0}
               aria-label={`${project.name} を開く`}
-              className={`cursor-pointer rounded-xl border bg-[var(--panel-strong)] px-4 py-3 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)] transition hover:border-slate-300 hover:bg-zinc-50/40 hover:shadow-[0_1px_0_rgba(9,9,11,0.05),0_18px_42px_rgba(9,9,11,0.12)] ${
+              className={`cursor-pointer rounded-xl border bg-[var(--panel-strong)] pl-6 pr-4 py-3 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)] transition hover:border-slate-300 hover:bg-zinc-50/40 hover:shadow-[0_1px_0_rgba(9,9,11,0.05),0_18px_42px_rgba(9,9,11,0.12)] ${
                 dropProjectId === project.id && dragProjectId !== project.id
                   ? "border-[var(--accent)] ring-2 ring-[var(--accent)]/30"
                   : "border-[var(--border)]"
@@ -293,7 +285,7 @@ export function ProjectListPage() {
                     />
                     <span className="truncate">{project.name}</span>
                   </h2>
-                  <p className="mt-2 pl-1 flex items-start gap-2 break-all text-sm text-[var(--muted)]">
+                  <p className="mt-2 flex items-start gap-2 break-all text-sm text-[var(--muted)]">
                     <img
                       src="/assets/images/git-branch.svg"
                       alt=""

@@ -596,3 +596,13 @@ task:
        - Project一覧と同様にリスト表示とする
        - 編集、削除がある
        - 開くとモーダルでMarkdown編集ができる
+  - id: 75
+    url: https://github.com/sunb256/vibe-task/pull/79
+    title: TOP画面のヘッダと検索を統合し操作配置を調整
+    action: |-
+      固定ヘッダを導入したのでヘッダ部はここまで大きな領域をとらなくてよくなった
+
+      TOP画面は検索と新規プロジェクトSettingは横並びで
+      右寄せは新規プロジェクトSetting
+
+      ヘッダ部のVIBE TASK表記はなしにしてヘッダと検索を統合するUI
