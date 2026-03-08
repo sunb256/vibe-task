@@ -716,7 +716,7 @@ task:
       検索機能も欲しい
       TOP画面と同様のUI
   - id: 90
-    url: https://github.com/sunb256/vibe-task/pull/90
+    url: https://github.com/sunb256/vibe-task/pull/91
     title: TOP画面とプロジェクト画面でアクティブロゴを表示
     action: |
       TOP画面とプロジェクト画面の時はロゴ画像をアクティブなものを使ってください
