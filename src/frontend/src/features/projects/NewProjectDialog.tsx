@@ -30,10 +30,13 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
     onSubmit,
   } = props;
   const [form, setForm] = useState(defaultProjectForm);
+  const [isNameManual, setIsNameManual] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
-      setForm(initialForm ?? defaultProjectForm);
+      const nextForm = initialForm ?? defaultProjectForm;
+      setForm(nextForm);
+      setIsNameManual(Boolean(nextForm.name.trim()));
     }
   }, [initialForm, isOpen]);
 
@@ -57,6 +60,22 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
     setForm((current) => ({ ...current, [field]: value }));
   }
 
+  function handleNameChange(value: string) {
+    updateField("name", value);
+    setIsNameManual(Boolean(value.trim()));
+  }
+
+  function handleRepoChange(value: string) {
+    setForm((current) => {
+      const next = { ...current, repositoryPath: value };
+      if (isNameManual) {
+        return next;
+      }
+      next.name = inferRepoName(value);
+      return next;
+    });
+  }
+
   return (
     <div
       className="fixed inset-0 z-10 flex items-center justify-center bg-black/45 px-4 py-8 backdrop-blur-[2px]"
@@ -76,19 +95,19 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
           </div>
         </div>
         <form className="grid gap-4" onSubmit={handleSubmit}>
-          <div className="grid gap-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="md:col-span-2">
+              <TextInput
+                label="repositoryPath"
+                autoFocus
+                value={form.repositoryPath}
+                onChange={(event) => handleRepoChange(event.target.value)}
+              />
+            </div>
             <TextInput
               label="name"
-              autoFocus
               value={form.name}
-              onChange={(event) => updateField("name", event.target.value)}
-            />
-            <TextInput
-              label="repositoryPath"
-              value={form.repositoryPath}
-              onChange={(event) =>
-                updateField("repositoryPath", event.target.value)
-              }
+              onChange={(event) => handleNameChange(event.target.value)}
             />
           </div>
           {error ? <Notice tone="error" message={error} /> : null}
@@ -108,4 +127,13 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
       </div>
     </div>
   );
+}
+
+function inferRepoName(repositoryPath: string) {
+  const trimmed = repositoryPath.trim().replace(/[\\/]+$/g, "");
+  if (!trimmed) {
+    return "";
+  }
+  const parts = trimmed.split(/[\\/]/);
+  return parts[parts.length - 1] ?? "";
 }

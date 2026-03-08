@@ -82,7 +82,14 @@ test("renders project list", async () => {
     screen.queryByText("repositoryPath は実在するリポジトリのディレクトリを指定します。"),
   ).not.toBeInTheDocument();
   const repositoryPathInput = screen.getByLabelText("repositoryPath");
-  expect(repositoryPathInput.parentElement?.parentElement).not.toHaveClass("md:grid-cols-2");
+  const nameInput = screen.getByLabelText("name");
+  expect(
+    repositoryPathInput.compareDocumentPosition(nameInput) & Node.DOCUMENT_POSITION_FOLLOWING,
+  ).toBeTruthy();
+  fireEvent.change(repositoryPathInput, { target: { value: "/tmp/auto-name-repo" } });
+  expect(nameInput).toHaveValue("auto-name-repo");
+  expect(repositoryPathInput.parentElement?.parentElement).toHaveClass("md:col-span-2");
+  expect(nameInput.parentElement?.parentElement).toHaveClass("md:grid-cols-2");
   expect(screen.getByRole("button", { name: "プロジェクト作成" })).toBeInTheDocument();
   const cancelButton = screen.getByRole("button", { name: "Cancel" });
   expect(cancelButton).toHaveClass("px-4", "py-2");
