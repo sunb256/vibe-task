@@ -650,7 +650,7 @@ task:
       改良
       $HOME/.codex/prompts/task-next.md
   - id: 82
-    url: https://github.com/sunb256/vibe-task/pull/83
+    url: https://github.com/sunb256/vibe-task/pull/84
     title: モーダル操作ボタン幅とTOP画面操作ボタンUIを統一
     action: |-
       プロジェクト画面、編集モーダルの更新ボタンの幅が狭い
