@@ -200,8 +200,8 @@ test("filters project list incrementally by search query", async () => {
             id: "project-2",
             name: "vibe-task",
             repositoryPath: "/home/user/ghq/vibe-task",
-            actionListPath: "tasks/action.yml",
-            doneListPath: "tasks/done.yml",
+            actionListPath: "custom/action.yml",
+            doneListPath: "custom/done.yml",
           },
         ],
       }),
@@ -226,6 +226,10 @@ test("filters project list incrementally by search query", async () => {
 
   fireEvent.change(searchInput, { target: { value: "not-found" } });
   expect(screen.getByText("検索条件に一致するProjectはありません。")).toBeInTheDocument();
+
+  fireEvent.change(searchInput, { target: { value: "tasks/" } });
+  expect(screen.getByText("impl")).toBeInTheDocument();
+  expect(screen.queryByText("vibe-task")).not.toBeInTheDocument();
 
   fireEvent.change(searchInput, { target: { value: "" } });
   expect(screen.getByText("impl")).toBeInTheDocument();

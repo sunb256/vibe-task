@@ -395,7 +395,14 @@ function filterProjects(projects: Project[], searchQuery: string) {
   }
   return projects.filter((project) => {
     const name = project.name.toLowerCase();
-    const path = project.repositoryPath.toLowerCase();
-    return name.includes(query) || path.includes(query);
+    const repositoryPath = project.repositoryPath.toLowerCase();
+    const actionListPath = project.actionListPath.toLowerCase();
+    const doneListPath = project.doneListPath.toLowerCase();
+    return (
+      name.includes(query) ||
+      repositoryPath.includes(query) ||
+      actionListPath.includes(query) ||
+      doneListPath.includes(query)
+    );
   });
 }
