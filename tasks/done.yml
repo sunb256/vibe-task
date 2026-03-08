@@ -624,7 +624,7 @@ task:
 
       また、Project TOP画面のUIに合わせてほしい(余白とか)
   - id: 78
-    url: https://github.com/sunb256/vibe-task/pull/80
+    url: https://github.com/sunb256/vibe-task/pull/81
     title: Project画面ヘッダをTOP画面準拠に統合しVIBE TASK表記を削除
     action: |-
       Project画面のヘッダ部をTOP画面のUIと合わせたい
