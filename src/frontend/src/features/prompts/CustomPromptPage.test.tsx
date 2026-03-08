@@ -128,7 +128,11 @@ test("edits prompt content in modal editor", async () => {
     expect(screen.getByText("alpha.md")).toBeInTheDocument();
   });
 
-  fireEvent.click(screen.getByRole("button", { name: "編集" }));
+  const row = screen.getByText("alpha.md").closest("article");
+  if (!row) {
+    throw new Error("prompt row is missing");
+  }
+  fireEvent.click(row);
   await waitFor(() => {
     expect(screen.getByRole("dialog", { name: "編集 - alpha.md" })).toBeInTheDocument();
   });

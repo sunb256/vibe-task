@@ -130,7 +130,7 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
         <form className="grid gap-4" onSubmit={handleSubmit}>
           <div className="mt-1 overflow-hidden rounded-md border border-[var(--border)] bg-white">
             <Editor
-              height="40vh"
+              height="52vh"
               language="markdown"
               value={action}
               onChange={(value) => onActionChange(value ?? "")}

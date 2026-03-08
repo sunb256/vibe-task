@@ -113,7 +113,25 @@ export function CustomPromptPage() {
           {prompts.map((prompt) => (
             <article
               key={prompt.name}
-              className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] px-4 py-3 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]"
+              role="button"
+              tabIndex={0}
+              onClick={() => {
+                if (isLoadingEditor) {
+                  return;
+                }
+                void openEditDialog(prompt);
+              }}
+              onKeyDown={(event) => {
+                if (isLoadingEditor) {
+                  return;
+                }
+                if (event.key !== "Enter" && event.key !== " ") {
+                  return;
+                }
+                event.preventDefault();
+                void openEditDialog(prompt);
+              }}
+              className="cursor-pointer rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] px-4 py-3 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)] transition hover:border-slate-300 hover:bg-zinc-50/40"
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
@@ -140,7 +158,10 @@ export function CustomPromptPage() {
                   <button
                     type="button"
                     disabled={isLoadingEditor}
-                    onClick={() => void openEditDialog(prompt)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      void openEditDialog(prompt);
+                    }}
                     className="rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     編集
@@ -148,7 +169,10 @@ export function CustomPromptPage() {
                   <button
                     type="button"
                     disabled={isDeleting}
-                    onClick={() => void handleDelete(prompt)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      void handleDelete(prompt);
+                    }}
                     className="rounded-lg border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-700 transition hover:border-rose-300 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     削除
