@@ -2,7 +2,6 @@ import Editor from "@monaco-editor/react";
 import { type FormEvent, type MouseEvent, useEffect, useRef } from "react";
 
 import { Notice } from "../../components/Notice";
-import { PrimaryButton } from "../../components/PrimaryButton";
 
 type NewTaskDialogProps = {
   isOpen: boolean;
@@ -169,13 +168,13 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
           </div>
           {error ? <Notice tone="error" message={error} /> : null}
           <div className="flex justify-end gap-2">
-            <PrimaryButton type="submit" disabled={isSaving}>
+            <button type="submit" disabled={isSaving} className={dialogButtonClass()}>
               {isSaving ? submittingLabel : submitLabel}
-            </PrimaryButton>
+            </button>
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
+              className={dialogButtonClass()}
             >
               Cancel
             </button>
@@ -188,4 +187,8 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
 
 function isSaveShortcut(event: KeyboardEvent) {
   return (event.ctrlKey || event.metaKey) && event.key === "Enter";
+}
+
+function dialogButtonClass() {
+  return "inline-flex h-9 w-[4.5rem] items-center justify-center rounded-md border border-[var(--border)] bg-white px-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60";
 }

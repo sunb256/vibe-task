@@ -649,3 +649,14 @@ task:
 
       改良
       $HOME/.codex/prompts/task-next.md
+  - id: 82
+    url: https://github.com/sunb256/vibe-task/pull/83
+    title: モーダル操作ボタン幅とTOP画面操作ボタンUIを統一
+    action: |-
+      プロジェクト画面、編集モーダルの更新ボタンの幅が狭い
+
+      プロジェクト画面で使用している編集や削除と同じ幅にして
+      これは新規作成者Cancelも同じにしてください
+
+      TOP画面で使用している新規プロジェクトやSettingも同じUIにしてください
+      CustomPromptで使用しているモーダルのUIも同じ

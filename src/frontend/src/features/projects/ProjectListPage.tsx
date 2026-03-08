@@ -11,7 +11,6 @@ import { useNavigate } from "react-router-dom";
 
 import { Notice } from "../../components/Notice";
 import { PageFrame } from "../../components/PageFrame";
-import { PrimaryButton } from "../../components/PrimaryButton";
 import {
   createProject,
   deleteProject,
@@ -232,9 +231,13 @@ export function ProjectListPage() {
               />
             </div>
             <div className="flex shrink-0 items-center justify-end gap-2">
-              <PrimaryButton className="whitespace-nowrap" onClick={() => setIsDialogOpen(true)}>
+              <button
+                type="button"
+                onClick={() => setIsDialogOpen(true)}
+                className="whitespace-nowrap rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
+              >
                 新規プロジェクト
-              </PrimaryButton>
+              </button>
               <button
                 type="button"
                 onClick={() => setIsSettingsOpen(true)}
