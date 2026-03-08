@@ -552,3 +552,9 @@ task:
     action: |
       TOP画面
       Project一覧はカードタイプでなくリスト形式にしたい。数が増えてきたら見にくいので
+  - id: 70
+    url: '-'
+    title: TOP画面のProject一覧にインクリメンタル検索を追加
+    action: |
+      TOP画面
+      Projectの検索画面が欲しい、インクリメンタル検索がいいです
