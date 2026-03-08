@@ -401,6 +401,34 @@ test("uses cached tasks on revisit before refetch resolves", async () => {
   expect(screen.queryByText("Loading tasks...")).not.toBeInTheDocument();
 });
 
+test("shows empty message when task list is empty", async () => {
+  vi.mocked(fetchProjects).mockResolvedValue({
+    projects: [
+      {
+        id: "project-1",
+        name: "impl",
+        repositoryPath: "/tmp/impl",
+        actionListPath: "tasks/action.yml",
+        doneListPath: "tasks/done.yml",
+      },
+    ],
+  });
+  vi.mocked(fetchTasks).mockResolvedValue({ tasks: [] });
+
+  render(
+    <MemoryRouter initialEntries={["/projects/project-1"]}>
+      <Routes>
+        <Route path="/projects/:projectId" element={<ProjectTasksPage />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("task はありません。")).toBeInTheDocument();
+  });
+  expect(screen.queryByText("task は見つかりませんでした。")).not.toBeInTheDocument();
+});
+
 test("creates a new action task from modal editor", async () => {
   vi.mocked(fetchProjects).mockResolvedValue({
     projects: [
