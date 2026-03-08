@@ -81,7 +81,9 @@ test("renders skills list and global menu", async () => {
   );
   expect(screen.getByRole("link", { name: "Skills" })).toHaveAttribute("href", "/skills");
   expect(screen.getByRole("heading", { level: 1, name: "Skills" })).toBeInTheDocument();
-  expect(screen.getByRole("searchbox", { name: "Search" })).toBeInTheDocument();
+  const searchInput = screen.getByRole("searchbox", { name: "Search" });
+  expect(searchInput).toBeInTheDocument();
+  expect(searchInput).toHaveFocus();
   expect(screen.getByText("$HOME/.codex/skills/alpha/SKILL.md")).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "新規Skill" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "編集" })).toBeInTheDocument();

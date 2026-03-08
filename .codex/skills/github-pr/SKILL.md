@@ -200,7 +200,6 @@ gh pr create \
   --body-file .git/.pr-body.md
 ```
 
-base branch が `main` でない場合は、実際の default branch を使います。
 
 
 ## PR を作らないほうがいいケース

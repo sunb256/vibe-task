@@ -53,6 +53,7 @@ test("renders project list", async () => {
   expect(screen.getByRole("button", { name: "Setting" })).toBeInTheDocument();
   expect(screen.getByRole("searchbox", { name: "Search" })).toBeInTheDocument();
   const searchInput = screen.getByRole("searchbox", { name: "Search" });
+  expect(searchInput).toHaveFocus();
   expect(searchInput.parentElement?.parentElement).toHaveClass("flex", "items-center", "gap-2");
   expect(screen.getByRole("button", { name: "編集" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "削除" })).toBeInTheDocument();
