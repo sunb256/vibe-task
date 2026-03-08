@@ -8,21 +8,24 @@ impl_rule: |
   5. KISS/DRY/リーダブルコードの原則を守る
 
 task:
-  - id: '80'
+  - id: '82'
     url: '-'
     title: '-'
     action: |-
-      TOP画面
-      検索バーは右寄せにして
-  - id: '81'
+      プロジェクト画面、編集モーダルの更新ボタンの幅が狭い
+
+      プロジェクト画面で使用している編集や削除と同じ幅にして
+      これは新規作成者Cancelも同じにしてください
+
+      TOP画面で使用している新規プロジェクトやSettingも同じUIにしてください
+      CustomPromptで使用しているモーダルのUIも同じ
+  - id: '83'
     url: '-'
     title: '-'
-    action: |
-      Custom Promptのファイル表示だが、
-      TOPのリポジトリパスと同様に環境変数表示がいい
-      
-      今
-      /home/sunb/.codex/prompts/task-next.md
-      
-      改良
-      $HOME/.codex/prompts/task-next.md
+    action: |-
+      Project画面
+
+      モーダルのタイトル部の左側に以下のsvgを使って
+
+
+      src/frontend/assets/images/square-check-big.svg
