@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import { Notice } from "../../components/Notice";
 import { PageFrame } from "../../components/PageFrame";
+import { readErrorMessage } from "../../lib/readErrorMessage";
 import { NewTaskDialog } from "../tasks/NewTaskDialog";
 import { deletePrompt, fetchPrompt, fetchPrompts, updatePrompt } from "./promptApi";
 import type { PromptFile, PromptSummary } from "./types";
@@ -31,7 +32,7 @@ export function CustomPromptPage() {
       const response = await fetchPrompts();
       setPrompts(response.prompts);
     } catch (loadError) {
-      setError(readError(loadError, "Prompt 一覧の取得に失敗しました。"));
+      setError(readErrorMessage(loadError, "Prompt 一覧の取得に失敗しました。"));
     } finally {
       setIsLoading(false);
     }
@@ -47,7 +48,7 @@ export function CustomPromptPage() {
       setEditContent(loaded.content);
       setIsEditOpen(true);
     } catch (loadError) {
-      setError(readError(loadError, "Prompt の読み込みに失敗しました。"));
+      setError(readErrorMessage(loadError, "Prompt の読み込みに失敗しました。"));
     } finally {
       setIsLoadingEditor(false);
     }
@@ -78,7 +79,7 @@ export function CustomPromptPage() {
       resetEditor();
       await loadPrompts();
     } catch (saveError) {
-      setEditError(readError(saveError, "Prompt の更新に失敗しました。"));
+      setEditError(readErrorMessage(saveError, "Prompt の更新に失敗しました。"));
     } finally {
       setIsSaving(false);
     }
@@ -95,7 +96,7 @@ export function CustomPromptPage() {
       await deletePrompt(prompt.name);
       await loadPrompts();
     } catch (deleteError) {
-      setError(readError(deleteError, "Prompt の削除に失敗しました。"));
+      setError(readErrorMessage(deleteError, "Prompt の削除に失敗しました。"));
     } finally {
       setIsDeleting(false);
     }
@@ -203,13 +204,6 @@ export function CustomPromptPage() {
       />
     </>
   );
-}
-
-function readError(error: unknown, fallback: string) {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-  return fallback;
 }
 
 function displayPath(path: string) {

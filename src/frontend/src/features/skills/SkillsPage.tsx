@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Notice } from "../../components/Notice";
 import { PageFrame } from "../../components/PageFrame";
 import { PrimaryButton } from "../../components/PrimaryButton";
+import { readErrorMessage } from "../../lib/readErrorMessage";
 import { NewTaskDialog } from "../tasks/NewTaskDialog";
 import { createSkill, deleteSkill, fetchSkill, fetchSkills, updateSkill } from "./skillApi";
 import type { SkillFile, SkillSummary } from "./types";
@@ -35,7 +36,7 @@ export function SkillsPage() {
       const response = await fetchSkills();
       setSkills(response.skills);
     } catch (loadError) {
-      setError(readError(loadError, "Skill 一覧の取得に失敗しました。"));
+      setError(readErrorMessage(loadError, "Skill 一覧の取得に失敗しました。"));
     } finally {
       setIsLoading(false);
     }
@@ -51,7 +52,7 @@ export function SkillsPage() {
       setEditContent(loaded.content);
       setIsEditOpen(true);
     } catch (loadError) {
-      setError(readError(loadError, "Skill の読み込みに失敗しました。"));
+      setError(readErrorMessage(loadError, "Skill の読み込みに失敗しました。"));
     } finally {
       setIsLoadingEditor(false);
     }
@@ -90,7 +91,7 @@ export function SkillsPage() {
       setIsEditOpen(true);
       await loadSkills();
     } catch (createError) {
-      setError(readError(createError, "Skill の作成に失敗しました。"));
+      setError(readErrorMessage(createError, "Skill の作成に失敗しました。"));
     } finally {
       setIsCreating(false);
     }
@@ -111,7 +112,7 @@ export function SkillsPage() {
       resetEditor();
       await loadSkills();
     } catch (saveError) {
-      setEditError(readError(saveError, "Skill の更新に失敗しました。"));
+      setEditError(readErrorMessage(saveError, "Skill の更新に失敗しました。"));
     } finally {
       setIsSaving(false);
     }
@@ -128,7 +129,7 @@ export function SkillsPage() {
       await deleteSkill(skill.name, skill);
       await loadSkills();
     } catch (deleteError) {
-      setError(readError(deleteError, "Skill の削除に失敗しました。"));
+      setError(readErrorMessage(deleteError, "Skill の削除に失敗しました。"));
     } finally {
       setIsDeleting(false);
     }
@@ -277,13 +278,6 @@ export function SkillsPage() {
       />
     </>
   );
-}
-
-function readError(error: unknown, fallback: string) {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-  return fallback;
 }
 
 function displayPath(path: string) {

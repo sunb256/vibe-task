@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import { Notice } from "../../components/Notice";
 import { PageFrame } from "../../components/PageFrame";
 import { PrimaryButton } from "../../components/PrimaryButton";
+import { readErrorMessage } from "../../lib/readErrorMessage";
 import { fetchProjects } from "../projects/projectApi";
 import { NewTaskDialog } from "./NewTaskDialog";
 import type { Project } from "../projects/types";
@@ -71,7 +72,7 @@ export function ProjectTasksPage() {
         }
       } catch (loadError) {
         if (!cancelled) {
-          setError(readError(loadError, "タスク一覧の取得に失敗しました。"));
+          setError(readErrorMessage(loadError, "タスク一覧の取得に失敗しました。"));
           setIsLoading(false);
         }
       }
@@ -92,7 +93,7 @@ export function ProjectTasksPage() {
       await deleteTask(projectId, task.source, task.id);
       await refreshTasks(projectId, setTasks);
     } catch (deleteError) {
-      setError(readError(deleteError, "タスクの削除に失敗しました。"));
+      setError(readErrorMessage(deleteError, "タスクの削除に失敗しました。"));
     }
   }
 
@@ -106,7 +107,7 @@ export function ProjectTasksPage() {
       await swapTaskId(projectId, task.source, task.id, swapWithId);
       await refreshTasks(projectId, setTasks);
     } catch (swapError) {
-      setError(readError(swapError, "task の並び替えに失敗しました。"));
+      setError(readErrorMessage(swapError, "task の並び替えに失敗しました。"));
     } finally {
       setIsSwapping(false);
     }
@@ -178,7 +179,7 @@ export function ProjectTasksPage() {
       setIsCreateOpen(false);
       createButtonRef.current?.focus();
     } catch (createError) {
-      setCreateError(readError(createError, "task の作成に失敗しました。"));
+      setCreateError(readErrorMessage(createError, "task の作成に失敗しました。"));
     } finally {
       setIsCreating(false);
     }
@@ -198,7 +199,7 @@ export function ProjectTasksPage() {
       setEditTaskAction("");
       createButtonRef.current?.focus();
     } catch (saveError) {
-      setEditError(readError(saveError, "task の更新に失敗しました。"));
+      setEditError(readErrorMessage(saveError, "task の更新に失敗しました。"));
     } finally {
       setIsEditing(false);
     }
@@ -373,13 +374,6 @@ export function ProjectTasksPage() {
       />
     </PageFrame>
   );
-}
-
-function readError(error: unknown, fallback: string) {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-  return fallback;
 }
 
 async function readProject(projectId: string) {
