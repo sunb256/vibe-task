@@ -69,8 +69,8 @@ export function PageFrame(props: PageFrameProps) {
             {actions ? <div className="w-full md:flex-1">{actions}</div> : null}
           </header>
           {children}
-          <footer className="mt-6">
-            <hr className="border-0 border-t border-[var(--border)]/70" />
+          <footer className="mt-6 pt-2">
+            <hr className="border-0 border-t border-[var(--border)] opacity-70" />
           </footer>
         </div>
       </main>
