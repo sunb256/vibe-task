@@ -238,17 +238,18 @@ export function ProjectListPage() {
         }
       >
         <section className="space-y-3">
-          <div className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] px-4 py-3">
-            <label className="grid gap-2 text-sm">
-              <span className="font-medium text-[var(--ink)]">Project 検索</span>
-              <input
-                type="search"
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="プロジェクト名 / repositoryPath で絞り込み"
-                className="rounded-lg border border-[var(--border)] bg-white px-4 py-2.5 text-sm shadow-[0_1px_2px_rgba(9,9,11,0.04)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12"
-              />
+          <div className="flex items-center">
+            <label htmlFor="project-search" className="sr-only">
+              Project 検索
             </label>
+            <input
+              id="project-search"
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Project検索"
+              className="h-9 w-full max-w-md rounded-lg border border-[var(--border)] bg-white px-3 text-sm outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12"
+            />
           </div>
           {error ? <Notice tone="error" message={error} /> : null}
           {isLoading ? <Notice tone="neutral" message="Loading projects..." /> : null}
