@@ -82,6 +82,7 @@ test("renders custom prompt list with menu", async () => {
   const row = screen.getByText("alpha.md").closest("article");
   expect(row?.querySelector('img[src="/assets/images/file-text.svg"]')).not.toBeNull();
   expect(row).toHaveClass("pl-6", "pr-4", "py-3");
+  expect(row).toHaveClass("hover:border-amber-200", "hover:bg-amber-50/60");
   expect(screen.getByRole("button", { name: "編集" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "削除" })).toBeInTheDocument();
 });

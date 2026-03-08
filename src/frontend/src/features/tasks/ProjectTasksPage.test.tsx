@@ -178,6 +178,7 @@ test("does not render the removed project subtitle", async () => {
   const rows = screen.getAllByRole("row");
   expect(rows).toHaveLength(2);
   expect(rows[1].querySelector("td")).toHaveClass("py-2", "whitespace-nowrap");
+  expect(rows[1].querySelector("td")).toHaveClass("group-hover:bg-amber-50/70");
   expect(within(rows[1]).queryByText("-")).not.toBeInTheDocument();
   expect(screen.queryByText("done-title-10")).not.toBeInTheDocument();
   expect(screen.queryByText("done-title-2")).not.toBeInTheDocument();

@@ -265,7 +265,7 @@ export function ProjectListPage() {
               role="link"
               tabIndex={0}
               aria-label={`${project.name} を開く`}
-              className={`cursor-pointer rounded-xl border bg-[var(--panel-strong)] pl-6 pr-4 py-3 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)] transition hover:border-slate-300 hover:bg-zinc-50/40 hover:shadow-[0_1px_0_rgba(9,9,11,0.05),0_18px_42px_rgba(9,9,11,0.12)] ${
+              className={`cursor-pointer rounded-xl border bg-[var(--panel-strong)] pl-6 pr-4 py-3 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)] transition hover:border-amber-200 hover:bg-amber-50/60 hover:shadow-[0_1px_0_rgba(9,9,11,0.05),0_18px_42px_rgba(9,9,11,0.12)] ${
                 dropProjectId === project.id && dragProjectId !== project.id
                   ? "border-[var(--accent)] ring-2 ring-[var(--accent)]/30"
                   : "border-[var(--border)]"

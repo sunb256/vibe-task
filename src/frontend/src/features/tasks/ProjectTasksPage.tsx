@@ -267,14 +267,14 @@ export function ProjectTasksPage() {
                       onClick={() => openEditDialog(task)}
                       className="group cursor-pointer"
                     >
-                      <td className="rounded-l-md border-y border-l border-[var(--border)] bg-[var(--panel-strong)] px-3 py-2 text-[var(--muted)] whitespace-nowrap transition group-hover:bg-zinc-50/70 group-focus-within:bg-zinc-50/70">
+                      <td className="rounded-l-md border-y border-l border-[var(--border)] bg-[var(--panel-strong)] px-3 py-2 text-[var(--muted)] whitespace-nowrap transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
                         <span
                           className={`rounded-md px-3 py-1 text-xs font-semibold uppercase ${sourceBadgeTone(task.source)}`}
                         >
                           {sourceTag(task)}
                         </span>
                       </td>
-                      <td className="w-full min-w-[34rem] border-y border-[var(--border)] bg-[var(--panel-strong)] transition group-hover:bg-zinc-50/70 group-focus-within:bg-zinc-50/70">
+                      <td className="w-full min-w-[34rem] border-y border-[var(--border)] bg-[var(--panel-strong)] transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
                         <button
                           type="button"
                           aria-label={`task ${task.id} を編集`}
@@ -294,7 +294,7 @@ export function ProjectTasksPage() {
                           </div>
                         </button>
                       </td>
-                      <td className="w-[13rem] whitespace-nowrap border-y border-[var(--border)] bg-[var(--panel-strong)] pl-1 pr-3 py-2 transition group-hover:bg-zinc-50/70 group-focus-within:bg-zinc-50/70">
+                      <td className="w-[13rem] whitespace-nowrap border-y border-[var(--border)] bg-[var(--panel-strong)] pl-1 pr-3 py-2 transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
                         <div className="flex items-center gap-1">
                           <button
                             type="button"
@@ -330,7 +330,7 @@ export function ProjectTasksPage() {
                           />
                         </div>
                       </td>
-                      <td className="rounded-r-md border-y border-r border-[var(--border)] bg-[var(--panel-strong)] px-3 py-2 text-center transition group-hover:bg-zinc-50/70 group-focus-within:bg-zinc-50/70">
+                      <td className="rounded-r-md border-y border-r border-[var(--border)] bg-[var(--panel-strong)] px-3 py-2 text-center transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
                         <TaskPrLink url={task.url} />
                       </td>
                     </tr>
