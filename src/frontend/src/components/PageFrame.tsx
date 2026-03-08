@@ -25,11 +25,21 @@ export function PageFrame(props: PageFrameProps) {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-zinc-800 bg-[rgba(9,9,11,0.94)] text-white backdrop-blur">
-        <div className="mx-auto flex h-10 max-w-6xl items-center px-4 sm:px-6 lg:px-8">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-zinc-800 bg-[rgba(9,9,11,0.94)] px-4 text-white backdrop-blur sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-10 max-w-6xl items-center">
           <nav className="flex items-center gap-4" aria-label="global menu">
-            <NavLink to="/" end className={({ isActive }) => menuLinkClass(isActive)}>
-              Project
+            <NavLink
+              to="/"
+              end
+              aria-label="Project"
+              className={({ isActive }) => menuLinkClass(isActive)}
+            >
+              <img
+                src="/assets/images/vibe_task_logo.png"
+                alt=""
+                aria-hidden="true"
+                className="h-5 w-auto"
+              />
             </NavLink>
             <NavLink
               to="/custom-prompt"

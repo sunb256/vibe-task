@@ -103,7 +103,11 @@ export function CustomPromptPage() {
 
   return (
     <>
-      <PageFrame eyebrow="VIBE TASK" title="Custom Prompt">
+      <PageFrame
+        eyebrow={null}
+        headerStyle="plain"
+        title={<span className="inline-flex h-9 items-center pl-1">Custom Prompt</span>}
+      >
         <section className="space-y-3">
           {error ? <Notice tone="error" message={error} /> : null}
           {isLoading ? <Notice tone="neutral" message="Loading prompts..." /> : null}
@@ -131,7 +135,7 @@ export function CustomPromptPage() {
                 event.preventDefault();
                 void openEditDialog(prompt);
               }}
-              className="cursor-pointer rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] px-4 py-3 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)] transition hover:border-slate-300 hover:bg-zinc-50/40"
+              className="cursor-pointer rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] pl-6 pr-4 py-3 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)] transition hover:border-slate-300 hover:bg-zinc-50/40 hover:shadow-[0_1px_0_rgba(9,9,11,0.05),0_18px_42px_rgba(9,9,11,0.12)]"
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
@@ -144,9 +148,9 @@ export function CustomPromptPage() {
                     />
                     <span className="truncate">{prompt.name}</span>
                   </h2>
-                  <p className="mt-2 pl-1 flex items-start gap-2 break-all text-sm text-[var(--muted)]">
+                  <p className="mt-2 flex items-start gap-2 break-all text-sm text-[var(--muted)]">
                     <img
-                      src="/assets/images/git-branch.svg"
+                      src="/assets/images/file-text.svg"
                       alt=""
                       aria-hidden="true"
                       className="mt-[2px] h-4 w-4 shrink-0"
