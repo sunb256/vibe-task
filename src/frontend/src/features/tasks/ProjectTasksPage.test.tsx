@@ -121,7 +121,8 @@ test("does not render the removed project subtitle", async () => {
     "href",
     "/custom-prompt",
   );
-  expect(screen.getByText("VIBE TASK")).toBeInTheDocument();
+  expect(screen.queryByText("VIBE TASK")).not.toBeInTheDocument();
+  expect(screen.getByRole("heading", { level: 1, name: "impl" })).toBeInTheDocument();
   expect(screen.getAllByRole("columnheader").map((header) => header.textContent)).toEqual([
     "id",
     "task",
@@ -136,12 +137,9 @@ test("does not render the removed project subtitle", async () => {
   expect(screen.queryByRole("link", { name: "Back to TOP" })).not.toBeInTheDocument();
   const createButton = screen.getByRole("button", { name: "新規タスク(N)" });
   expect(createButton).toBeInTheDocument();
-  expect(createButton.parentElement).toHaveClass("justify-start", "pl-2");
+  expect(createButton.closest("div")).toHaveClass("justify-start", "pl-2");
   expect(screen.queryByRole("button", { name: "新規" })).not.toBeInTheDocument();
-  expect(screen.getByRole("link", { name: "impl" })).toHaveAttribute(
-    "href",
-    "/",
-  );
+  expect(screen.queryByRole("link", { name: "impl" })).not.toBeInTheDocument();
   const table = screen.getByRole("table");
   expect(table).toHaveClass("border-spacing-y-1");
   expect(createButton.compareDocumentPosition(table) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();

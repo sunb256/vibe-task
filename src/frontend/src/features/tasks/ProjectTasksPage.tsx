@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 import { Notice } from "../../components/Notice";
 import { PageFrame } from "../../components/PageFrame";
@@ -211,24 +211,11 @@ export function ProjectTasksPage() {
 
   return (
     <PageFrame
-      eyebrow="VIBE TASK"
-      title={
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 rounded-sm transition hover:text-[var(--muted)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
-        >
-          <img
-            src="/assets/images/code-xml.svg"
-            alt=""
-            aria-hidden="true"
-            className="h-5 w-5 shrink-0 mt-[3px]"
-          />
-          <span>{project ? project.name : "Project"}</span>
-        </Link>
-      }
+      eyebrow={null}
+      title={<span className="inline-flex h-9 items-center pl-1">{project ? project.name : "Project"}</span>}
     >
       <section className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
-        <div className="mb-4 flex items-center justify-start gap-2 pl-2">
+        <div className="mb-4 flex w-full items-center justify-start gap-2 pl-2">
           <PrimaryButton
             ref={createButtonRef}
             type="button"

@@ -105,10 +105,9 @@ export function CustomPromptPage() {
     <>
       <PageFrame
         eyebrow={null}
-        headerStyle="plain"
         title={<span className="inline-flex h-9 items-center pl-1">Custom Prompt</span>}
       >
-        <section className="space-y-3">
+        <section className="space-y-3 rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
           {error ? <Notice tone="error" message={error} /> : null}
           {isLoading ? <Notice tone="neutral" message="Loading prompts..." /> : null}
           {!error && !isLoading && prompts.length === 0 ? (
