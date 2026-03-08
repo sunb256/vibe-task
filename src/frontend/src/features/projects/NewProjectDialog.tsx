@@ -10,6 +10,7 @@ type NewProjectDialogProps = {
   isSaving: boolean;
   error: string;
   title: string;
+  autoFillNameFromRepositoryPath?: boolean;
   submitLabel: string;
   submittingLabel: string;
   initialForm?: ProjectFormState;
@@ -23,6 +24,7 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
     isOpen,
     isSaving,
     title,
+    autoFillNameFromRepositoryPath = false,
     submitLabel,
     submittingLabel,
     initialForm,
@@ -54,7 +56,7 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
   }
 
   function updateField(field: keyof ProjectFormState, value: string) {
-    setForm((current) => ({ ...current, [field]: value }));
+    setForm((current) => buildNextForm(current, field, value, autoFillNameFromRepositoryPath));
   }
 
   return (
@@ -78,18 +80,20 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
         <form className="grid gap-4" onSubmit={handleSubmit}>
           <div className="grid gap-4">
             <TextInput
-              label="name"
-              autoFocus
-              value={form.name}
-              onChange={(event) => updateField("name", event.target.value)}
-            />
-            <TextInput
               label="repositoryPath"
+              autoFocus
               value={form.repositoryPath}
               onChange={(event) =>
                 updateField("repositoryPath", event.target.value)
               }
             />
+            <div className="w-full md:w-1/2">
+              <TextInput
+                label="name"
+                value={form.name}
+                onChange={(event) => updateField("name", event.target.value)}
+              />
+            </div>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             <TextInput
@@ -122,4 +126,47 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
       </div>
     </div>
   );
+}
+
+function buildNextForm(
+  current: ProjectFormState,
+  field: keyof ProjectFormState,
+  value: string,
+  autoFillNameFromRepositoryPath: boolean,
+) {
+  const next = { ...current, [field]: value };
+  if (!shouldAutoFillName(field, current, autoFillNameFromRepositoryPath)) {
+    return next;
+  }
+  const detectedName = detectRepositoryName(value);
+  if (detectedName) {
+    next.name = detectedName;
+  }
+  return next;
+}
+
+function shouldAutoFillName(
+  field: keyof ProjectFormState,
+  current: ProjectFormState,
+  autoFillNameFromRepositoryPath: boolean,
+) {
+  if (!autoFillNameFromRepositoryPath) {
+    return false;
+  }
+  if (field !== "repositoryPath") {
+    return false;
+  }
+  return current.name.trim() === "";
+}
+
+function detectRepositoryName(repositoryPath: string) {
+  const normalized = repositoryPath.trim().replace(/[\\/]+$/, "");
+  if (!normalized) {
+    return "";
+  }
+  const parts = normalized.split(/[\\/]/).filter(Boolean);
+  if (parts.length === 0) {
+    return "";
+  }
+  return parts[parts.length - 1];
 }

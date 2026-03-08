@@ -741,4 +741,15 @@ task:
       task はありません。
       
       に変更
+  - id: 93
+    url: '-'
+    title: 新規プロジェクト作成フォームの入力順とname自動補完を改善
+    action: |
+      新規プロジェクト作成で
+      repositoryPathが一番上にして
+      
+      repositoryPathとnameが殻でrepositoryPathが入力された場合、
+      ファイル名をnameに自動入力して
+      
+      nameの横幅は今の半分でいいです
       
