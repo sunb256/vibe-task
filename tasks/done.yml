@@ -606,3 +606,12 @@ task:
       右寄せは新規プロジェクトSetting
 
       ヘッダ部のVIBE TASK表記はなしにしてヘッダと検索を統合するUI
+  - id: 76
+    url: https://github.com/sunb256/vibe-task/pull/79
+    title: 固定ヘッダ先頭のProjectリンクをロゴ表示へ置換
+    action: |
+      ロゴを作ったので固定ヘッダに使ってさい
+      最初の部分に表示
+      Project はこのロゴにするので置き換え
+
+      src/frontend/assets/images/vibe_task_logo.png
