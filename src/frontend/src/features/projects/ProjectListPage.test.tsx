@@ -45,7 +45,7 @@ test("renders project list", async () => {
   expect(pageTitleLink.querySelector('img[src="/assets/images/logs.svg"]')).not.toBeNull();
   expect(screen.getByRole("button", { name: "新規プロジェクト" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Setting" })).toBeInTheDocument();
-  expect(screen.getByRole("searchbox", { name: "Project 検索" })).toBeInTheDocument();
+  expect(screen.getByRole("searchbox", { name: "Search" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "編集" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "削除" })).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "NEW" })).not.toBeInTheDocument();
@@ -219,7 +219,7 @@ test("filters project list incrementally by search query", async () => {
     expect(screen.getByText("vibe-task")).toBeInTheDocument();
   });
 
-  const searchInput = screen.getByRole("searchbox", { name: "Project 検索" });
+  const searchInput = screen.getByRole("searchbox", { name: "Search" });
   fireEvent.change(searchInput, { target: { value: "vibe" } });
   expect(screen.queryByText("impl")).not.toBeInTheDocument();
   expect(screen.getByText("vibe-task")).toBeInTheDocument();
