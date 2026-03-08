@@ -39,6 +39,9 @@ export function SkillsPage() {
   }
 
   async function openEditDialog(skill: SkillSummary) {
+    if (!canEditSkill(skill)) {
+      return;
+    }
     setIsLoadingEditor(true);
     setError("");
     setEditError("");
@@ -129,17 +132,17 @@ export function SkillsPage() {
           ) : null}
           {skills.map((skill) => (
             <article
-              key={skill.name}
-              role="button"
-              tabIndex={0}
+              key={skill.path}
+              role={canEditSkill(skill) ? "button" : undefined}
+              tabIndex={canEditSkill(skill) ? 0 : -1}
               onClick={() => {
-                if (isLoadingEditor) {
+                if (isLoadingEditor || !canEditSkill(skill)) {
                   return;
                 }
                 void openEditDialog(skill);
               }}
               onKeyDown={(event) => {
-                if (isLoadingEditor) {
+                if (isLoadingEditor || !canEditSkill(skill)) {
                   return;
                 }
                 if (event.key !== "Enter" && event.key !== " ") {
@@ -148,7 +151,11 @@ export function SkillsPage() {
                 event.preventDefault();
                 void openEditDialog(skill);
               }}
-              className="cursor-pointer rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] pl-6 pr-4 py-3 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)] transition hover:border-amber-200 hover:bg-amber-50/60 hover:shadow-[0_1px_0_rgba(9,9,11,0.05),0_18px_42px_rgba(9,9,11,0.12)]"
+              className={`rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] pl-6 pr-4 py-3 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)] transition ${
+                canEditSkill(skill)
+                  ? "cursor-pointer hover:border-amber-200 hover:bg-amber-50/60 hover:shadow-[0_1px_0_rgba(9,9,11,0.05),0_18px_42px_rgba(9,9,11,0.12)]"
+                  : "cursor-default"
+              }`}
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
@@ -170,19 +177,30 @@ export function SkillsPage() {
                     />
                     <span>{displayPath(skill.path)}</span>
                   </p>
+                  {skill.source === "project" ? (
+                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">
+                      Project: {skill.projectName}
+                    </p>
+                  ) : null}
                 </div>
                 <div className="flex shrink-0 justify-end gap-2 sm:pt-1">
-                  <button
-                    type="button"
-                    disabled={isLoadingEditor}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      void openEditDialog(skill);
-                    }}
-                    className="rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    編集
-                  </button>
+                  {canEditSkill(skill) ? (
+                    <button
+                      type="button"
+                      disabled={isLoadingEditor}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        void openEditDialog(skill);
+                      }}
+                      className="rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      編集
+                    </button>
+                  ) : (
+                    <span className="inline-flex items-center rounded-lg border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--muted)]">
+                      読み取り専用
+                    </span>
+                  )}
                 </div>
               </div>
             </article>
@@ -225,4 +243,8 @@ function displayPath(path: string) {
     return `$HOME${macHome[1] ?? ""}`;
   }
   return path;
+}
+
+function canEditSkill(skill: SkillSummary) {
+  return skill.editable;
 }

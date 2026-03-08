@@ -55,6 +55,9 @@ test("renders skills list and global menu", async () => {
           {
             name: "alpha",
             path: "/home/sunb/.codex/skills/alpha/SKILL.md",
+            source: "global",
+            projectName: "",
+            editable: true,
           },
         ],
       }),
@@ -100,7 +103,15 @@ test("creates a new skill from new button", async () => {
     .mockResolvedValueOnce(
       new Response(
         JSON.stringify({
-          skills: [{ name: "new-skill", path: "/tmp/.codex/skills/new-skill/SKILL.md" }],
+          skills: [
+            {
+              name: "new-skill",
+              path: "/tmp/.codex/skills/new-skill/SKILL.md",
+              source: "global",
+              projectName: "",
+              editable: true,
+            },
+          ],
         }),
       ),
     );
@@ -136,7 +147,15 @@ test("edits skill content in modal editor", async () => {
     .mockResolvedValueOnce(
       new Response(
         JSON.stringify({
-          skills: [{ name: "alpha", path: "/tmp/.codex/skills/alpha/SKILL.md" }],
+          skills: [
+            {
+              name: "alpha",
+              path: "/tmp/.codex/skills/alpha/SKILL.md",
+              source: "global",
+              projectName: "",
+              editable: true,
+            },
+          ],
         }),
       ),
     )
@@ -146,6 +165,9 @@ test("edits skill content in modal editor", async () => {
           name: "alpha",
           path: "/tmp/.codex/skills/alpha/SKILL.md",
           content: "# Alpha Skill\n",
+          source: "global",
+          projectName: "",
+          editable: true,
         }),
       ),
     )
@@ -155,13 +177,24 @@ test("edits skill content in modal editor", async () => {
           name: "alpha",
           path: "/tmp/.codex/skills/alpha/SKILL.md",
           content: "# Updated Skill\n",
+          source: "global",
+          projectName: "",
+          editable: true,
         }),
       ),
     )
     .mockResolvedValueOnce(
       new Response(
         JSON.stringify({
-          skills: [{ name: "alpha", path: "/tmp/.codex/skills/alpha/SKILL.md" }],
+          skills: [
+            {
+              name: "alpha",
+              path: "/tmp/.codex/skills/alpha/SKILL.md",
+              source: "global",
+              projectName: "",
+              editable: true,
+            },
+          ],
         }),
       ),
     );
@@ -203,4 +236,36 @@ test("edits skill content in modal editor", async () => {
   await waitFor(() => {
     expect(screen.queryByRole("dialog", { name: "編集 - alpha" })).not.toBeInTheDocument();
   });
+});
+
+test("renders project skill as read-only", async () => {
+  vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+    new Response(
+      JSON.stringify({
+        skills: [
+          {
+            name: "local-skill",
+            path: "/tmp/repo/.codex/skills/local-skill/SKILL.md",
+            source: "project",
+            projectName: "impl",
+            editable: false,
+          },
+        ],
+      }),
+    ),
+  );
+
+  render(
+    <MemoryRouter initialEntries={["/skills"]}>
+      <SkillsPage />
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("local-skill")).toBeInTheDocument();
+  });
+
+  expect(screen.getByText("Project: impl")).toBeInTheDocument();
+  expect(screen.getByText("読み取り専用")).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "編集" })).not.toBeInTheDocument();
 });

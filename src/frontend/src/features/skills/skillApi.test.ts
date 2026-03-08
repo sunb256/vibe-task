@@ -16,6 +16,9 @@ test("fetchSkills and fetchSkill request the skills endpoints with no-store", as
           name: "alpha",
           path: "/tmp/.codex/skills/alpha/SKILL.md",
           content: "# Alpha Skill\n",
+          source: "global",
+          projectName: "",
+          editable: true,
         }),
       ),
     );
@@ -44,6 +47,9 @@ test("createSkill and updateSkill use correct HTTP methods and payload", async (
           name: "alpha",
           path: "/tmp/.codex/skills/alpha/SKILL.md",
           content: "# Alpha Skill\n",
+          source: "global",
+          projectName: "",
+          editable: true,
         }),
       ),
     )
@@ -53,6 +59,9 @@ test("createSkill and updateSkill use correct HTTP methods and payload", async (
           name: "alpha",
           path: "/tmp/.codex/skills/alpha/SKILL.md",
           content: "# Updated Skill\n",
+          source: "global",
+          projectName: "",
+          editable: true,
         }),
       ),
     );

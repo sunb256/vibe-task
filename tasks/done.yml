@@ -698,3 +698,13 @@ task:
       `$HOME/.codex/skills/<slill名フォルダ>/SKILL.md`
 
       これを現行のCustom Prompt画面のように、MENUにSkillsを追加して表示できるようにしたい
+  - id: 88
+    url: https://github.com/sunb256/vibe-task/pull/89
+    title: Skills一覧に各プロジェクト配下のSKILL探索表示を追加
+    action: |-
+      SKILLは各プロジェクト配下にも存在することができる
+
+      `各プロジェクト/.codex/skills/<スキル名>/SKILL.md`
+
+      各プロジェクトのskillsファイルも探索して表示してほしいです
+      また、ユーザ直下のSKILLか各プロジェクトのSKILLか区別のつくUIにして欲しい
