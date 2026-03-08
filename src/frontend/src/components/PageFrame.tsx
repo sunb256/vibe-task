@@ -29,32 +29,34 @@ export function PageFrame(props: PageFrameProps) {
     <>
       <header className="fixed inset-x-0 top-0 z-50 border-b border-zinc-800 bg-[rgba(9,9,11,0.94)] px-4 text-white backdrop-blur sm:px-6 lg:px-8">
         <div className="mx-auto flex h-10 max-w-6xl items-center">
-          <nav className="flex items-center gap-4" aria-label="global menu">
+          <nav className="flex items-center" aria-label="global menu">
             <NavLink
               to="/"
               end
               aria-label="Project"
-              className={({ isActive }) => menuLinkClass(isActive)}
+              className={({ isActive }) => logoLinkClass(isActive)}
             >
               <img
                 src={logoSrc}
                 alt=""
                 aria-hidden="true"
-                className="h-5 w-auto"
+                className="h-5 w-auto select-none"
               />
             </NavLink>
-            <NavLink
-              to="/custom-prompt"
-              className={({ isActive }) => menuLinkClass(isActive)}
-            >
-              Custom Prompt
-            </NavLink>
-            <NavLink
-              to="/skills"
-              className={({ isActive }) => menuLinkClass(isActive)}
-            >
-              Skills
-            </NavLink>
+            <div className="ml-5 flex items-center gap-4">
+              <NavLink
+                to="/custom-prompt"
+                className={({ isActive }) => menuLinkClass(isActive)}
+              >
+                Custom Prompt
+              </NavLink>
+              <NavLink
+                to="/skills"
+                className={({ isActive }) => menuLinkClass(isActive)}
+              >
+                Skills
+              </NavLink>
+            </div>
           </nav>
         </div>
       </header>
@@ -96,7 +98,13 @@ function selectLogoSrc(pathname: string) {
 function menuLinkClass(isActive: boolean) {
   const activeTone = "text-white";
   const inactiveTone = "text-zinc-400 hover:text-zinc-200";
-  return `inline-flex h-6 items-center px-0.5 text-sm font-semibold transition ${isActive ? activeTone : inactiveTone}`;
+  return `inline-flex h-6 items-center whitespace-nowrap px-0.5 text-sm font-semibold transition ${isActive ? activeTone : inactiveTone}`;
+}
+
+function logoLinkClass(isActive: boolean) {
+  const activeTone = "text-white";
+  const inactiveTone = "text-zinc-400";
+  return `inline-flex h-6 shrink-0 items-center rounded-sm px-0.5 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-300 ${isActive ? activeTone : inactiveTone}`;
 }
 
 function headerClass(headerStyle: PageFrameProps["headerStyle"]) {
