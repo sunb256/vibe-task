@@ -682,3 +682,8 @@ task:
     action: |-
       各画面で行を選択したときのハイライトが今は薄いグレーになっているが、
       グレーでない何か薄い色のほうがいい
+  - id: 86
+    url: https://github.com/sunb256/vibe-task/pull/88
+    title: Custom Prompt編集で最新内容を確実に再取得するよう修正
+    action: |-
+      Custom Promptの編集でファイル内容が更新されていない気がする
