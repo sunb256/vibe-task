@@ -9,6 +9,7 @@ type NewTaskDialogProps = {
   error: string;
   action: string;
   title: string;
+  titleIconSrc?: string;
   description: string;
   submitLabel: string;
   submittingLabel: string;
@@ -25,6 +26,7 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
     error,
     action,
     title,
+    titleIconSrc,
     description,
     submitLabel,
     submittingLabel,
@@ -120,8 +122,16 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
-            <h2 id="task-dialog-title" className="text-xl font-semibold">
-              {title}
+            <h2 id="task-dialog-title" className="flex items-center gap-2 text-xl font-semibold">
+              {titleIconSrc ? (
+                <img
+                  src={titleIconSrc}
+                  alt=""
+                  aria-hidden="true"
+                  className="h-5 w-5 shrink-0 text-[var(--muted)]"
+                />
+              ) : null}
+              <span>{title}</span>
             </h2>
             {description ? <p className="mt-1 text-sm text-[var(--muted)]">{description}</p> : null}
           </div>

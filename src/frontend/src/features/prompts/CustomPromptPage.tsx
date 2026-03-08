@@ -192,6 +192,7 @@ export function CustomPromptPage() {
         error={editError}
         action={editContent}
         title={editPrompt ? `編集 - ${editPrompt.name}` : "編集"}
+        titleIconSrc="/assets/images/file-text.svg"
         description=""
         submitLabel="更新"
         submittingLabel="更新中..."
