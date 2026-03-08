@@ -140,6 +140,8 @@ test("edits prompt content in modal editor", async () => {
   await waitFor(() => {
     expect(screen.getByRole("dialog", { name: "編集 - alpha.md" })).toBeInTheDocument();
   });
+  const editDialog = screen.getByRole("dialog", { name: "編集 - alpha.md" });
+  expect(editDialog.querySelector('img[src="/assets/images/file-text.svg"]')).not.toBeNull();
   expect(screen.getByRole("button", { name: "更新" })).toHaveClass(
     "min-w-[4.5rem]",
     "whitespace-nowrap",
