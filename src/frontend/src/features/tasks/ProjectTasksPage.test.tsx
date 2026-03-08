@@ -603,3 +603,29 @@ test("edits a task in modal editor and supports keyboard shortcuts", async () =>
   expect(screen.getByRole("button", { name: "新規タスク(N)" })).toHaveFocus();
   expect(updateTaskAction).toHaveBeenCalledTimes(1);
 });
+
+test("shows empty-state message when no task exists", async () => {
+  vi.mocked(fetchProjects).mockResolvedValue({
+    projects: [
+      {
+        id: "project-1",
+        name: "impl",
+        repositoryPath: "/tmp/impl",
+      },
+    ],
+  });
+  vi.mocked(fetchTasks).mockResolvedValue({ tasks: [] });
+
+  render(
+    <MemoryRouter initialEntries={["/projects/project-1"]}>
+      <Routes>
+        <Route path="/projects/:projectId" element={<ProjectTasksPage />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("task はありません")).toBeInTheDocument();
+  });
+  expect(screen.queryByText("task は見つかりませんでした。")).not.toBeInTheDocument();
+});

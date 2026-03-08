@@ -244,7 +244,7 @@ export function ProjectTasksPage() {
         {error ? <Notice tone="error" message={error} /> : null}
         {isLoading ? <Notice tone="neutral" message="Loading tasks..." /> : null}
         {!error && !isLoading && visibleTasks.length === 0 ? (
-          <Notice tone="neutral" message="task は見つかりませんでした。" />
+          <Notice tone="neutral" message="task はありません" />
         ) : null}
         {!isLoading && visibleTasks.length > 0 ? (
           <div className="overflow-x-auto">

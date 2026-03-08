@@ -13,5 +13,5 @@ __pycache__/
 .vscode
 
 tasks/projects/
-./tasks/projects.yml 
+tasks/projects.yml 
 
