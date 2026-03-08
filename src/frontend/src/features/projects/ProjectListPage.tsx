@@ -326,6 +326,7 @@ export function ProjectListPage() {
         isSaving={isSaving}
         error={dialogError}
         title="新規作成"
+        autoFillNameFromRepositoryPath
         submitLabel="プロジェクト作成"
         submittingLabel="Saving..."
         initialForm={defaultProjectForm}
