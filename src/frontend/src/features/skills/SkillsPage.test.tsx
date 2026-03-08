@@ -344,22 +344,27 @@ test("deletes skill from list", async () => {
   });
 });
 
-test("renders project skill as read-only", async () => {
-  vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
-    new Response(
-      JSON.stringify({
-        skills: [
-          {
-            name: "local-skill",
-            path: "/tmp/repo/.codex/skills/local-skill/SKILL.md",
-            source: "project",
-            projectName: "impl",
-            editable: false,
-          },
-        ],
-      }),
-    ),
-  );
+test("shows project skill buttons and deletes with project scope", async () => {
+  const fetchMock = vi
+    .spyOn(globalThis, "fetch")
+    .mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          skills: [
+            {
+              name: "local-skill",
+              path: "/tmp/repo/.codex/skills/local-skill/SKILL.md",
+              source: "project",
+              projectName: "impl",
+              editable: true,
+            },
+          ],
+        }),
+      ),
+    )
+    .mockResolvedValueOnce(new Response(null, { status: 204 }))
+    .mockResolvedValueOnce(new Response(JSON.stringify({ skills: [] })));
+  const confirmMock = vi.spyOn(window, "confirm").mockReturnValue(true);
 
   render(
     <MemoryRouter initialEntries={["/skills"]}>
@@ -372,7 +377,17 @@ test("renders project skill as read-only", async () => {
   });
 
   expect(screen.getByText("Project: impl")).toBeInTheDocument();
-  expect(screen.getByText("読み取り専用")).toBeInTheDocument();
-  expect(screen.queryByRole("button", { name: "編集" })).not.toBeInTheDocument();
-  expect(screen.queryByRole("button", { name: "削除" })).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "編集" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "削除" })).toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole("button", { name: "削除" }));
+  expect(confirmMock).toHaveBeenCalledWith("Skill local-skill を削除しますか？");
+
+  await waitFor(() => {
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/skills/local-skill?source=project&projectName=impl",
+      expect.objectContaining({ method: "DELETE" }),
+    );
+  });
 });

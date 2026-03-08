@@ -40,14 +40,11 @@ export function SkillsPage() {
   }
 
   async function openEditDialog(skill: SkillSummary) {
-    if (!canEditSkill(skill)) {
-      return;
-    }
     setIsLoadingEditor(true);
     setError("");
     setEditError("");
     try {
-      const loaded = await fetchSkill(skill.name);
+      const loaded = await fetchSkill(skill.name, skill);
       setEditSkill(loaded);
       setEditContent(loaded.content);
       setIsEditOpen(true);
@@ -108,7 +105,7 @@ export function SkillsPage() {
     setIsSaving(true);
     setEditError("");
     try {
-      await updateSkill(editSkill.name, editContent);
+      await updateSkill(editSkill.name, editContent, editSkill);
       resetEditor();
       await loadSkills();
     } catch (saveError) {
@@ -119,9 +116,6 @@ export function SkillsPage() {
   }
 
   async function handleDelete(skill: SkillSummary) {
-    if (!canEditSkill(skill)) {
-      return;
-    }
     const ok = window.confirm(`Skill ${skill.name} を削除しますか？`);
     if (!ok) {
       return;
@@ -129,7 +123,7 @@ export function SkillsPage() {
     setIsDeleting(true);
     setError("");
     try {
-      await deleteSkill(skill.name);
+      await deleteSkill(skill.name, skill);
       await loadSkills();
     } catch (deleteError) {
       setError(readError(deleteError, "Skill の削除に失敗しました。"));
@@ -158,16 +152,19 @@ export function SkillsPage() {
           {skills.map((skill) => (
             <article
               key={skill.path}
-              role={canEditSkill(skill) ? "button" : undefined}
-              tabIndex={canEditSkill(skill) ? 0 : -1}
+              role="button"
+              tabIndex={0}
               onClick={() => {
-                if (isLoadingEditor || !canEditSkill(skill)) {
+                if (isLoadingEditor) {
                   return;
                 }
                 void openEditDialog(skill);
               }}
               onKeyDown={(event) => {
-                if (isLoadingEditor || !canEditSkill(skill)) {
+                if (isLoadingEditor) {
+                  return;
+                }
+                if (event.target !== event.currentTarget) {
                   return;
                 }
                 if (event.key !== "Enter" && event.key !== " ") {
@@ -176,13 +173,9 @@ export function SkillsPage() {
                 event.preventDefault();
                 void openEditDialog(skill);
               }}
-              className={`rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] pl-6 pr-4 py-3 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)] transition ${
-                canEditSkill(skill)
-                  ? "cursor-pointer hover:border-amber-200 hover:bg-amber-50/60 hover:shadow-[0_1px_0_rgba(9,9,11,0.05),0_18px_42px_rgba(9,9,11,0.12)]"
-                  : "cursor-default"
-              }`}
+              className="cursor-pointer rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] pl-6 pr-4 py-3 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)] transition hover:border-amber-200 hover:bg-amber-50/60 hover:shadow-[0_1px_0_rgba(9,9,11,0.05),0_18px_42px_rgba(9,9,11,0.12)]"
             >
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
                   <h2 className="flex items-center gap-2 text-base font-semibold">
                     <img
@@ -208,37 +201,29 @@ export function SkillsPage() {
                     </p>
                   ) : null}
                 </div>
-                <div className="flex shrink-0 justify-end gap-2 sm:pt-1">
-                  {canEditSkill(skill) ? (
-                    <>
-                      <button
-                        type="button"
-                        disabled={isLoadingEditor}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          void openEditDialog(skill);
-                        }}
-                        className="rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        編集
-                      </button>
-                      <button
-                        type="button"
-                        disabled={isDeleting}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          void handleDelete(skill);
-                        }}
-                        className="rounded-lg border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-700 transition hover:border-rose-300 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        削除
-                      </button>
-                    </>
-                  ) : (
-                    <span className="inline-flex items-center rounded-lg border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--muted)]">
-                      読み取り専用
-                    </span>
-                  )}
+                <div className="flex shrink-0 justify-end gap-2">
+                  <button
+                    type="button"
+                    disabled={isLoadingEditor}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      void openEditDialog(skill);
+                    }}
+                    className="rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    編集
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isDeleting}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      void handleDelete(skill);
+                    }}
+                    className="rounded-lg border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-700 transition hover:border-rose-300 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    削除
+                  </button>
                 </div>
               </div>
             </article>
@@ -281,8 +266,4 @@ function displayPath(path: string) {
     return `$HOME${macHome[1] ?? ""}`;
   }
   return path;
-}
-
-function canEditSkill(skill: SkillSummary) {
-  return skill.editable;
 }
