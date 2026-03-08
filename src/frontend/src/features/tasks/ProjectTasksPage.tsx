@@ -486,7 +486,7 @@ function sourceFilterClass(source: "todo" | "done", active: boolean) {
 }
 
 function orderTasks(tasks: TaskRecord[]) {
-  const actionTasks = tasks.filter((task) => task.source === "action");
+  const actionTasks = tasks.filter((task) => task.source === "action").sort(compareTaskIdAsc);
   const doneTasks = tasks.filter((task) => task.source === "done").sort(compareTaskIdDesc);
   return [...actionTasks, ...doneTasks];
 }
@@ -511,6 +511,15 @@ function compareTaskIdDesc(left: TaskRecord, right: TaskRecord) {
     return rightId - leftId;
   }
   return right.id.localeCompare(left.id, undefined, { numeric: true, sensitivity: "base" });
+}
+
+function compareTaskIdAsc(left: TaskRecord, right: TaskRecord) {
+  const leftId = Number(left.id);
+  const rightId = Number(right.id);
+  if (Number.isFinite(leftId) && Number.isFinite(rightId)) {
+    return leftId - rightId;
+  }
+  return left.id.localeCompare(right.id, undefined, { numeric: true, sensitivity: "base" });
 }
 
 function swapTargetId(

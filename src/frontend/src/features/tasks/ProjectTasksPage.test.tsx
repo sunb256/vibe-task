@@ -305,6 +305,14 @@ test("swaps task ids with up/down buttons", async () => {
     expect(fetchTasks).toHaveBeenCalledTimes(2);
   });
   expect(screen.getByText("TODO #2", { selector: "span" })).toBeInTheDocument();
+  const movedUpRow = screen.getByText("second task").closest("tr");
+  const movedDownRow = screen.getByText("first task").closest("tr");
+  if (!movedUpRow || !movedDownRow) {
+    throw new Error("swapped rows are missing");
+  }
+  expect(
+    movedUpRow.compareDocumentPosition(movedDownRow) & Node.DOCUMENT_POSITION_FOLLOWING,
+  ).toBeTruthy();
 });
 
 test("renders tasks before project list request finishes", async () => {
