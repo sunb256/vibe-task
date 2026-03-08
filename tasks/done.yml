@@ -670,3 +670,9 @@ task:
 
 
       src/frontend/assets/images/square-check-big.svg
+  - id: 84
+    url: https://github.com/sunb256/vibe-task/pull/86
+    title: TOP画面の新規プロジェクトボタンを黒背景・白文字に統一
+    action: |-
+      TOP画面
+      新規プロジェクトボタンを黒背景、白抜きにして

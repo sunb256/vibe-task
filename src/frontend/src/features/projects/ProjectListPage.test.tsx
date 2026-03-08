@@ -46,7 +46,9 @@ test("renders project list", async () => {
     "/custom-prompt",
   );
   expect(screen.queryByRole("link", { name: "Project 一覧" })).not.toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "新規プロジェクト" })).toBeInTheDocument();
+  const newProjectButton = screen.getByRole("button", { name: "新規プロジェクト" });
+  expect(newProjectButton).toBeInTheDocument();
+  expect(newProjectButton).toHaveClass("bg-[var(--accent)]", "text-white");
   expect(screen.getByRole("button", { name: "Setting" })).toBeInTheDocument();
   expect(screen.getByRole("searchbox", { name: "Search" })).toBeInTheDocument();
   const searchInput = screen.getByRole("searchbox", { name: "Search" });
