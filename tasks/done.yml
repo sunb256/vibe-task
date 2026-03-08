@@ -731,7 +731,7 @@ task:
       
       改善できませんか
   - id: 92
-    url: '-'
+    url: https://github.com/sunb256/vibe-task/pull/93
     title: task空表示メッセージを「task はありません。」へ変更
     action: |
       task は見つかりませんでした。
