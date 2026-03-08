@@ -887,3 +887,9 @@ task:
     action: |
       backendのリファクタリングを実施してください。
       モジュール化、コンポーネント化を行い、可読性が最も高くなるような実装をしてください
+
+  - id: '108'
+    url: https://github.com/sunb256/vibe-task/pull/115
+    title: frontend全体のエラー処理を共通化して保守性を改善
+    action: |
+      全体的にリファクタリングして
