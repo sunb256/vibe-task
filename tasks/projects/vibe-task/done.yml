@@ -850,3 +850,12 @@ task:
       編集と削除ボタンを入れてください
 
       devブランチで作業して
+
+  - id: '103'
+    url: https://github.com/sunb256/vibe-task/pull/110
+    title: Skills画面にSkill名検索機能を追加
+    action: |
+      Skills画面についてTOP画面と同様に検索機能をつけて下さい。
+      検索対象はSkill名とします
+
+      devブランチで作業してください

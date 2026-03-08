@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Notice } from "../../components/Notice";
 import { PageFrame } from "../../components/PageFrame";
@@ -11,6 +11,7 @@ const emptyContent = "";
 
 export function SkillsPage() {
   const [skills, setSkills] = useState<SkillSummary[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState("");
   const [editError, setEditError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -21,6 +22,7 @@ export function SkillsPage() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editSkill, setEditSkill] = useState<SkillFile | null>(null);
   const [editContent, setEditContent] = useState(emptyContent);
+  const visibleSkills = useMemo(() => filterSkills(skills, searchQuery), [skills, searchQuery]);
 
   useEffect(() => {
     void loadSkills();
@@ -139,17 +141,44 @@ export function SkillsPage() {
         title={<span className="inline-flex h-9 items-center pl-1">Skills</span>}
       >
         <section className="space-y-3 rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
-          <div className="mb-4 flex justify-end">
-            <PrimaryButton type="button" onClick={() => void handleCreate()} disabled={isCreating}>
-              新規Skill
-            </PrimaryButton>
+          <div className="mb-4 flex w-full items-center justify-between gap-2">
+            <div className="relative w-full min-w-48 max-w-64">
+              <img
+                src="/assets/images/search.svg"
+                alt=""
+                aria-hidden="true"
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-65"
+              />
+              <input
+                id="skill-search"
+                type="search"
+                aria-label="Search"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Search"
+                className="h-9 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12"
+              />
+            </div>
+            <div className="flex shrink-0 items-center justify-end">
+              <PrimaryButton
+                type="button"
+                onClick={() => void handleCreate()}
+                disabled={isCreating}
+                className="whitespace-nowrap"
+              >
+                新規Skill
+              </PrimaryButton>
+            </div>
           </div>
           {error ? <Notice tone="error" message={error} /> : null}
           {isLoading ? <Notice tone="neutral" message="Loading skills..." /> : null}
           {!error && !isLoading && skills.length === 0 ? (
             <Notice tone="neutral" message="Skill は見つかりませんでした。" />
           ) : null}
-          {skills.map((skill) => (
+          {!error && !isLoading && skills.length > 0 && visibleSkills.length === 0 ? (
+            <Notice tone="neutral" message="検索条件に一致するSkillはありません。" />
+          ) : null}
+          {visibleSkills.map((skill) => (
             <article
               key={skill.path}
               role="button"
@@ -266,4 +295,12 @@ function displayPath(path: string) {
     return `$HOME${macHome[1] ?? ""}`;
   }
   return path;
+}
+
+function filterSkills(skills: SkillSummary[], searchQuery: string) {
+  const query = searchQuery.trim().toLowerCase();
+  if (!query) {
+    return skills;
+  }
+  return skills.filter((skill) => skill.name.toLowerCase().includes(query));
 }
