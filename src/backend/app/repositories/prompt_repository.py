@@ -12,7 +12,7 @@ class PromptRepository:
         if not self.prompts_dir.exists():
             return []
         files = self._list_prompt_files()
-        return [self._to_prompt_record(path) for path in files]
+        return [self._to_prompt_summary(path) for path in files]
 
     def get_prompt(self, prompt_name: str) -> PromptRecord:
         path = self._resolve_prompt_path(prompt_name)
@@ -43,6 +43,9 @@ class PromptRepository:
             path=str(path),
             content=path.read_text(encoding="utf-8"),
         )
+
+    def _to_prompt_summary(self, path: Path) -> PromptRecord:
+        return PromptRecord(name=path.name, path=str(path), content="")
 
     def _resolve_prompt_path(self, prompt_name: str) -> Path:
         name = prompt_name.strip()
