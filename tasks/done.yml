@@ -597,8 +597,8 @@ task:
        - 編集、削除がある
        - 開くとモーダルでMarkdown編集ができる
   - id: 75
-    url: https://github.com/sunb256/vibe-task/pull/78
-    title: TOP画面のヘッダと検索を統合し操作を横並びに調整
+    url: https://github.com/sunb256/vibe-task/pull/79
+    title: TOP画面のヘッダと検索を統合し操作配置を調整
     action: |-
       固定ヘッダを導入したのでヘッダ部はここまで大きな領域をとらなくてよくなった
 
