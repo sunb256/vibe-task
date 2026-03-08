@@ -91,20 +91,6 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
               }
             />
           </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            <TextInput
-              label="action-list path"
-              value={form.actionListPath}
-              onChange={(event) =>
-                updateField("actionListPath", event.target.value)
-              }
-            />
-            <TextInput
-              label="done-list path"
-              value={form.doneListPath}
-              onChange={(event) => updateField("doneListPath", event.target.value)}
-            />
-          </div>
           {error ? <Notice tone="error" message={error} /> : null}
           <div className="flex justify-end gap-2">
             <PrimaryButton type="submit" disabled={isSaving}>

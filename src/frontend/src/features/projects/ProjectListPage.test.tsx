@@ -17,8 +17,6 @@ test("renders project list", async () => {
             id: "project-1",
             name: "impl",
             repositoryPath: "/tmp/impl",
-            actionListPath: "tasks/action.yml",
-            doneListPath: "tasks/done.yml",
           },
         ],
       }),
@@ -125,8 +123,6 @@ test("deletes a project from the top page card", async () => {
               id: "project-1",
               name: "impl",
               repositoryPath: "/tmp/impl",
-              actionListPath: "tasks/action.yml",
-              doneListPath: "tasks/done.yml",
             },
           ],
         }),
@@ -170,8 +166,6 @@ test("does not call delete api when deletion is canceled", async () => {
             id: "project-1",
             name: "impl",
             repositoryPath: "/tmp/impl",
-            actionListPath: "tasks/action.yml",
-            doneListPath: "tasks/done.yml",
           },
         ],
       }),
@@ -203,15 +197,11 @@ test("filters project list incrementally by search query", async () => {
             id: "project-1",
             name: "impl",
             repositoryPath: "/tmp/impl",
-            actionListPath: "tasks/action.yml",
-            doneListPath: "tasks/done.yml",
           },
           {
             id: "project-2",
             name: "vibe-task",
             repositoryPath: "/home/user/ghq/vibe-task",
-            actionListPath: "custom/action.yml",
-            doneListPath: "custom/done.yml",
           },
         ],
       }),
@@ -237,7 +227,7 @@ test("filters project list incrementally by search query", async () => {
   fireEvent.change(searchInput, { target: { value: "not-found" } });
   expect(screen.getByText("検索条件に一致するProjectはありません。")).toBeInTheDocument();
 
-  fireEvent.change(searchInput, { target: { value: "tasks/" } });
+  fireEvent.change(searchInput, { target: { value: "/tmp/impl" } });
   expect(screen.getByText("impl")).toBeInTheDocument();
   expect(screen.queryByText("vibe-task")).not.toBeInTheDocument();
 
@@ -257,15 +247,11 @@ test("reorders project list by drag and drop", async () => {
               id: "project-1",
               name: "impl",
               repositoryPath: "/tmp/impl",
-              actionListPath: "tasks/action.yml",
-              doneListPath: "tasks/done.yml",
             },
             {
               id: "project-2",
               name: "impl-2",
               repositoryPath: "/tmp/impl-2",
-              actionListPath: "tasks/action.yml",
-              doneListPath: "tasks/done.yml",
             },
           ],
         }),
@@ -280,15 +266,11 @@ test("reorders project list by drag and drop", async () => {
               id: "project-2",
               name: "impl-2",
               repositoryPath: "/tmp/impl-2",
-              actionListPath: "tasks/action.yml",
-              doneListPath: "tasks/done.yml",
             },
             {
               id: "project-1",
               name: "impl",
               repositoryPath: "/tmp/impl",
-              actionListPath: "tasks/action.yml",
-              doneListPath: "tasks/done.yml",
             },
           ],
         }),
@@ -345,8 +327,6 @@ test("navigates when clicking project list row area", async () => {
             id: "project-1",
             name: "impl",
             repositoryPath: "/tmp/impl",
-            actionListPath: "tasks/action.yml",
-            doneListPath: "tasks/done.yml",
           },
         ],
       }),

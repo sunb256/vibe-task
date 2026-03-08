@@ -1,4 +1,3 @@
-import os
 import re
 from collections.abc import MutableSequence
 from pathlib import Path
@@ -12,10 +11,34 @@ from app.models import ProjectRecord, TaskRecord
 
 
 class TaskRepository:
-    def __init__(self) -> None:
+    def __init__(self, projects_root: Path) -> None:
+        self.projects_root = projects_root
         self.yaml = YAML()
         self.yaml.preserve_quotes = True
         self.yaml.indent(mapping=2, sequence=4, offset=2)
+
+    def ensure_project_files(self, project: ProjectRecord) -> None:
+        project_dir = self._resolve_project_dir(project)
+        project_dir.mkdir(parents=True, exist_ok=True)
+        for source in ("action", "done"):
+            path = project_dir / self._source_file_name(source)
+            if path.exists():
+                continue
+            path.write_text("task: []\n", encoding="utf-8")
+
+    def relocate_project_files(
+        self,
+        previous: ProjectRecord,
+        current: ProjectRecord,
+    ) -> None:
+        previous_dir = self._resolve_project_dir(previous)
+        current_dir = self._resolve_project_dir(current)
+        if previous_dir == current_dir or not previous_dir.exists():
+            return
+        if current_dir.exists():
+            raise AppError("project task directory already exists", 400)
+        current_dir.parent.mkdir(parents=True, exist_ok=True)
+        previous_dir.rename(current_dir)
 
     def list_tasks(self, project: ProjectRecord) -> list[TaskRecord]:
         records: list[TaskRecord] = []
@@ -182,22 +205,32 @@ class TaskRepository:
         return tasks
 
     def _resolve_source_path(self, project: ProjectRecord, source: str) -> Path:
-        relative_path = self._source_path_value(project, source)
-        if Path(relative_path).is_absolute():
-            raise AppError("task file path must be relative", 400)
-        expanded = os.path.expandvars(project.repository_path)
-        repo_root = Path(expanded).expanduser().resolve()
-        file_path = (repo_root / relative_path).resolve()
-        if repo_root not in file_path.parents and file_path != repo_root:
-            raise AppError("task file path must stay inside repository", 400)
-        return file_path
+        project_dir = self._resolve_project_dir(project)
+        return project_dir / self._source_file_name(source)
 
-    def _source_path_value(self, project: ProjectRecord, source: str) -> str:
+    def _source_file_name(self, source: str) -> str:
         if source == "action":
-            return project.action_list_path
+            return "action.yml"
         if source == "done":
-            return project.done_list_path
+            return "done.yml"
         raise AppError("invalid source", 400)
+
+    def _resolve_project_dir(self, project: ProjectRecord) -> Path:
+        root = self.projects_root.resolve()
+        directory = self._project_directory_name(project.name, project.id)
+        project_dir = (root / directory).resolve()
+        if root not in project_dir.parents and project_dir != root:
+            raise AppError("invalid project task directory", 400)
+        return project_dir
+
+    def _project_directory_name(self, name: str, project_id: str) -> str:
+        lowered = name.strip().lower()
+        dashed = re.sub(r"\s+", "-", lowered)
+        normalized = re.sub(r"[^a-z0-9._-]+", "-", dashed)
+        normalized = normalized.strip("-._")
+        if normalized:
+            return normalized
+        return f"project-{project_id}"
 
     def _normalize_dash_placeholders(self, raw_text: str) -> str:
         normalized: list[str] = []

@@ -6,7 +6,8 @@ from app.repositories.task_repository import TaskRepository
 class TaskService:
     def __init__(self, project_repository: ProjectRepository) -> None:
         self.project_repository = project_repository
-        self.task_repository = TaskRepository()
+        tasks_root = self.project_repository.projects_file.parent / "projects"
+        self.task_repository = TaskRepository(tasks_root)
 
     def list_tasks(self, project_id: str) -> list[TaskRecord]:
         project = self.project_repository.get_project(project_id)
