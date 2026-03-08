@@ -47,6 +47,12 @@ export function PageFrame(props: PageFrameProps) {
             >
               Custom Prompt
             </NavLink>
+            <NavLink
+              to="/skills"
+              className={({ isActive }) => menuLinkClass(isActive)}
+            >
+              Skills
+            </NavLink>
           </nav>
         </div>
       </header>

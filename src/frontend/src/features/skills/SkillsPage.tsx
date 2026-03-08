@@ -1,0 +1,228 @@
+import { useEffect, useState } from "react";
+
+import { Notice } from "../../components/Notice";
+import { PageFrame } from "../../components/PageFrame";
+import { PrimaryButton } from "../../components/PrimaryButton";
+import { NewTaskDialog } from "../tasks/NewTaskDialog";
+import { createSkill, fetchSkill, fetchSkills, updateSkill } from "./skillApi";
+import type { SkillFile, SkillSummary } from "./types";
+
+const emptyContent = "";
+
+export function SkillsPage() {
+  const [skills, setSkills] = useState<SkillSummary[]>([]);
+  const [error, setError] = useState("");
+  const [editError, setEditError] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingEditor, setIsLoadingEditor] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editSkill, setEditSkill] = useState<SkillFile | null>(null);
+  const [editContent, setEditContent] = useState(emptyContent);
+
+  useEffect(() => {
+    void loadSkills();
+  }, []);
+
+  async function loadSkills() {
+    setIsLoading(true);
+    setError("");
+    try {
+      const response = await fetchSkills();
+      setSkills(response.skills);
+    } catch (loadError) {
+      setError(readError(loadError, "Skill 一覧の取得に失敗しました。"));
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function openEditDialog(skill: SkillSummary) {
+    setIsLoadingEditor(true);
+    setError("");
+    setEditError("");
+    try {
+      const loaded = await fetchSkill(skill.name);
+      setEditSkill(loaded);
+      setEditContent(loaded.content);
+      setIsEditOpen(true);
+    } catch (loadError) {
+      setError(readError(loadError, "Skill の読み込みに失敗しました。"));
+    } finally {
+      setIsLoadingEditor(false);
+    }
+  }
+
+  function closeEditDialog() {
+    if (isSaving || isLoadingEditor) {
+      return;
+    }
+    resetEditor();
+  }
+
+  function resetEditor() {
+    setEditError("");
+    setIsEditOpen(false);
+    setEditSkill(null);
+    setEditContent(emptyContent);
+  }
+
+  async function handleCreate() {
+    const name = window.prompt("Skill名を入力してください。");
+    if (name === null) {
+      return;
+    }
+    const skillName = name.trim();
+    if (!skillName) {
+      setError("Skill名を入力してください。");
+      return;
+    }
+    setIsCreating(true);
+    setError("");
+    try {
+      const created = await createSkill(skillName, `# ${skillName}\n`);
+      setEditSkill(created);
+      setEditContent(created.content);
+      setIsEditOpen(true);
+      await loadSkills();
+    } catch (createError) {
+      setError(readError(createError, "Skill の作成に失敗しました。"));
+    } finally {
+      setIsCreating(false);
+    }
+  }
+
+  async function handleUpdate() {
+    if (!editSkill) {
+      return;
+    }
+    setIsSaving(true);
+    setEditError("");
+    try {
+      await updateSkill(editSkill.name, editContent);
+      resetEditor();
+      await loadSkills();
+    } catch (saveError) {
+      setEditError(readError(saveError, "Skill の更新に失敗しました。"));
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  return (
+    <>
+      <PageFrame
+        eyebrow={null}
+        title={<span className="inline-flex h-9 items-center pl-1">Skills</span>}
+      >
+        <section className="space-y-3 rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
+          <div className="mb-4 flex justify-end">
+            <PrimaryButton type="button" onClick={() => void handleCreate()} disabled={isCreating}>
+              新規Skill
+            </PrimaryButton>
+          </div>
+          {error ? <Notice tone="error" message={error} /> : null}
+          {isLoading ? <Notice tone="neutral" message="Loading skills..." /> : null}
+          {!error && !isLoading && skills.length === 0 ? (
+            <Notice tone="neutral" message="Skill は見つかりませんでした。" />
+          ) : null}
+          {skills.map((skill) => (
+            <article
+              key={skill.name}
+              role="button"
+              tabIndex={0}
+              onClick={() => {
+                if (isLoadingEditor) {
+                  return;
+                }
+                void openEditDialog(skill);
+              }}
+              onKeyDown={(event) => {
+                if (isLoadingEditor) {
+                  return;
+                }
+                if (event.key !== "Enter" && event.key !== " ") {
+                  return;
+                }
+                event.preventDefault();
+                void openEditDialog(skill);
+              }}
+              className="cursor-pointer rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] pl-6 pr-4 py-3 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)] transition hover:border-amber-200 hover:bg-amber-50/60 hover:shadow-[0_1px_0_rgba(9,9,11,0.05),0_18px_42px_rgba(9,9,11,0.12)]"
+            >
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <h2 className="flex items-center gap-2 text-base font-semibold">
+                    <img
+                      src="/assets/images/code-xml.svg"
+                      alt=""
+                      aria-hidden="true"
+                      className="mt-[2px] h-5 w-5 shrink-0 text-[var(--muted)]"
+                    />
+                    <span className="truncate">{skill.name}</span>
+                  </h2>
+                  <p className="mt-2 flex items-start gap-2 break-all text-sm text-[var(--muted)]">
+                    <img
+                      src="/assets/images/file-text.svg"
+                      alt=""
+                      aria-hidden="true"
+                      className="mt-[2px] h-4 w-4 shrink-0"
+                    />
+                    <span>{displayPath(skill.path)}</span>
+                  </p>
+                </div>
+                <div className="flex shrink-0 justify-end gap-2 sm:pt-1">
+                  <button
+                    type="button"
+                    disabled={isLoadingEditor}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      void openEditDialog(skill);
+                    }}
+                    className="rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    編集
+                  </button>
+                </div>
+              </div>
+            </article>
+          ))}
+        </section>
+      </PageFrame>
+      <NewTaskDialog
+        isOpen={isEditOpen}
+        isSaving={isSaving}
+        error={editError}
+        action={editContent}
+        title={editSkill ? `編集 - ${editSkill.name}` : "編集"}
+        titleIconSrc="/assets/images/file-text.svg"
+        description=""
+        submitLabel="更新"
+        submittingLabel="更新中..."
+        enableShortcut
+        onActionChange={setEditContent}
+        onClose={closeEditDialog}
+        onSubmit={handleUpdate}
+      />
+    </>
+  );
+}
+
+function readError(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+  return fallback;
+}
+
+function displayPath(path: string) {
+  const linuxHome = /^\/home\/[^/]+(\/.*)?$/.exec(path);
+  if (linuxHome) {
+    return `$HOME${linuxHome[1] ?? ""}`;
+  }
+  const macHome = /^\/Users\/[^/]+(\/.*)?$/.exec(path);
+  if (macHome) {
+    return `$HOME${macHome[1] ?? ""}`;
+  }
+  return path;
+}

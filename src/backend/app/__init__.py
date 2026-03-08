@@ -11,6 +11,7 @@ def create_app(test_config: dict[str, object] | None = None) -> Flask:
     app.config.from_mapping(
         PROJECTS_FILE=str(_default_projects_file()),
         PROMPTS_DIR=str(_default_prompts_dir()),
+        SKILLS_DIR=str(_default_skills_dir()),
     )
     if test_config:
         app.config.update(test_config)
@@ -25,3 +26,7 @@ def _default_projects_file() -> Path:
 
 def _default_prompts_dir() -> Path:
     return Path.home() / ".codex" / "prompts"
+
+
+def _default_skills_dir() -> Path:
+    return Path.home() / ".codex" / "skills"

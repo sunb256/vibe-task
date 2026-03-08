@@ -121,6 +121,7 @@ test("does not render the removed project subtitle", async () => {
     "href",
     "/custom-prompt",
   );
+  expect(screen.getByRole("link", { name: "Skills" })).toHaveAttribute("href", "/skills");
   expect(screen.queryByText("VIBE TASK")).not.toBeInTheDocument();
   expect(screen.getByRole("heading", { level: 1, name: "impl" })).toBeInTheDocument();
   expect(screen.getAllByRole("columnheader").map((header) => header.textContent)).toEqual([
@@ -340,6 +341,7 @@ test("renders tasks before project list request finishes", async () => {
     "href",
     "/custom-prompt",
   );
+  expect(screen.getByRole("link", { name: "Skills" })).toHaveAttribute("href", "/skills");
 });
 
 test("uses cached tasks on revisit before refetch resolves", async () => {
