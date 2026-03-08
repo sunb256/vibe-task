@@ -178,8 +178,9 @@ def list_skills():
 
 @api_bp.get("/skills/<path:skill_name>")
 def get_skill(skill_name: str):
-    service = SkillService(_skill_repository())
-    skill = service.get_skill(skill_name)
+    source, project_name = _skill_scope()
+    service = SkillService(_skill_repository(), _project_repository())
+    skill = service.get_skill(skill_name, source, project_name)
     return jsonify(skill.to_dict())
 
 
@@ -207,16 +208,28 @@ def update_skill(skill_name: str):
     content = payload.get("content")
     if not isinstance(content, str):
         raise AppError("content is required", 400)
-    service = SkillService(_skill_repository())
-    skill = service.update_skill(skill_name, content)
+    source, project_name = _skill_scope()
+    service = SkillService(_skill_repository(), _project_repository())
+    skill = service.update_skill(skill_name, content, source, project_name)
     return jsonify(skill.to_dict())
 
 
 @api_bp.delete("/skills/<path:skill_name>")
 def delete_skill(skill_name: str):
-    service = SkillService(_skill_repository())
-    service.delete_skill(skill_name)
+    source, project_name = _skill_scope()
+    service = SkillService(_skill_repository(), _project_repository())
+    service.delete_skill(skill_name, source, project_name)
     return "", 204
+
+
+def _skill_scope() -> tuple[str, str]:
+    source = request.args.get("source", "global").strip().lower()
+    if source not in {"global", "project"}:
+        raise AppError("invalid source", 400)
+    project_name = request.args.get("projectName", "").strip()
+    if source == "project" and not project_name:
+        raise AppError("projectName is required", 400)
+    return source, project_name
 
 
 def _project_repository() -> ProjectRepository:
