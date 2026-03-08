@@ -176,6 +176,16 @@ def list_skills():
     return jsonify({"skills": skills})
 
 
+@api_bp.get("/skills/file")
+def get_skill_by_path():
+    skill_path = request.args.get("path")
+    if not isinstance(skill_path, str):
+        raise AppError("path is required", 400)
+    service = SkillService(_skill_repository(), _project_repository())
+    skill = service.get_skill_by_path(skill_path)
+    return jsonify(skill.to_dict())
+
+
 @api_bp.get("/skills/<path:skill_name>")
 def get_skill(skill_name: str):
     service = SkillService(_skill_repository())
@@ -197,6 +207,35 @@ def create_skill():
     service = SkillService(_skill_repository())
     skill = service.create_skill(name, content)
     return jsonify(skill.to_dict()), 201
+
+
+@api_bp.patch("/skills/file")
+def update_skill_by_path():
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        raise AppError("request body must be an object", 400)
+    skill_path = payload.get("path")
+    if not isinstance(skill_path, str):
+        raise AppError("path is required", 400)
+    content = payload.get("content")
+    if not isinstance(content, str):
+        raise AppError("content is required", 400)
+    service = SkillService(_skill_repository(), _project_repository())
+    skill = service.update_skill_by_path(skill_path, content)
+    return jsonify(skill.to_dict())
+
+
+@api_bp.delete("/skills/file")
+def delete_skill_by_path():
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        raise AppError("request body must be an object", 400)
+    skill_path = payload.get("path")
+    if not isinstance(skill_path, str):
+        raise AppError("path is required", 400)
+    service = SkillService(_skill_repository(), _project_repository())
+    service.delete_skill_by_path(skill_path)
+    return "", 204
 
 
 @api_bp.patch("/skills/<path:skill_name>")

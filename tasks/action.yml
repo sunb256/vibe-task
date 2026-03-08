@@ -7,11 +7,4 @@ impl_rule: |
   4. 連切な改行を行う。
   5. KISS/DRY/リーダブルコードの原則を守る
 
-task:
-  - id: '89'
-    url: '-'
-    title: '-'
-    action: |-
-      Skills画面
-      検索機能も欲しい
-      TOP画面と同様のUI
+task: []

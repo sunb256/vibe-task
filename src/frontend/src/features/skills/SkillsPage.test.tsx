@@ -82,8 +82,104 @@ test("renders skills list and global menu", async () => {
   expect(screen.getByRole("link", { name: "Skills" })).toHaveAttribute("href", "/skills");
   expect(screen.getByRole("heading", { level: 1, name: "Skills" })).toBeInTheDocument();
   expect(screen.getByText("$HOME/.codex/skills/alpha/SKILL.md")).toBeInTheDocument();
+  expect(screen.getByRole("searchbox", { name: "Search" })).toBeInTheDocument();
+  expect(screen.getByLabelText("ファイルパスも検索")).not.toBeChecked();
   expect(screen.getByRole("button", { name: "新規Skill" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "編集" })).toBeInTheDocument();
+});
+
+test("filters skills by search query", async () => {
+  vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+    new Response(
+      JSON.stringify({
+        skills: [
+          {
+            name: "alpha",
+            path: "/tmp/.codex/skills/alpha/SKILL.md",
+            source: "global",
+            projectName: "",
+            editable: true,
+          },
+          {
+            name: "beta",
+            path: "/tmp/.codex/skills/beta/SKILL.md",
+            source: "global",
+            projectName: "",
+            editable: true,
+          },
+        ],
+      }),
+    ),
+  );
+
+  render(
+    <MemoryRouter initialEntries={["/skills"]}>
+      <SkillsPage />
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("alpha")).toBeInTheDocument();
+    expect(screen.getByText("beta")).toBeInTheDocument();
+  });
+
+  fireEvent.change(screen.getByRole("searchbox", { name: "Search" }), {
+    target: { value: "alp" },
+  });
+
+  expect(screen.getByText("alpha")).toBeInTheDocument();
+  expect(screen.queryByText("beta")).not.toBeInTheDocument();
+
+  fireEvent.change(screen.getByRole("searchbox", { name: "Search" }), {
+    target: { value: "zzz" },
+  });
+
+  expect(screen.getByText("検索条件に一致するSkillはありません。")).toBeInTheDocument();
+});
+
+test("path search works only when checkbox is enabled", async () => {
+  vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+    new Response(
+      JSON.stringify({
+        skills: [
+          {
+            name: "alpha",
+            path: "/tmp/.codex/skills/alpha/SKILL.md",
+            source: "global",
+            projectName: "",
+            editable: true,
+          },
+          {
+            name: "beta",
+            path: "/tmp/.codex/skills/team-beta-only/SKILL.md",
+            source: "global",
+            projectName: "",
+            editable: true,
+          },
+        ],
+      }),
+    ),
+  );
+
+  render(
+    <MemoryRouter initialEntries={["/skills"]}>
+      <SkillsPage />
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("alpha")).toBeInTheDocument();
+    expect(screen.getByText("beta")).toBeInTheDocument();
+  });
+
+  fireEvent.change(screen.getByRole("searchbox", { name: "Search" }), {
+    target: { value: "team-beta-only" },
+  });
+  expect(screen.getByText("検索条件に一致するSkillはありません。")).toBeInTheDocument();
+
+  fireEvent.click(screen.getByLabelText("ファイルパスも検索"));
+  expect(screen.getByText("beta")).toBeInTheDocument();
+  expect(screen.queryByText("alpha")).not.toBeInTheDocument();
 });
 
 test("creates a new skill from new button", async () => {
@@ -217,6 +313,11 @@ test("edits skill content in modal editor", async () => {
   await waitFor(() => {
     expect(screen.getByRole("dialog", { name: "編集 - alpha" })).toBeInTheDocument();
   });
+  expect(fetchMock).toHaveBeenNthCalledWith(
+    2,
+    "/api/skills/file?path=%2Ftmp%2F.codex%2Fskills%2Falpha%2FSKILL.md",
+    expect.objectContaining({ cache: "no-store" }),
+  );
 
   fireEvent.change(screen.getByLabelText("task-editor"), {
     target: { value: "# Updated Skill\n" },
@@ -226,10 +327,13 @@ test("edits skill content in modal editor", async () => {
   await waitFor(() => {
     expect(fetchMock).toHaveBeenNthCalledWith(
       3,
-      "/api/skills/alpha",
+      "/api/skills/file",
       expect.objectContaining({
         method: "PATCH",
-        body: JSON.stringify({ content: "# Updated Skill\n" }),
+        body: JSON.stringify({
+          path: "/tmp/.codex/skills/alpha/SKILL.md",
+          content: "# Updated Skill\n",
+        }),
       }),
     );
   });
@@ -238,22 +342,64 @@ test("edits skill content in modal editor", async () => {
   });
 });
 
-test("renders project skill as read-only", async () => {
-  vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
-    new Response(
-      JSON.stringify({
-        skills: [
-          {
-            name: "local-skill",
-            path: "/tmp/repo/.codex/skills/local-skill/SKILL.md",
-            source: "project",
-            projectName: "impl",
-            editable: false,
-          },
-        ],
-      }),
-    ),
-  );
+test("edits project skill content in modal editor", async () => {
+  const confirmMock = vi.spyOn(window, "confirm").mockReturnValue(true);
+  const fetchMock = vi
+    .spyOn(globalThis, "fetch")
+    .mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          skills: [
+            {
+              name: "local-skill",
+              path: "/tmp/repo/.codex/skills/local-skill/SKILL.md",
+              source: "project",
+              projectName: "impl",
+              editable: true,
+            },
+          ],
+        }),
+      ),
+    )
+    .mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          name: "local-skill",
+          path: "/tmp/repo/.codex/skills/local-skill/SKILL.md",
+          content: "# Local Skill\n",
+          source: "project",
+          projectName: "impl",
+          editable: true,
+        }),
+      ),
+    )
+    .mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          name: "local-skill",
+          path: "/tmp/repo/.codex/skills/local-skill/SKILL.md",
+          content: "# Updated Local Skill\n",
+          source: "project",
+          projectName: "impl",
+          editable: true,
+        }),
+      ),
+    )
+    .mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          skills: [
+            {
+              name: "local-skill",
+              path: "/tmp/repo/.codex/skills/local-skill/SKILL.md",
+              source: "project",
+              projectName: "impl",
+              editable: true,
+            },
+          ],
+        }),
+      ),
+    );
 
   render(
     <MemoryRouter initialEntries={["/skills"]}>
@@ -266,6 +412,82 @@ test("renders project skill as read-only", async () => {
   });
 
   expect(screen.getByText("Project: impl")).toBeInTheDocument();
-  expect(screen.getByText("読み取り専用")).toBeInTheDocument();
-  expect(screen.queryByRole("button", { name: "編集" })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByText("local-skill"));
+  await waitFor(() => {
+    expect(screen.getByRole("dialog", { name: "編集 - local-skill" })).toBeInTheDocument();
+  });
+  fireEvent.change(screen.getByLabelText("task-editor"), {
+    target: { value: "# Updated Local Skill\n" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "更新" }));
+  expect(confirmMock).toHaveBeenCalledWith(
+    "プロジェクト配下のSkillを更新します。続行しますか？\n/tmp/repo/.codex/skills/local-skill/SKILL.md",
+  );
+  await waitFor(() => {
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      3,
+      "/api/skills/file",
+      expect.objectContaining({
+        method: "PATCH",
+        body: JSON.stringify({
+          path: "/tmp/repo/.codex/skills/local-skill/SKILL.md",
+          content: "# Updated Local Skill\n",
+        }),
+      }),
+    );
+  });
+});
+
+test("deletes project skill with confirmation", async () => {
+  const confirmMock = vi.spyOn(window, "confirm").mockReturnValue(true);
+  const fetchMock = vi
+    .spyOn(globalThis, "fetch")
+    .mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          skills: [
+            {
+              name: "local-skill",
+              path: "/tmp/repo/.codex/skills/local-skill/SKILL.md",
+              source: "project",
+              projectName: "impl",
+              editable: true,
+            },
+          ],
+        }),
+      ),
+    )
+    .mockResolvedValueOnce(new Response(null, { status: 204 }))
+    .mockResolvedValueOnce(new Response(JSON.stringify({ skills: [] })));
+
+  render(
+    <MemoryRouter initialEntries={["/skills"]}>
+      <SkillsPage />
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("local-skill")).toBeInTheDocument();
+  });
+
+  fireEvent.click(screen.getByRole("button", { name: "削除" }));
+
+  expect(confirmMock).toHaveBeenCalledWith(
+    "プロジェクト配下のSkillを削除します。続行しますか？\n/tmp/repo/.codex/skills/local-skill/SKILL.md",
+  );
+  await waitFor(() => {
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/skills/file",
+      expect.objectContaining({
+        method: "DELETE",
+        body: JSON.stringify({
+          path: "/tmp/repo/.codex/skills/local-skill/SKILL.md",
+        }),
+      }),
+    );
+  });
+  await waitFor(() => {
+    expect(screen.getByText("Skill は見つかりませんでした。")).toBeInTheDocument();
+  });
 });

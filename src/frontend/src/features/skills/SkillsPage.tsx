@@ -1,10 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Notice } from "../../components/Notice";
 import { PageFrame } from "../../components/PageFrame";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { NewTaskDialog } from "../tasks/NewTaskDialog";
-import { createSkill, fetchSkill, fetchSkills, updateSkill } from "./skillApi";
+import {
+  createSkill,
+  deleteSkillByPath,
+  fetchSkillByPath,
+  fetchSkills,
+  updateSkillByPath,
+} from "./skillApi";
 import type { SkillFile, SkillSummary } from "./types";
 
 const emptyContent = "";
@@ -17,9 +23,16 @@ export function SkillsPage() {
   const [isLoadingEditor, setIsLoadingEditor] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isPathSearchEnabled, setIsPathSearchEnabled] = useState(false);
   const [editSkill, setEditSkill] = useState<SkillFile | null>(null);
   const [editContent, setEditContent] = useState(emptyContent);
+  const visibleSkills = useMemo(
+    () => filterSkills(skills, searchQuery, isPathSearchEnabled),
+    [skills, searchQuery, isPathSearchEnabled],
+  );
 
   useEffect(() => {
     void loadSkills();
@@ -39,14 +52,11 @@ export function SkillsPage() {
   }
 
   async function openEditDialog(skill: SkillSummary) {
-    if (!canEditSkill(skill)) {
-      return;
-    }
     setIsLoadingEditor(true);
     setError("");
     setEditError("");
     try {
-      const loaded = await fetchSkill(skill.name);
+      const loaded = await fetchSkillByPath(skill.path);
       setEditSkill(loaded);
       setEditContent(loaded.content);
       setIsEditOpen(true);
@@ -100,16 +110,48 @@ export function SkillsPage() {
     if (!editSkill) {
       return;
     }
+    if (editSkill.source === "project") {
+      const ok = window.confirm(
+        `プロジェクト配下のSkillを更新します。続行しますか？\n${editSkill.path}`,
+      );
+      if (!ok) {
+        return;
+      }
+    }
     setIsSaving(true);
     setEditError("");
     try {
-      await updateSkill(editSkill.name, editContent);
+      await updateSkillByPath(editSkill.path, editContent);
       resetEditor();
       await loadSkills();
     } catch (saveError) {
       setEditError(readError(saveError, "Skill の更新に失敗しました。"));
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  async function handleDelete(skill: SkillSummary) {
+    const message =
+      skill.source === "project"
+        ? `プロジェクト配下のSkillを削除します。続行しますか？\n${skill.path}`
+        : `Skill ${skill.name} を削除しますか？`;
+    const ok = window.confirm(message);
+    if (!ok) {
+      return;
+    }
+    setIsDeleting(true);
+    setError("");
+    try {
+      await deleteSkillByPath(skill.path);
+      if (editSkill && editSkill.path === skill.path) {
+        resetEditor();
+      }
+      await loadSkills();
+    } catch (deleteError) {
+      setError(readError(deleteError, "Skill の削除に失敗しました。"));
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -120,29 +162,66 @@ export function SkillsPage() {
         title={<span className="inline-flex h-9 items-center pl-1">Skills</span>}
       >
         <section className="space-y-3 rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
-          <div className="mb-4 flex justify-end">
-            <PrimaryButton type="button" onClick={() => void handleCreate()} disabled={isCreating}>
-              新規Skill
-            </PrimaryButton>
+          <div className="mb-4 flex w-full items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="relative w-56 sm:w-64">
+                <img
+                  src="/assets/images/search.svg"
+                  alt=""
+                  aria-hidden="true"
+                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-65"
+                />
+                <input
+                  id="skill-search"
+                  type="search"
+                  aria-label="Search"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder="Search"
+                  className="h-9 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12"
+                />
+              </div>
+              <label
+                htmlFor="skill-search-path"
+                className="inline-flex shrink-0 select-none items-center gap-2 whitespace-nowrap pl-1 text-xs font-medium text-[var(--muted)]"
+              >
+                <input
+                  id="skill-search-path"
+                  type="checkbox"
+                  checked={isPathSearchEnabled}
+                  onChange={(event) => setIsPathSearchEnabled(event.target.checked)}
+                  className="h-4 w-4 rounded border-[var(--border)] text-[var(--accent)] focus:ring-[var(--accent)]/30"
+                />
+                ファイルパスも検索
+              </label>
+            </div>
+            <div className="flex shrink-0 items-center justify-end gap-2">
+              <PrimaryButton type="button" onClick={() => void handleCreate()} disabled={isCreating}>
+                新規Skill
+              </PrimaryButton>
+            </div>
           </div>
           {error ? <Notice tone="error" message={error} /> : null}
           {isLoading ? <Notice tone="neutral" message="Loading skills..." /> : null}
           {!error && !isLoading && skills.length === 0 ? (
             <Notice tone="neutral" message="Skill は見つかりませんでした。" />
           ) : null}
-          {skills.map((skill) => (
+          {!error && !isLoading && skills.length > 0 && visibleSkills.length === 0 ? (
+            <Notice tone="neutral" message="検索条件に一致するSkillはありません。" />
+          ) : null}
+          {visibleSkills.map((skill) => (
             <article
               key={skill.path}
-              role={canEditSkill(skill) ? "button" : undefined}
-              tabIndex={canEditSkill(skill) ? 0 : -1}
+              role="button"
+              tabIndex={0}
               onClick={() => {
-                if (isLoadingEditor || !canEditSkill(skill)) {
+                if (isLoadingEditor) {
                   return;
                 }
                 void openEditDialog(skill);
               }}
               onKeyDown={(event) => {
-                if (isLoadingEditor || !canEditSkill(skill)) {
+                if (isLoadingEditor) {
                   return;
                 }
                 if (event.key !== "Enter" && event.key !== " ") {
@@ -151,13 +230,9 @@ export function SkillsPage() {
                 event.preventDefault();
                 void openEditDialog(skill);
               }}
-              className={`rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] pl-6 pr-4 py-3 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)] transition ${
-                canEditSkill(skill)
-                  ? "cursor-pointer hover:border-amber-200 hover:bg-amber-50/60 hover:shadow-[0_1px_0_rgba(9,9,11,0.05),0_18px_42px_rgba(9,9,11,0.12)]"
-                  : "cursor-default"
-              }`}
+              className="cursor-pointer rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] pl-6 pr-4 py-3 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)] transition hover:border-amber-200 hover:bg-amber-50/60 hover:shadow-[0_1px_0_rgba(9,9,11,0.05),0_18px_42px_rgba(9,9,11,0.12)]"
             >
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
                   <h2 className="flex items-center gap-2 text-base font-semibold">
                     <img
@@ -183,24 +258,29 @@ export function SkillsPage() {
                     </p>
                   ) : null}
                 </div>
-                <div className="flex shrink-0 justify-end gap-2 sm:pt-1">
-                  {canEditSkill(skill) ? (
-                    <button
-                      type="button"
-                      disabled={isLoadingEditor}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        void openEditDialog(skill);
-                      }}
-                      className="rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      編集
-                    </button>
-                  ) : (
-                    <span className="inline-flex items-center rounded-lg border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--muted)]">
-                      読み取り専用
-                    </span>
-                  )}
+                <div className="flex shrink-0 justify-end gap-2">
+                  <button
+                    type="button"
+                    disabled={isLoadingEditor}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      void openEditDialog(skill);
+                    }}
+                    className="rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    編集
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isDeleting}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      void handleDelete(skill);
+                    }}
+                    className="rounded-lg border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-700 transition hover:border-rose-300 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    削除
+                  </button>
                 </div>
               </div>
             </article>
@@ -245,6 +325,16 @@ function displayPath(path: string) {
   return path;
 }
 
-function canEditSkill(skill: SkillSummary) {
-  return skill.editable;
+function filterSkills(skills: SkillSummary[], query: string, includePath: boolean) {
+  const normalized = query.trim().toLowerCase();
+  if (!normalized) {
+    return skills;
+  }
+  return skills.filter((skill) => {
+    const fields = [skill.name, skill.projectName, skill.source];
+    if (includePath) {
+      fields.push(skill.path);
+    }
+    return fields.some((value) => value.toLowerCase().includes(normalized));
+  });
 }

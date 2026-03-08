@@ -15,6 +15,13 @@ export function fetchSkill(skillName: string) {
   });
 }
 
+export function fetchSkillByPath(path: string) {
+  const params = new URLSearchParams({ path });
+  return apiFetch<SkillFile>(`/api/skills/file?${params.toString()}`, {
+    cache: "no-store",
+  });
+}
+
 export function createSkill(name: string, content: string) {
   return apiFetch<SkillFile>("/api/skills", {
     method: "POST",
@@ -26,5 +33,19 @@ export function updateSkill(skillName: string, content: string) {
   return apiFetch<SkillFile>(`/api/skills/${encodeURIComponent(skillName)}`, {
     method: "PATCH",
     json: { content },
+  });
+}
+
+export function updateSkillByPath(path: string, content: string) {
+  return apiFetch<SkillFile>("/api/skills/file", {
+    method: "PATCH",
+    json: { path, content },
+  });
+}
+
+export function deleteSkillByPath(path: string) {
+  return apiFetch<void>("/api/skills/file", {
+    method: "DELETE",
+    json: { path },
   });
 }

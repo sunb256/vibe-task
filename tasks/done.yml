@@ -708,3 +708,10 @@ task:
 
       各プロジェクトのskillsファイルも探索して表示してほしいです
       また、ユーザ直下のSKILLか各プロジェクトのSKILLか区別のつくUIにして欲しい
+  - id: 89
+    url: https://github.com/sunb256/vibe-task/pull/90
+    title: Skills画面の検索追加とSkill編集・削除機能の改善
+    action: |-
+      Skills画面
+      検索機能も欲しい
+      TOP画面と同様のUI

@@ -36,7 +36,7 @@ def test_lists_project_skill_files(client, project_repo: Path):
     assert local["name"] == "local"
     assert local["source"] == "project"
     assert local["projectName"] == "impl"
-    assert local["editable"] is False
+    assert local["editable"] is True
 
 
 def test_reads_skill_file(client):
@@ -46,6 +46,32 @@ def test_reads_skill_file(client):
     payload = response.get_json()
     assert payload["name"] == "alpha"
     assert payload["content"] == "# Alpha Skill\n"
+
+
+def test_reads_project_skill_file_by_path(client, project_repo: Path):
+    local_skill = project_repo / ".codex" / "skills" / "local"
+    local_skill.mkdir(parents=True)
+    skill_file = local_skill / "SKILL.md"
+    skill_file.write_text("# Local Skill\n", encoding="utf-8")
+    created = client.post(
+        "/api/projects",
+        json={
+            "name": "impl",
+            "repositoryPath": str(project_repo),
+            "actionListPath": "tasks/action.yml",
+            "doneListPath": "tasks/done.yml",
+        },
+    )
+    assert created.status_code == 201
+
+    response = client.get("/api/skills/file", query_string={"path": str(skill_file)})
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert payload["name"] == "local"
+    assert payload["source"] == "project"
+    assert payload["projectName"] == "impl"
+    assert payload["content"] == "# Local Skill\n"
 
 
 def test_creates_skill_file(client, skills_dir: Path):
@@ -70,6 +96,59 @@ def test_updates_skill_file(client, skills_dir: Path):
     assert payload["content"] == "# Updated Skill\n"
     content = (skills_dir / "alpha" / "SKILL.md").read_text(encoding="utf-8")
     assert content == "# Updated Skill\n"
+
+
+def test_updates_project_skill_file_by_path(client, project_repo: Path):
+    local_skill = project_repo / ".codex" / "skills" / "local"
+    local_skill.mkdir(parents=True)
+    skill_file = local_skill / "SKILL.md"
+    skill_file.write_text("# Local Skill\n", encoding="utf-8")
+    created = client.post(
+        "/api/projects",
+        json={
+            "name": "impl",
+            "repositoryPath": str(project_repo),
+            "actionListPath": "tasks/action.yml",
+            "doneListPath": "tasks/done.yml",
+        },
+    )
+    assert created.status_code == 201
+
+    response = client.patch(
+        "/api/skills/file",
+        json={"path": str(skill_file), "content": "# Updated Local Skill\n"},
+    )
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert payload["name"] == "local"
+    assert payload["source"] == "project"
+    assert payload["projectName"] == "impl"
+    assert payload["content"] == "# Updated Local Skill\n"
+    content = skill_file.read_text(encoding="utf-8")
+    assert content == "# Updated Local Skill\n"
+
+
+def test_deletes_project_skill_file_by_path(client, project_repo: Path):
+    local_skill = project_repo / ".codex" / "skills" / "local"
+    local_skill.mkdir(parents=True)
+    skill_file = local_skill / "SKILL.md"
+    skill_file.write_text("# Local Skill\n", encoding="utf-8")
+    created = client.post(
+        "/api/projects",
+        json={
+            "name": "impl",
+            "repositoryPath": str(project_repo),
+            "actionListPath": "tasks/action.yml",
+            "doneListPath": "tasks/done.yml",
+        },
+    )
+    assert created.status_code == 201
+
+    response = client.delete("/api/skills/file", json={"path": str(skill_file)})
+
+    assert response.status_code == 204
+    assert not skill_file.exists()
 
 
 def test_rejects_invalid_skill_name(client):
