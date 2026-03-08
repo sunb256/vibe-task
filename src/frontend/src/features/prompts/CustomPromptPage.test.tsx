@@ -72,6 +72,9 @@ test("renders custom prompt list with menu", async () => {
   });
 
   expect(screen.getByRole("link", { name: "Project" })).toHaveAttribute("href", "/");
+  expect(
+    screen.getByRole("link", { name: "Project" }).querySelector('img[src="/assets/images/vibe_task_logo.png"]'),
+  ).not.toBeNull();
   expect(screen.getByRole("link", { name: "Custom Prompt" })).toHaveAttribute(
     "href",
     "/custom-prompt",
