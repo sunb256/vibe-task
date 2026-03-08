@@ -8,17 +8,16 @@ impl_rule: |
   5. KISS/DRY/リーダブルコードの原則を守る
 
 task:
-  - id: '78'
-    url: '-'
-    title: '-'
-    action: |-
-      Project画面のヘッダ部をTOP画面のUIと合わせたい
-
-      ヘッダ部のVIBE TASK表記はやめてタイトルだけにして、メインコンテンツのヘッダ部と統合したい
   - id: '79'
     url: '-'
     title: '-'
-    action: |
+    action: |-
       フッタ部を作りたい
-      
+
       記載は今のところないが <hr/>　で薄い線を入れておきたい
+  - id: '80'
+    url: '-'
+    title: '-'
+    action: |
+      TOP画面
+      検索バーは右寄せにして
