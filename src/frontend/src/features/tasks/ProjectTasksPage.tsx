@@ -347,6 +347,7 @@ export function ProjectTasksPage() {
         error={createError}
         action={newTaskAction}
         title="新規タスク"
+        titleIconSrc="/assets/images/square-check-big.svg"
         description=""
         submitLabel="新規作成"
         submittingLabel="作成中..."
@@ -361,6 +362,7 @@ export function ProjectTasksPage() {
         error={editError}
         action={editTaskAction}
         title={editTask ? `編集 - #${editTask.id}` : "編集"}
+        titleIconSrc="/assets/images/square-check-big.svg"
         description=""
         submitLabel="更新"
         submittingLabel="更新中..."

@@ -660,3 +660,13 @@ task:
 
       TOP画面で使用している新規プロジェクトやSettingも同じUIにしてください
       CustomPromptで使用しているモーダルのUIも同じ
+  - id: 83
+    url: https://github.com/sunb256/vibe-task/pull/84
+    title: Project画面モーダルタイトル左にsquare-check-big.svgを表示
+    action: |-
+      Project画面
+
+      モーダルのタイトル部の左側に以下のsvgを使って
+
+
+      src/frontend/assets/images/square-check-big.svg

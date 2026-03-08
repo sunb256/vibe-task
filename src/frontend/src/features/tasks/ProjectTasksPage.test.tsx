@@ -187,6 +187,8 @@ test("does not render the removed project subtitle", async () => {
   expect(screen.getByText("first task")).toHaveClass("text-black");
   fireEvent.click(screen.getByText("TODO #1", { selector: "span" }));
   expect(screen.getByRole("dialog", { name: "編集 - #1" })).toBeInTheDocument();
+  const editDialog = screen.getByRole("dialog", { name: "編集 - #1" });
+  expect(editDialog.querySelector('img[src="/assets/images/square-check-big.svg"]')).not.toBeNull();
   expect(screen.getByRole("button", { name: "更新" })).toHaveClass(
     "min-w-[4.5rem]",
     "whitespace-nowrap",
@@ -467,6 +469,8 @@ test("creates a new action task from modal editor", async () => {
 
   fireEvent.keyDown(window, { key: "n", ctrlKey: true });
   expect(screen.getByRole("dialog", { name: "新規タスク" })).toBeInTheDocument();
+  const createDialog = screen.getByRole("dialog", { name: "新規タスク" });
+  expect(createDialog.querySelector('img[src="/assets/images/square-check-big.svg"]')).not.toBeNull();
   expect(screen.getByLabelText("task-editor")).toHaveFocus();
   expect(screen.getByRole("button", { name: "新規作成" })).toHaveClass(
     "min-w-[4.5rem]",

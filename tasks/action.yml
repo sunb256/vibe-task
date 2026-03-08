@@ -7,14 +7,4 @@ impl_rule: |
   4. 連切な改行を行う。
   5. KISS/DRY/リーダブルコードの原則を守る
 
-task:
-  - id: '83'
-    url: '-'
-    title: '-'
-    action: |-
-      Project画面
-
-      モーダルのタイトル部の左側に以下のsvgを使って
-
-
-      src/frontend/assets/images/square-check-big.svg
+task: []
