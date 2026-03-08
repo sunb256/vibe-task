@@ -212,10 +212,10 @@ export function ProjectTasksPage() {
   return (
     <PageFrame
       eyebrow={null}
-      headerStyle="plain"
       title={<span className="inline-flex h-9 items-center pl-1">{project ? project.name : "Project"}</span>}
-      actions={
-        <div className="flex w-full items-center justify-start gap-2 pl-2">
+    >
+      <section className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
+        <div className="mb-4 flex w-full items-center justify-start gap-2 pl-2">
           <PrimaryButton
             ref={createButtonRef}
             type="button"
@@ -241,9 +241,6 @@ export function ProjectTasksPage() {
             {`DONE(${doneCount})`}
           </button>
         </div>
-      }
-    >
-      <section className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
         {error ? <Notice tone="error" message={error} /> : null}
         {isLoading ? <Notice tone="neutral" message="Loading tasks..." /> : null}
         {!error && !isLoading && visibleTasks.length === 0 ? (
