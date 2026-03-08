@@ -97,6 +97,7 @@ test("renders project list", async () => {
   fireEvent.click(screen.getByRole("button", { name: "Setting" }));
   expect(screen.getByRole("dialog", { name: "Setting" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "projects.yml をエクスポート" })).toBeInTheDocument();
+  expect(screen.queryByText("projects.yml を読み込んで置き換えます。")).not.toBeInTheDocument();
   expect(screen.getByRole("button", { name: "インポート" })).toBeDisabled();
   const settingsCancelButton = screen.getByRole("button", { name: "Cancel" });
   expect(settingsCancelButton).toHaveClass("px-4", "py-2");

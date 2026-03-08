@@ -98,7 +98,6 @@ export function ProjectSettingsDialog(props: ProjectSettingsDialogProps) {
           </section>
           <section className="rounded-lg border border-[var(--border)] bg-white/70 p-4">
             <h3 className="text-sm font-semibold text-[var(--ink)]">データインポート</h3>
-            <p className="mt-1 text-sm text-[var(--muted)]">projects.yml を読み込んで置き換えます。</p>
             <form className="mt-3 grid gap-3" onSubmit={handleImport}>
               <label className="grid gap-1 text-sm text-[var(--ink)]">
                 projects.yml
