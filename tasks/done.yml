@@ -582,7 +582,7 @@ task:
 
        としたい
   - id: 74
-    url: https://github.com/sunb256/vibe-task/pull/77
+    url: https://github.com/sunb256/vibe-task/pull/78
     title: Custom Prompt画面に~/.codex/prompts一覧・編集・削除を実装
     action: |-
       CustomPrompt編集画面を作りたい
