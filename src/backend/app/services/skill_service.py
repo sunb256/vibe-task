@@ -31,6 +31,9 @@ class SkillService:
     def update_skill(self, skill_name: str, content: str) -> SkillRecord:
         return self.skill_repository.update_skill(skill_name, content)
 
+    def delete_skill(self, skill_name: str) -> None:
+        self.skill_repository.delete_skill(skill_name)
+
     def _list_project_skills(self) -> list[SkillRecord]:
         skills: list[SkillRecord] = []
         for project in self.project_repository.list_projects():

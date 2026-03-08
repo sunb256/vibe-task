@@ -42,6 +42,16 @@ class SkillRepository:
         skill_path.write_text(content, encoding="utf-8")
         return self._to_skill_record(skill_path)
 
+    def delete_skill(self, skill_name: str) -> None:
+        skill_path = self._resolve_skill_file_path(skill_name)
+        if not skill_path.exists():
+            raise AppError("skill not found", 404)
+        skill_path.unlink()
+        try:
+            skill_path.parent.rmdir()
+        except OSError:
+            return
+
     def _to_skill_record(self, path: Path) -> SkillRecord:
         return SkillRecord(
             name=path.parent.name,

@@ -70,6 +70,16 @@ def test_updates_skill_file(client, skills_dir: Path):
     assert content == "# Updated Skill\n"
 
 
+def test_deletes_skill_file(client):
+    deleted = client.delete("/api/skills/beta")
+
+    assert deleted.status_code == 204
+    listed = client.get("/api/skills")
+    payload = listed.get_json()
+    names = [skill["name"] for skill in payload["skills"]]
+    assert names == ["alpha"]
+
+
 def test_rejects_invalid_skill_name(client):
     response = client.get("/api/skills/nested/secret")
 

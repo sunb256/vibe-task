@@ -28,3 +28,9 @@ export function updateSkill(skillName: string, content: string) {
     json: { content },
   });
 }
+
+export function deleteSkill(skillName: string) {
+  return apiFetch<void>(`/api/skills/${encodeURIComponent(skillName)}`, {
+    method: "DELETE",
+  });
+}
