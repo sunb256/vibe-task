@@ -261,7 +261,7 @@ export function ProjectTasksPage() {
         ) : null}
         {!isLoading && visibleTasks.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="min-w-full border-separate border-spacing-y-2 text-left text-sm">
+            <table className="min-w-full border-separate border-spacing-y-1 text-left text-sm">
               <thead>
                 <tr className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
                   <th className="px-3 whitespace-nowrap">id</th>
@@ -280,7 +280,7 @@ export function ProjectTasksPage() {
                       onClick={() => openEditDialog(task)}
                       className="group cursor-pointer"
                     >
-                      <td className="rounded-l-md border-y border-l border-[var(--border)] bg-[var(--panel-strong)] px-3 py-3 text-[var(--muted)] whitespace-nowrap transition group-hover:bg-zinc-50/70 group-focus-within:bg-zinc-50/70">
+                      <td className="rounded-l-md border-y border-l border-[var(--border)] bg-[var(--panel-strong)] px-3 py-2 text-[var(--muted)] whitespace-nowrap transition group-hover:bg-zinc-50/70 group-focus-within:bg-zinc-50/70">
                         <span
                           className={`rounded-md px-3 py-1 text-xs font-semibold uppercase ${sourceBadgeTone(task.source)}`}
                         >
@@ -295,7 +295,7 @@ export function ProjectTasksPage() {
                             event.stopPropagation();
                             openEditDialog(task);
                           }}
-                          className="block h-full w-full px-3 py-3 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+                          className="block h-full w-full px-3 py-2 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
                         >
                           <div className="space-y-1">
                             {showTaskTitle(task.title) ? (
@@ -307,7 +307,7 @@ export function ProjectTasksPage() {
                           </div>
                         </button>
                       </td>
-                      <td className="w-[13rem] whitespace-nowrap border-y border-[var(--border)] bg-[var(--panel-strong)] pl-1 pr-3 py-3 transition group-hover:bg-zinc-50/70 group-focus-within:bg-zinc-50/70">
+                      <td className="w-[13rem] whitespace-nowrap border-y border-[var(--border)] bg-[var(--panel-strong)] pl-1 pr-3 py-2 transition group-hover:bg-zinc-50/70 group-focus-within:bg-zinc-50/70">
                         <div className="flex items-center gap-1">
                           <button
                             type="button"
@@ -343,7 +343,7 @@ export function ProjectTasksPage() {
                           />
                         </div>
                       </td>
-                      <td className="rounded-r-md border-y border-r border-[var(--border)] bg-[var(--panel-strong)] px-3 py-3 text-center transition group-hover:bg-zinc-50/70 group-focus-within:bg-zinc-50/70">
+                      <td className="rounded-r-md border-y border-r border-[var(--border)] bg-[var(--panel-strong)] px-3 py-2 text-center transition group-hover:bg-zinc-50/70 group-focus-within:bg-zinc-50/70">
                         <TaskPrLink url={task.url} />
                       </td>
                     </tr>

@@ -563,3 +563,21 @@ task:
     title: Project画面の編集、削除の横幅を一回り小さく調整
     action: |
       Project画面の編集、削除の横幅はもう一回り小さくてもいいです
+  - id: 72
+    url: '-'
+    title: Project画面の各レコード上下余白を一回り小さく調整
+    action: |
+      Project画面
+      各レコードの余白の上下はもう一回り小さくてもいいです
+  - id: 73
+    url: '-'
+    title: 固定ヘッダを追加しProject/Custom Promptメニューを実装
+    action: |-
+      画面上に固定ヘッダを作りたい
+
+      メニューを選択できるようにしたい
+
+       - Project(現在のTOP画面)
+       - Custom Prompt
+
+       としたい
