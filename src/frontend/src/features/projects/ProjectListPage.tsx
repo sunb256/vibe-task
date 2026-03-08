@@ -210,10 +210,10 @@ export function ProjectListPage() {
     <>
       <PageFrame
         eyebrow={null}
-        headerStyle="plain"
         title={<span className="inline-flex h-9 items-center pl-1">Project 一覧</span>}
-        actions={
-          <div className="flex w-full items-center justify-between gap-2">
+      >
+        <section className="space-y-3 rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
+          <div className="mb-4 flex w-full items-center justify-between gap-2">
             <div className="relative w-full min-w-48 max-w-64">
               <img
                 src="/assets/images/search.svg"
@@ -244,9 +244,6 @@ export function ProjectListPage() {
               </button>
             </div>
           </div>
-        }
-      >
-        <section className="space-y-3">
           {error ? <Notice tone="error" message={error} /> : null}
           {isLoading ? <Notice tone="neutral" message="Loading projects..." /> : null}
           {!error && !isLoading && projects.length === 0 ? (
