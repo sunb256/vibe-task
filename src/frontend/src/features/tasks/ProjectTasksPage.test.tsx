@@ -117,6 +117,11 @@ test("does not render the removed project subtitle", async () => {
     expect(screen.getByText("impl")).toBeInTheDocument();
   });
   expect(screen.getByRole("link", { name: "Project" })).toHaveAttribute("href", "/");
+  expect(
+    screen
+      .getByRole("link", { name: "Project" })
+      .querySelector('img[src="/assets/images/vibe_task_logo_active.png"]'),
+  ).not.toBeNull();
   expect(screen.getByRole("link", { name: "Custom Prompt" })).toHaveAttribute(
     "href",
     "/custom-prompt",
