@@ -38,3 +38,17 @@ class TaskRecord:
             "url": self.url,
             "action": self.action,
         }
+
+
+@dataclass(slots=True)
+class PromptRecord:
+    name: str
+    path: str
+    content: str
+
+    def to_dict(self) -> dict[str, str]:
+        return {
+            "name": self.name,
+            "path": self.path,
+            "content": self.content,
+        }

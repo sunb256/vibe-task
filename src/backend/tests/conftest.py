@@ -30,7 +30,22 @@ def projects_file(tmp_path: Path) -> Path:
 
 
 @pytest.fixture()
-def client(projects_file: Path):
-    app = create_app({"TESTING": True, "PROJECTS_FILE": str(projects_file)})
+def prompts_dir(tmp_path: Path) -> Path:
+    prompts = tmp_path / ".codex" / "prompts"
+    prompts.mkdir(parents=True)
+    (prompts / "alpha.md").write_text("# Alpha\n", encoding="utf-8")
+    (prompts / "beta.md").write_text("# Beta\n", encoding="utf-8")
+    return prompts
+
+
+@pytest.fixture()
+def client(projects_file: Path, prompts_dir: Path):
+    app = create_app(
+        {
+            "TESTING": True,
+            "PROJECTS_FILE": str(projects_file),
+            "PROMPTS_DIR": str(prompts_dir),
+        }
+    )
     with app.test_client() as client:
         yield client
