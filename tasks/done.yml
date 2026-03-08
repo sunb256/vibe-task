@@ -638,7 +638,7 @@ task:
 
       記載は今のところないが <hr/>　で薄い線を入れておきたい
   - id: 81
-    url: https://github.com/sunb256/vibe-task/pull/82
+    url: https://github.com/sunb256/vibe-task/pull/83
     title: Custom Promptのパス表示を$HOME形式に変換
     action: |-
       Custom Promptのファイル表示だが、
