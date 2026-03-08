@@ -78,16 +78,18 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
           </div>
         </div>
         <form className="grid gap-4" onSubmit={handleSubmit}>
-          <div className="grid gap-4">
-            <TextInput
-              label="repositoryPath"
-              autoFocus
-              value={form.repositoryPath}
-              onChange={(event) =>
-                updateField("repositoryPath", event.target.value)
-              }
-            />
-            <div className="w-full md:w-1/2">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="md:col-span-2">
+              <TextInput
+                label="repositoryPath"
+                autoFocus
+                value={form.repositoryPath}
+                onChange={(event) =>
+                  updateField("repositoryPath", event.target.value)
+                }
+              />
+            </div>
+            <div>
               <TextInput
                 label="name"
                 value={form.name}
