@@ -38,7 +38,9 @@ test("renders project list", async () => {
   expect(pageTitle).toHaveClass("text-xl");
   expect(screen.getByRole("link", { name: "Project" })).toHaveAttribute("href", "/");
   const projectMenuLink = screen.getByRole("link", { name: "Project" });
-  expect(projectMenuLink.querySelector('img[src="/assets/images/vibe_task_logo.png"]')).not.toBeNull();
+  expect(
+    projectMenuLink.querySelector('img[src="/assets/images/vibe_task_logo_active.png"]'),
+  ).not.toBeNull();
   expect(screen.getByRole("link", { name: "Custom Prompt" })).toHaveAttribute(
     "href",
     "/custom-prompt",

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 
 type PageFrameProps = {
   title: ReactNode;
@@ -11,6 +11,7 @@ type PageFrameProps = {
 };
 
 export function PageFrame(props: PageFrameProps) {
+  const { pathname } = useLocation();
   const {
     title,
     eyebrow = "VIBE TASK",
@@ -22,6 +23,7 @@ export function PageFrame(props: PageFrameProps) {
     props;
   const frameClass = headerClass(headerStyle);
   const titleWrapClass = titleClass(headerStyle);
+  const logoSrc = selectLogoSrc(pathname);
 
   return (
     <>
@@ -35,7 +37,7 @@ export function PageFrame(props: PageFrameProps) {
               className={({ isActive }) => menuLinkClass(isActive)}
             >
               <img
-                src="/assets/images/vibe_task_logo.png"
+                src={logoSrc}
                 alt=""
                 aria-hidden="true"
                 className="h-5 w-auto"
@@ -82,6 +84,13 @@ export function PageFrame(props: PageFrameProps) {
       </main>
     </>
   );
+}
+
+function selectLogoSrc(pathname: string) {
+  if (pathname === "/" || pathname.startsWith("/projects/")) {
+    return "/assets/images/vibe_task_logo_active.png";
+  }
+  return "/assets/images/vibe_task_logo.png";
 }
 
 function menuLinkClass(isActive: boolean) {
