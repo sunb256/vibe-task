@@ -7,4 +7,21 @@ impl_rule: |
   4. 連切な改行を行う。
   5. KISS/DRY/リーダブルコードの原則を守る
 
-task: []
+task:
+  - id: '70'
+    url: '-'
+    title: '-'
+    action: |-
+      TOP画面
+      Projectの検索画面が欲しい、インクリメンタル検索がいいです
+  - id: '71'
+    url: '-'
+    title: '-'
+    action: |-
+      Project画面の編集、削除の横幅はもう一回り小さくてもいいです
+  - id: '72'
+    url: '-'
+    title: '-'
+    action: |
+      Project画面
+      各レコードの余白の上下はもう一回り小さくてもいいです

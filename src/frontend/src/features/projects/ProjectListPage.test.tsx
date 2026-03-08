@@ -8,7 +8,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-test("renders project cards", async () => {
+test("renders project list", async () => {
   vi.spyOn(globalThis, "fetch").mockResolvedValue(
     new Response(
       JSON.stringify({
@@ -57,9 +57,12 @@ test("renders project cards", async () => {
   expect(screen.queryByText("action-list")).not.toBeInTheDocument();
   expect(screen.queryByText("done-list")).not.toBeInTheDocument();
   const projectCard = screen.getByText("impl").closest("article");
+  const projectList = projectCard?.parentElement;
   expect(projectCard?.querySelector('img[src="/assets/images/code-xml.svg"]')).not.toBeNull();
   expect(projectCard?.querySelector('img[src="/assets/images/git-branch.svg"]')).not.toBeNull();
-  expect(projectCard).toHaveClass("p-4");
+  expect(projectCard).toHaveClass("px-4", "py-3");
+  expect(projectList).toHaveClass("space-y-3");
+  expect(projectList).not.toHaveClass("md:grid-cols-2");
   expect(screen.queryByRole("link", { name: "Open Project" })).not.toBeInTheDocument();
 
   fireEvent.click(screen.getByRole("button", { name: "新規プロジェクト" }));
@@ -180,7 +183,7 @@ test("does not call delete api when deletion is canceled", async () => {
   expect(fetchMock).toHaveBeenCalledTimes(1);
 });
 
-test("reorders project cards by drag and drop", async () => {
+test("reorders project list by drag and drop", async () => {
   const fetchMock = vi
     .spyOn(globalThis, "fetch")
     .mockResolvedValueOnce(
@@ -270,7 +273,7 @@ test("reorders project cards by drag and drop", async () => {
   });
 });
 
-test("navigates when clicking project card area", async () => {
+test("navigates when clicking project list row area", async () => {
   vi.spyOn(globalThis, "fetch").mockResolvedValue(
     new Response(
       JSON.stringify({
