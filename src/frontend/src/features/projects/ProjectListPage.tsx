@@ -37,10 +37,15 @@ export function ProjectListPage() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isReordering, setIsReordering] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [editProject, setEditProject] = useState<Project | null>(null);
   const [dragProjectId, setDragProjectId] = useState<string | null>(null);
   const [dropProjectId, setDropProjectId] = useState<string | null>(null);
   const dragProjectIdRef = useRef<string | null>(null);
+  const visibleProjects = useMemo(
+    () => filterProjects(projects, searchQuery),
+    [projects, searchQuery],
+  );
   const editForm = useMemo(
     () => (editProject ? toFormState(editProject) : defaultProjectForm),
     [editProject],
@@ -233,12 +238,32 @@ export function ProjectListPage() {
         }
       >
         <section className="space-y-3">
+          <div className="relative w-full max-w-64">
+            <img
+              src="/assets/images/search.svg"
+              alt=""
+              aria-hidden="true"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-65"
+            />
+            <input
+              id="project-search"
+              type="search"
+              aria-label="Search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search"
+              className="h-9 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-sm outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12"
+            />
+          </div>
           {error ? <Notice tone="error" message={error} /> : null}
           {isLoading ? <Notice tone="neutral" message="Loading projects..." /> : null}
           {!error && !isLoading && projects.length === 0 ? (
             <Notice tone="neutral" message="Project はまだ登録されていません。" />
           ) : null}
-          {projects.map((project) => (
+          {!error && !isLoading && projects.length > 0 && visibleProjects.length === 0 ? (
+            <Notice tone="neutral" message="検索条件に一致するProjectはありません。" />
+          ) : null}
+          {visibleProjects.map((project) => (
             <article
               key={project.id}
               draggable={!isReordering}
@@ -361,4 +386,16 @@ function isInteractiveTarget(target: EventTarget | null) {
     return false;
   }
   return Boolean(target.closest("button,input,textarea,select,label,[role='button']"));
+}
+
+function filterProjects(projects: Project[], searchQuery: string) {
+  const query = searchQuery.trim().toLowerCase();
+  if (!query) {
+    return projects;
+  }
+  return projects.filter((project) => {
+    const name = project.name.toLowerCase();
+    const path = project.repositoryPath.toLowerCase();
+    return name.includes(query) || path.includes(query);
+  });
 }

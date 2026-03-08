@@ -45,6 +45,7 @@ test("renders project list", async () => {
   expect(pageTitleLink.querySelector('img[src="/assets/images/logs.svg"]')).not.toBeNull();
   expect(screen.getByRole("button", { name: "新規プロジェクト" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Setting" })).toBeInTheDocument();
+  expect(screen.getByRole("searchbox", { name: "Search" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "編集" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "削除" })).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "NEW" })).not.toBeInTheDocument();
@@ -181,6 +182,54 @@ test("does not call delete api when deletion is canceled", async () => {
   fireEvent.click(screen.getByRole("button", { name: "削除" }));
 
   expect(fetchMock).toHaveBeenCalledTimes(1);
+});
+
+test("filters project list incrementally by search query", async () => {
+  vi.spyOn(globalThis, "fetch").mockResolvedValue(
+    new Response(
+      JSON.stringify({
+        projects: [
+          {
+            id: "project-1",
+            name: "impl",
+            repositoryPath: "/tmp/impl",
+            actionListPath: "tasks/action.yml",
+            doneListPath: "tasks/done.yml",
+          },
+          {
+            id: "project-2",
+            name: "vibe-task",
+            repositoryPath: "/home/user/ghq/vibe-task",
+            actionListPath: "tasks/action.yml",
+            doneListPath: "tasks/done.yml",
+          },
+        ],
+      }),
+    ),
+  );
+
+  render(
+    <MemoryRouter>
+      <ProjectListPage />
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("impl")).toBeInTheDocument();
+    expect(screen.getByText("vibe-task")).toBeInTheDocument();
+  });
+
+  const searchInput = screen.getByRole("searchbox", { name: "Search" });
+  fireEvent.change(searchInput, { target: { value: "vibe" } });
+  expect(screen.queryByText("impl")).not.toBeInTheDocument();
+  expect(screen.getByText("vibe-task")).toBeInTheDocument();
+
+  fireEvent.change(searchInput, { target: { value: "not-found" } });
+  expect(screen.getByText("検索条件に一致するProjectはありません。")).toBeInTheDocument();
+
+  fireEvent.change(searchInput, { target: { value: "" } });
+  expect(screen.getByText("impl")).toBeInTheDocument();
+  expect(screen.getByText("vibe-task")).toBeInTheDocument();
 });
 
 test("reorders project list by drag and drop", async () => {
