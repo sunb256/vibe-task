@@ -615,3 +615,11 @@ task:
       Project はこのロゴにするので置き換え
 
       src/frontend/assets/images/vibe_task_logo.png
+  - id: 77
+    url: https://github.com/sunb256/vibe-task/pull/80
+    title: Custom Promptのファイルアイコンをfile-textへ変更し余白をTOP画面準拠に調整
+    action: |
+      CustomPromptのファイルに使っているアイコンはgitアイコンでなく以下がいいです
+      src/frontend/assets/images/file-text.svg
+
+      また、Project TOP画面のUIに合わせてほしい(余白とか)

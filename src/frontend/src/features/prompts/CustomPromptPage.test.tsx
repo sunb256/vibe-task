@@ -76,8 +76,12 @@ test("renders custom prompt list with menu", async () => {
     "href",
     "/custom-prompt",
   );
+  expect(screen.queryByText("VIBE TASK")).not.toBeInTheDocument();
   expect(screen.getByRole("heading", { level: 1, name: "Custom Prompt" })).toBeInTheDocument();
   expect(screen.getByText("/tmp/.codex/prompts/alpha.md")).toBeInTheDocument();
+  const row = screen.getByText("alpha.md").closest("article");
+  expect(row?.querySelector('img[src="/assets/images/file-text.svg"]')).not.toBeNull();
+  expect(row).toHaveClass("pl-6", "pr-4", "py-3");
   expect(screen.getByRole("button", { name: "編集" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "削除" })).toBeInTheDocument();
 });

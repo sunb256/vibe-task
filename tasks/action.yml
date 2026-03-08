@@ -8,14 +8,6 @@ impl_rule: |
   5. KISS/DRY/リーダブルコードの原則を守る
 
 task:
-  - id: '77'
-    url: '-'
-    title: '-'
-    action: |
-      CustomPromptのファイルに使っているアイコンはgitアイコンでなく以下がいいです
-      src/frontend/assets/images/file-text.svg
-
-      また、Project TOP画面のUIに合わせてほしい(余白とか)
   - id: '78'
     url: '-'
     title: '-'
@@ -23,3 +15,10 @@ task:
       Project画面のヘッダ部をTOP画面のUIと合わせたい
 
       ヘッダ部のVIBE TASK表記はやめてタイトルだけにして、メインコンテンツのヘッダ部と統合したい
+  - id: '79'
+    url: '-'
+    title: '-'
+    action: |
+      フッタ部を作りたい
+      
+      記載は今のところないが <hr/>　で薄い線を入れておきたい
