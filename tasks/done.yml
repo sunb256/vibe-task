@@ -559,7 +559,7 @@ task:
       TOP画面
       Projectの検索画面が欲しい、インクリメンタル検索がいいです
   - id: 71
-    url: '-'
+    url: https://github.com/sunb256/vibe-task/pull/76
     title: Project画面の編集、削除の横幅を一回り小さく調整
     action: |
       Project画面の編集、削除の横幅はもう一回り小さくてもいいです
