@@ -118,7 +118,7 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="task-dialog-title"
-        className="w-full max-w-6xl rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] px-6 py-7 shadow-[0_1px_0_rgba(9,9,11,0.06),0_24px_70px_rgba(9,9,11,0.28)]"
+        className="w-full max-w-7xl rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] px-6 py-8 shadow-[0_1px_0_rgba(9,9,11,0.06),0_24px_70px_rgba(9,9,11,0.28)]"
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
@@ -139,7 +139,7 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
         <form className="grid gap-4" onSubmit={handleSubmit}>
           <div className="mt-1 overflow-hidden rounded-md border border-[var(--border)] bg-white">
             <Editor
-              height="58vh"
+              height="64vh"
               language="markdown"
               value={action}
               onChange={(value) => onActionChange(value ?? "")}

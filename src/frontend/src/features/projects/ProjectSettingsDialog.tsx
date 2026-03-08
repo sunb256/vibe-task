@@ -77,7 +77,7 @@ export function ProjectSettingsDialog(props: ProjectSettingsDialogProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="project-settings-title"
-        className="w-full max-w-4xl rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] px-6 py-7 shadow-[0_1px_0_rgba(9,9,11,0.06),0_24px_70px_rgba(9,9,11,0.28)]"
+        className="w-full max-w-5xl rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] px-6 py-8 shadow-[0_1px_0_rgba(9,9,11,0.06),0_24px_70px_rgba(9,9,11,0.28)]"
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
