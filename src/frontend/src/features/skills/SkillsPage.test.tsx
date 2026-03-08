@@ -83,6 +83,7 @@ test("renders skills list and global menu", async () => {
   expect(screen.getByRole("heading", { level: 1, name: "Skills" })).toBeInTheDocument();
   expect(screen.getByText("$HOME/.codex/skills/alpha/SKILL.md")).toBeInTheDocument();
   expect(screen.getByRole("searchbox", { name: "Search" })).toBeInTheDocument();
+  expect(screen.getByLabelText("ファイルパスも検索")).not.toBeChecked();
   expect(screen.getByRole("button", { name: "新規Skill" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "編集" })).toBeInTheDocument();
 });
@@ -134,6 +135,51 @@ test("filters skills by search query", async () => {
   });
 
   expect(screen.getByText("検索条件に一致するSkillはありません。")).toBeInTheDocument();
+});
+
+test("path search works only when checkbox is enabled", async () => {
+  vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+    new Response(
+      JSON.stringify({
+        skills: [
+          {
+            name: "alpha",
+            path: "/tmp/.codex/skills/alpha/SKILL.md",
+            source: "global",
+            projectName: "",
+            editable: true,
+          },
+          {
+            name: "beta",
+            path: "/tmp/.codex/skills/team-beta-only/SKILL.md",
+            source: "global",
+            projectName: "",
+            editable: true,
+          },
+        ],
+      }),
+    ),
+  );
+
+  render(
+    <MemoryRouter initialEntries={["/skills"]}>
+      <SkillsPage />
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("alpha")).toBeInTheDocument();
+    expect(screen.getByText("beta")).toBeInTheDocument();
+  });
+
+  fireEvent.change(screen.getByRole("searchbox", { name: "Search" }), {
+    target: { value: "team-beta-only" },
+  });
+  expect(screen.getByText("検索条件に一致するSkillはありません。")).toBeInTheDocument();
+
+  fireEvent.click(screen.getByLabelText("ファイルパスも検索"));
+  expect(screen.getByText("beta")).toBeInTheDocument();
+  expect(screen.queryByText("alpha")).not.toBeInTheDocument();
 });
 
 test("creates a new skill from new button", async () => {

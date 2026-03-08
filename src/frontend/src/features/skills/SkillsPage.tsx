@@ -26,9 +26,13 @@ export function SkillsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isPathSearchEnabled, setIsPathSearchEnabled] = useState(false);
   const [editSkill, setEditSkill] = useState<SkillFile | null>(null);
   const [editContent, setEditContent] = useState(emptyContent);
-  const visibleSkills = useMemo(() => filterSkills(skills, searchQuery), [skills, searchQuery]);
+  const visibleSkills = useMemo(
+    () => filterSkills(skills, searchQuery, isPathSearchEnabled),
+    [skills, searchQuery, isPathSearchEnabled],
+  );
 
   useEffect(() => {
     void loadSkills();
@@ -158,23 +162,38 @@ export function SkillsPage() {
         title={<span className="inline-flex h-9 items-center pl-1">Skills</span>}
       >
         <section className="space-y-3 rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
-          <div className="mb-4 flex w-full items-center justify-between gap-2">
-            <div className="relative w-full min-w-48 max-w-64">
-              <img
-                src="/assets/images/search.svg"
-                alt=""
-                aria-hidden="true"
-                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-65"
-              />
-              <input
-                id="skill-search"
-                type="search"
-                aria-label="Search"
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Search"
-                className="h-9 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12"
-              />
+          <div className="mb-4 flex w-full items-start justify-between gap-2">
+            <div className="w-full min-w-48 max-w-72 space-y-2">
+              <div className="relative">
+                <img
+                  src="/assets/images/search.svg"
+                  alt=""
+                  aria-hidden="true"
+                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-65"
+                />
+                <input
+                  id="skill-search"
+                  type="search"
+                  aria-label="Search"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder="Search"
+                  className="h-9 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12"
+                />
+              </div>
+              <label
+                htmlFor="skill-search-path"
+                className="inline-flex select-none items-center gap-2 pl-1 text-xs font-medium text-[var(--muted)]"
+              >
+                <input
+                  id="skill-search-path"
+                  type="checkbox"
+                  checked={isPathSearchEnabled}
+                  onChange={(event) => setIsPathSearchEnabled(event.target.checked)}
+                  className="h-4 w-4 rounded border-[var(--border)] text-[var(--accent)] focus:ring-[var(--accent)]/30"
+                />
+                ファイルパスも検索
+              </label>
             </div>
             <div className="flex shrink-0 items-center justify-end gap-2">
               <PrimaryButton type="button" onClick={() => void handleCreate()} disabled={isCreating}>
@@ -306,14 +325,16 @@ function displayPath(path: string) {
   return path;
 }
 
-function filterSkills(skills: SkillSummary[], query: string) {
+function filterSkills(skills: SkillSummary[], query: string, includePath: boolean) {
   const normalized = query.trim().toLowerCase();
   if (!normalized) {
     return skills;
   }
-  return skills.filter((skill) =>
-    [skill.name, skill.path, skill.projectName, skill.source]
-      .filter(Boolean)
-      .some((value) => value.toLowerCase().includes(normalized)),
-  );
+  return skills.filter((skill) => {
+    const fields = [skill.name, skill.projectName, skill.source];
+    if (includePath) {
+      fields.push(skill.path);
+    }
+    return fields.some((value) => value.toLowerCase().includes(normalized));
+  });
 }
