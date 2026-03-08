@@ -723,4 +723,11 @@ task:
       
       パスはこれ
       `src/frontend/assets/images/vibe_task_logo_active.png`
+  - id: 91
+    url: '-'
+    title: 通常画面の検索入力へ自動フォーカスを適用
+    action: |
+      入力カーソルがちらつくのがとても気になる
+      
+      改善できませんか
       
