@@ -742,7 +742,7 @@ task:
       
       に変更
   - id: 93
-    url: '-'
+    url: https://github.com/sunb256/vibe-task/pull/94
     title: 新規プロジェクト作成フォームの入力順とname自動補完を改善
     action: |
       新規プロジェクト作成で
