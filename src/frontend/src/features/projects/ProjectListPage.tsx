@@ -238,7 +238,7 @@ export function ProjectListPage() {
         }
       >
         <section className="space-y-3">
-          <div className="relative w-full max-w-sm">
+          <div className="relative w-full max-w-64">
             <img
               src="/assets/images/search.svg"
               alt=""
