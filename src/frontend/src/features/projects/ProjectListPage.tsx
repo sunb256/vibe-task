@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { Notice } from "../../components/Notice";
 import { PageFrame } from "../../components/PageFrame";
 import { PrimaryButton } from "../../components/PrimaryButton";
+import { readErrorMessage } from "../../lib/readErrorMessage";
 import {
   createProject,
   deleteProject,
@@ -62,7 +63,7 @@ export function ProjectListPage() {
       const response = await fetchProjects();
       setProjects(response.projects);
     } catch (loadError) {
-      setError(readError(loadError, "プロジェクト一覧の取得に失敗しました。"));
+      setError(readErrorMessage(loadError, "プロジェクト一覧の取得に失敗しました。"));
     } finally {
       setIsLoading(false);
     }
@@ -76,7 +77,7 @@ export function ProjectListPage() {
       setIsDialogOpen(false);
       await loadProjects();
     } catch (saveError) {
-      setDialogError(readError(saveError, "プロジェクトの保存に失敗しました。"));
+      setDialogError(readErrorMessage(saveError, "プロジェクトの保存に失敗しました。"));
     } finally {
       setIsSaving(false);
     }
@@ -109,7 +110,7 @@ export function ProjectListPage() {
       setEditProject(null);
       await loadProjects();
     } catch (saveError) {
-      setEditError(readError(saveError, "プロジェクトの更新に失敗しました。"));
+      setEditError(readErrorMessage(saveError, "プロジェクトの更新に失敗しました。"));
     } finally {
       setIsUpdating(false);
     }
@@ -126,7 +127,7 @@ export function ProjectListPage() {
       await deleteProject(project.id);
       await loadProjects();
     } catch (deleteError) {
-      setError(readError(deleteError, "プロジェクトの削除に失敗しました。"));
+      setError(readErrorMessage(deleteError, "プロジェクトの削除に失敗しました。"));
     } finally {
       setIsDeleting(false);
     }
@@ -142,7 +143,7 @@ export function ProjectListPage() {
       await reorderProjects(sourceId, targetId);
       await loadProjects();
     } catch (reorderError) {
-      setError(readError(reorderError, "プロジェクトの並び替えに失敗しました。"));
+      setError(readErrorMessage(reorderError, "プロジェクトの並び替えに失敗しました。"));
     } finally {
       setIsReordering(false);
     }
@@ -353,13 +354,6 @@ export function ProjectListPage() {
       />
     </>
   );
-}
-
-function readError(error: unknown, fallback: string) {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-  return fallback;
 }
 
 function toFormState(project: Project): ProjectFormState {

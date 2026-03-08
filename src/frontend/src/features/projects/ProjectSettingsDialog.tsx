@@ -2,6 +2,7 @@ import { type FormEvent, type MouseEvent, useEffect, useState } from "react";
 
 import { Notice } from "../../components/Notice";
 import { PrimaryButton } from "../../components/PrimaryButton";
+import { readErrorMessage } from "../../lib/readErrorMessage";
 import { exportProjectsFile, importProjectsFile } from "./projectApi";
 
 type ProjectSettingsDialogProps = {
@@ -36,7 +37,7 @@ export function ProjectSettingsDialog(props: ProjectSettingsDialogProps) {
       const response = await exportProjectsFile();
       downloadYaml("projects.yml", response.content);
     } catch (loadError) {
-      setError(readError(loadError, "projects.yml のエクスポートに失敗しました。"));
+      setError(readErrorMessage(loadError, "projects.yml のエクスポートに失敗しました。"));
     } finally {
       setIsExporting(false);
     }
@@ -55,7 +56,7 @@ export function ProjectSettingsDialog(props: ProjectSettingsDialogProps) {
       await onImported();
       onClose();
     } catch (saveError) {
-      setError(readError(saveError, "projects.yml のインポートに失敗しました。"));
+      setError(readErrorMessage(saveError, "projects.yml のインポートに失敗しました。"));
     } finally {
       setIsImporting(false);
     }
@@ -139,11 +140,4 @@ function downloadYaml(fileName: string, content: string) {
   link.download = fileName;
   link.click();
   URL.revokeObjectURL(objectUrl);
-}
-
-function readError(error: unknown, fallback: string) {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-  return fallback;
 }
