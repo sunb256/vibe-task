@@ -40,6 +40,11 @@ test("renders project list", async () => {
   const pageTitle = screen.getByRole("heading", { level: 1, name: "Project 一覧" });
   expect(pageTitle).toBeInTheDocument();
   expect(pageTitle).toHaveClass("text-xl");
+  expect(screen.getByRole("link", { name: "Project" })).toHaveAttribute("href", "/");
+  expect(screen.getByRole("link", { name: "Custom Prompt" })).toHaveAttribute(
+    "href",
+    "/custom-prompt",
+  );
   expect(screen.getByRole("link", { name: "Project 一覧" })).toHaveAttribute("href", "/");
   const pageTitleLink = screen.getByRole("link", { name: "Project 一覧" });
   expect(pageTitleLink.querySelector('img[src="/assets/images/logs.svg"]')).not.toBeNull();

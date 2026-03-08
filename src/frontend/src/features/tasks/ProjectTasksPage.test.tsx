@@ -116,6 +116,11 @@ test("does not render the removed project subtitle", async () => {
   await waitFor(() => {
     expect(screen.getByText("impl")).toBeInTheDocument();
   });
+  expect(screen.getByRole("link", { name: "Project" })).toHaveAttribute("href", "/");
+  expect(screen.getByRole("link", { name: "Custom Prompt" })).toHaveAttribute(
+    "href",
+    "/custom-prompt",
+  );
   expect(screen.getByText("VIBE TASK")).toBeInTheDocument();
   expect(screen.getAllByRole("columnheader").map((header) => header.textContent)).toEqual([
     "id",
@@ -138,7 +143,7 @@ test("does not render the removed project subtitle", async () => {
     "/",
   );
   const table = screen.getByRole("table");
-  expect(table).toHaveClass("border-spacing-y-2");
+  expect(table).toHaveClass("border-spacing-y-1");
   expect(createButton.compareDocumentPosition(table) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   const todoToggle = screen.getByRole("button", { name: "TODO(1)" });
   const doneToggle = screen.getByRole("button", { name: "DONE(2)" });
@@ -174,7 +179,7 @@ test("does not render the removed project subtitle", async () => {
   expect(screen.getByRole("button", { name: "task 1 を下へ" })).toBeDisabled();
   const rows = screen.getAllByRole("row");
   expect(rows).toHaveLength(2);
-  expect(rows[1].querySelector("td")).toHaveClass("py-3", "whitespace-nowrap");
+  expect(rows[1].querySelector("td")).toHaveClass("py-2", "whitespace-nowrap");
   expect(within(rows[1]).queryByText("-")).not.toBeInTheDocument();
   expect(screen.queryByText("done-title-10")).not.toBeInTheDocument();
   expect(screen.queryByText("done-title-2")).not.toBeInTheDocument();
@@ -315,7 +320,15 @@ test("renders tasks before project list request finishes", async () => {
     expect(screen.getByText("fast task")).toBeInTheDocument();
   });
   expect(screen.queryByText("Loading tasks...")).not.toBeInTheDocument();
-  expect(screen.getByRole("link", { name: "Project" })).toHaveAttribute("href", "/");
+  expect(
+    screen
+      .getAllByRole("link", { name: "Project" })
+      .some((link) => link.getAttribute("href") === "/"),
+  ).toBe(true);
+  expect(screen.getByRole("link", { name: "Custom Prompt" })).toHaveAttribute(
+    "href",
+    "/custom-prompt",
+  );
 });
 
 test("uses cached tasks on revisit before refetch resolves", async () => {

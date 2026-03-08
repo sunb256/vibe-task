@@ -8,24 +8,6 @@ impl_rule: |
   5. KISS/DRY/リーダブルコードの原則を守る
 
 task:
-  - id: '72'
-    url: '-'
-    title: '-'
-    action: |-
-      Project画面
-      各レコードの余白の上下はもう一回り小さくてもいいです
-  - id: '73'
-    url: '-'
-    title: '-'
-    action: |-
-      画面上に固定ヘッダを作りたい
-
-      メニューを選択できるようにしたい
-
-       - Project(現在のTOP画面)
-       - Custom Prompt
-
-       としたい
   - id: '74'
     url: '-'
     title: '-'
