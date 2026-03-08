@@ -607,7 +607,7 @@ task:
 
       ヘッダ部のVIBE TASK表記はなしにしてヘッダと検索を統合するUI
   - id: 76
-    url: https://github.com/sunb256/vibe-task/pull/79
+    url: https://github.com/sunb256/vibe-task/pull/80
     title: 固定ヘッダ先頭のProjectリンクをロゴ表示へ置換
     action: |
       ロゴを作ったので固定ヘッダに使ってさい
