@@ -154,7 +154,7 @@ export function CustomPromptPage() {
                       aria-hidden="true"
                       className="mt-[2px] h-4 w-4 shrink-0"
                     />
-                    <span>{prompt.path}</span>
+                    <span>{displayPath(prompt.path)}</span>
                   </p>
                 </div>
                 <div className="flex shrink-0 justify-end gap-2 sm:pt-1">
@@ -209,4 +209,16 @@ function readError(error: unknown, fallback: string) {
     return error.message;
   }
   return fallback;
+}
+
+function displayPath(path: string) {
+  const linuxHome = /^\/home\/[^/]+(\/.*)?$/.exec(path);
+  if (linuxHome) {
+    return `$HOME${linuxHome[1] ?? ""}`;
+  }
+  const macHome = /^\/Users\/[^/]+(\/.*)?$/.exec(path);
+  if (macHome) {
+    return `$HOME${macHome[1] ?? ""}`;
+  }
+  return path;
 }

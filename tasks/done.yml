@@ -637,3 +637,15 @@ task:
       フッタ部を作りたい
 
       記載は今のところないが <hr/>　で薄い線を入れておきたい
+  - id: 81
+    url: https://github.com/sunb256/vibe-task/pull/83
+    title: Custom Promptのパス表示を$HOME形式に変換
+    action: |-
+      Custom Promptのファイル表示だが、
+      TOPのリポジトリパスと同様に環境変数表示がいい
+
+      今
+      /home/sunb/.codex/prompts/task-next.md
+
+      改良
+      $HOME/.codex/prompts/task-next.md

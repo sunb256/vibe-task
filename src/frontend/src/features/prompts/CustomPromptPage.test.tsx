@@ -54,7 +54,7 @@ test("renders custom prompt list with menu", async () => {
         prompts: [
           {
             name: "alpha.md",
-            path: "/tmp/.codex/prompts/alpha.md",
+            path: "/home/sunb/.codex/prompts/alpha.md",
           },
         ],
       }),
@@ -78,7 +78,7 @@ test("renders custom prompt list with menu", async () => {
   );
   expect(screen.queryByText("VIBE TASK")).not.toBeInTheDocument();
   expect(screen.getByRole("heading", { level: 1, name: "Custom Prompt" })).toBeInTheDocument();
-  expect(screen.getByText("/tmp/.codex/prompts/alpha.md")).toBeInTheDocument();
+  expect(screen.getByText("$HOME/.codex/prompts/alpha.md")).toBeInTheDocument();
   const row = screen.getByText("alpha.md").closest("article");
   expect(row?.querySelector('img[src="/assets/images/file-text.svg"]')).not.toBeNull();
   expect(row).toHaveClass("pl-6", "pr-4", "py-3");
