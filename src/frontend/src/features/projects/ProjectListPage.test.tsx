@@ -70,6 +70,7 @@ test("renders project list", async () => {
   expect(projectCard?.querySelector('img[src="/assets/images/code-xml.svg"]')).not.toBeNull();
   expect(projectCard?.querySelector('img[src="/assets/images/git-branch.svg"]')).not.toBeNull();
   expect(projectCard).toHaveClass("pl-6", "pr-4", "py-3");
+  expect(projectCard).toHaveClass("hover:border-amber-200", "hover:bg-amber-50/60");
   expect(projectList).toHaveClass("space-y-3");
   expect(projectList).not.toHaveClass("md:grid-cols-2");
   expect(screen.queryByRole("link", { name: "Open Project" })).not.toBeInTheDocument();
