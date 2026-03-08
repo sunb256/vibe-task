@@ -5,8 +5,10 @@ from flask import Blueprint, current_app, jsonify, request
 from app.errors import AppError
 from app.repositories.project_repository import ProjectRepository
 from app.repositories.prompt_repository import PromptRepository
+from app.repositories.skill_repository import SkillRepository
 from app.services.project_service import ProjectService
 from app.services.prompt_service import PromptService
+from app.services.skill_service import SkillService
 from app.services.task_service import TaskService
 
 api_bp = Blueprint("api", __name__)
@@ -167,6 +169,52 @@ def delete_prompt(prompt_name: str):
     return "", 204
 
 
+@api_bp.get("/skills")
+def list_skills():
+    service = SkillService(_skill_repository())
+    skills = [
+        {"name": skill.name, "path": skill.path}
+        for skill in service.list_skills()
+    ]
+    return jsonify({"skills": skills})
+
+
+@api_bp.get("/skills/<path:skill_name>")
+def get_skill(skill_name: str):
+    service = SkillService(_skill_repository())
+    skill = service.get_skill(skill_name)
+    return jsonify(skill.to_dict())
+
+
+@api_bp.post("/skills")
+def create_skill():
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        raise AppError("request body must be an object", 400)
+    name = payload.get("name")
+    if not isinstance(name, str):
+        raise AppError("name is required", 400)
+    content = payload.get("content")
+    if not isinstance(content, str):
+        raise AppError("content is required", 400)
+    service = SkillService(_skill_repository())
+    skill = service.create_skill(name, content)
+    return jsonify(skill.to_dict()), 201
+
+
+@api_bp.patch("/skills/<path:skill_name>")
+def update_skill(skill_name: str):
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        raise AppError("request body must be an object", 400)
+    content = payload.get("content")
+    if not isinstance(content, str):
+        raise AppError("content is required", 400)
+    service = SkillService(_skill_repository())
+    skill = service.update_skill(skill_name, content)
+    return jsonify(skill.to_dict())
+
+
 def _project_repository() -> ProjectRepository:
     projects_file = Path(current_app.config["PROJECTS_FILE"])
     return ProjectRepository(projects_file)
@@ -175,3 +223,8 @@ def _project_repository() -> ProjectRepository:
 def _prompt_repository() -> PromptRepository:
     prompts_dir = Path(current_app.config["PROMPTS_DIR"])
     return PromptRepository(prompts_dir)
+
+
+def _skill_repository() -> SkillRepository:
+    skills_dir = Path(current_app.config["SKILLS_DIR"])
+    return SkillRepository(skills_dir)

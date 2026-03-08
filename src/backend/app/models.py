@@ -52,3 +52,17 @@ class PromptRecord:
             "path": self.path,
             "content": self.content,
         }
+
+
+@dataclass(slots=True)
+class SkillRecord:
+    name: str
+    path: str
+    content: str
+
+    def to_dict(self) -> dict[str, str]:
+        return {
+            "name": self.name,
+            "path": self.path,
+            "content": self.content,
+        }

@@ -39,12 +39,26 @@ def prompts_dir(tmp_path: Path) -> Path:
 
 
 @pytest.fixture()
-def client(projects_file: Path, prompts_dir: Path):
+def skills_dir(tmp_path: Path) -> Path:
+    skills = tmp_path / ".codex" / "skills"
+    skills.mkdir(parents=True)
+    alpha = skills / "alpha"
+    beta = skills / "beta"
+    alpha.mkdir()
+    beta.mkdir()
+    (alpha / "SKILL.md").write_text("# Alpha Skill\n", encoding="utf-8")
+    (beta / "SKILL.md").write_text("# Beta Skill\n", encoding="utf-8")
+    return skills
+
+
+@pytest.fixture()
+def client(projects_file: Path, prompts_dir: Path, skills_dir: Path):
     app = create_app(
         {
             "TESTING": True,
             "PROJECTS_FILE": str(projects_file),
             "PROMPTS_DIR": str(prompts_dir),
+            "SKILLS_DIR": str(skills_dir),
         }
     )
     with app.test_client() as client:

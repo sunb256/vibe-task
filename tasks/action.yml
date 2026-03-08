@@ -7,4 +7,18 @@ impl_rule: |
   4. 連切な改行を行う。
   5. KISS/DRY/リーダブルコードの原則を守る
 
-task: []
+task:
+  - id: '88'
+    url: '-'
+    title: '-'
+    action: |
+      SKILLは各プロジェクト配下にも存在することができる
+
+      各プロジェクトのskillsファイルも探索して表示してほしいです
+  - id: '89'
+    url: '-'
+    title: '-'
+    action: |-
+      Skills画面
+      検索機能も欲しい
+      TOP画面と同様のUI

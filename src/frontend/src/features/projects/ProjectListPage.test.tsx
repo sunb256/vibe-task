@@ -45,6 +45,7 @@ test("renders project list", async () => {
     "href",
     "/custom-prompt",
   );
+  expect(screen.getByRole("link", { name: "Skills" })).toHaveAttribute("href", "/skills");
   expect(screen.queryByRole("link", { name: "Project 一覧" })).not.toBeInTheDocument();
   const newProjectButton = screen.getByRole("button", { name: "新規プロジェクト" });
   expect(newProjectButton).toBeInTheDocument();

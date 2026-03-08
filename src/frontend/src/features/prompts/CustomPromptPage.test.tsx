@@ -76,6 +76,7 @@ test("renders custom prompt list with menu", async () => {
     "href",
     "/custom-prompt",
   );
+  expect(screen.getByRole("link", { name: "Skills" })).toHaveAttribute("href", "/skills");
   expect(screen.queryByText("VIBE TASK")).not.toBeInTheDocument();
   expect(screen.getByRole("heading", { level: 1, name: "Custom Prompt" })).toBeInTheDocument();
   expect(screen.getByText("$HOME/.codex/prompts/alpha.md")).toBeInTheDocument();

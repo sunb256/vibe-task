@@ -6,11 +6,13 @@ type PromptListResponse = {
 };
 
 export function fetchPrompts() {
-  return apiFetch<PromptListResponse>("/api/prompts");
+  return apiFetch<PromptListResponse>("/api/prompts", { cache: "no-store" });
 }
 
 export function fetchPrompt(promptName: string) {
-  return apiFetch<PromptFile>(`/api/prompts/${encodeURIComponent(promptName)}`);
+  return apiFetch<PromptFile>(`/api/prompts/${encodeURIComponent(promptName)}`, {
+    cache: "no-store",
+  });
 }
 
 export function updatePrompt(promptName: string, content: string) {
