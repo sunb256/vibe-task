@@ -162,9 +162,9 @@ export function SkillsPage() {
         title={<span className="inline-flex h-9 items-center pl-1">Skills</span>}
       >
         <section className="space-y-3 rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
-          <div className="mb-4 flex w-full items-start justify-between gap-2">
-            <div className="w-full min-w-48 max-w-72 space-y-2">
-              <div className="relative">
+          <div className="mb-4 flex w-full items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="relative w-56 sm:w-64">
                 <img
                   src="/assets/images/search.svg"
                   alt=""
@@ -183,7 +183,7 @@ export function SkillsPage() {
               </div>
               <label
                 htmlFor="skill-search-path"
-                className="inline-flex select-none items-center gap-2 pl-1 text-xs font-medium text-[var(--muted)]"
+                className="inline-flex shrink-0 select-none items-center gap-2 whitespace-nowrap pl-1 text-xs font-medium text-[var(--muted)]"
               >
                 <input
                   id="skill-search-path"
