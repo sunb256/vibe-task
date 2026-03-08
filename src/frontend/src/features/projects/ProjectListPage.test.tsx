@@ -34,9 +34,7 @@ test("renders project list", async () => {
   await waitFor(() => {
     expect(screen.getByText("impl")).toBeInTheDocument();
   });
-  const taskManagerTitle = screen.getByText("VIBE TASK");
-  expect(taskManagerTitle).toBeInTheDocument();
-  expect(taskManagerTitle).toHaveClass("text-[12px]", "text-sky-700/80");
+  expect(screen.queryByText("VIBE TASK")).not.toBeInTheDocument();
   const pageTitle = screen.getByRole("heading", { level: 1, name: "Project 一覧" });
   expect(pageTitle).toBeInTheDocument();
   expect(pageTitle).toHaveClass("text-xl");
@@ -45,12 +43,12 @@ test("renders project list", async () => {
     "href",
     "/custom-prompt",
   );
-  expect(screen.getByRole("link", { name: "Project 一覧" })).toHaveAttribute("href", "/");
-  const pageTitleLink = screen.getByRole("link", { name: "Project 一覧" });
-  expect(pageTitleLink.querySelector('img[src="/assets/images/logs.svg"]')).not.toBeNull();
+  expect(screen.queryByRole("link", { name: "Project 一覧" })).not.toBeInTheDocument();
   expect(screen.getByRole("button", { name: "新規プロジェクト" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Setting" })).toBeInTheDocument();
   expect(screen.getByRole("searchbox", { name: "Search" })).toBeInTheDocument();
+  const searchInput = screen.getByRole("searchbox", { name: "Search" });
+  expect(searchInput.parentElement?.parentElement).toHaveClass("flex", "items-center", "gap-2");
   expect(screen.getByRole("button", { name: "編集" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "削除" })).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "NEW" })).not.toBeInTheDocument();
@@ -66,7 +64,7 @@ test("renders project list", async () => {
   const projectList = projectCard?.parentElement;
   expect(projectCard?.querySelector('img[src="/assets/images/code-xml.svg"]')).not.toBeNull();
   expect(projectCard?.querySelector('img[src="/assets/images/git-branch.svg"]')).not.toBeNull();
-  expect(projectCard).toHaveClass("px-4", "py-3");
+  expect(projectCard).toHaveClass("pl-6", "pr-4", "py-3");
   expect(projectList).toHaveClass("space-y-3");
   expect(projectList).not.toHaveClass("md:grid-cols-2");
   expect(screen.queryByRole("link", { name: "Open Project" })).not.toBeInTheDocument();
