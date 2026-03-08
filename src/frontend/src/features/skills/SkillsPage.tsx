@@ -4,7 +4,7 @@ import { Notice } from "../../components/Notice";
 import { PageFrame } from "../../components/PageFrame";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { NewTaskDialog } from "../tasks/NewTaskDialog";
-import { createSkill, fetchSkill, fetchSkills, updateSkill } from "./skillApi";
+import { createSkill, deleteSkill, fetchSkill, fetchSkills, updateSkill } from "./skillApi";
 import type { SkillFile, SkillSummary } from "./types";
 
 const emptyContent = "";
@@ -17,6 +17,7 @@ export function SkillsPage() {
   const [isLoadingEditor, setIsLoadingEditor] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editSkill, setEditSkill] = useState<SkillFile | null>(null);
   const [editContent, setEditContent] = useState(emptyContent);
@@ -100,6 +101,10 @@ export function SkillsPage() {
     if (!editSkill) {
       return;
     }
+    const ok = window.confirm(`Skill ${editSkill.name} を更新しますか？`);
+    if (!ok) {
+      return;
+    }
     setIsSaving(true);
     setEditError("");
     try {
@@ -110,6 +115,26 @@ export function SkillsPage() {
       setEditError(readError(saveError, "Skill の更新に失敗しました。"));
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  async function handleDelete(skill: SkillSummary) {
+    if (!canEditSkill(skill)) {
+      return;
+    }
+    const ok = window.confirm(`Skill ${skill.name} を削除しますか？`);
+    if (!ok) {
+      return;
+    }
+    setIsDeleting(true);
+    setError("");
+    try {
+      await deleteSkill(skill.name);
+      await loadSkills();
+    } catch (deleteError) {
+      setError(readError(deleteError, "Skill の削除に失敗しました。"));
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -185,17 +210,30 @@ export function SkillsPage() {
                 </div>
                 <div className="flex shrink-0 justify-end gap-2 sm:pt-1">
                   {canEditSkill(skill) ? (
-                    <button
-                      type="button"
-                      disabled={isLoadingEditor}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        void openEditDialog(skill);
-                      }}
-                      className="rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      編集
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        disabled={isLoadingEditor}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          void openEditDialog(skill);
+                        }}
+                        className="rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        編集
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isDeleting}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          void handleDelete(skill);
+                        }}
+                        className="rounded-lg border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-700 transition hover:border-rose-300 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        削除
+                      </button>
+                    </>
                   ) : (
                     <span className="inline-flex items-center rounded-lg border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--muted)]">
                       読み取り専用

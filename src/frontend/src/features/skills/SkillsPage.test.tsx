@@ -84,6 +84,7 @@ test("renders skills list and global menu", async () => {
   expect(screen.getByText("$HOME/.codex/skills/alpha/SKILL.md")).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "新規Skill" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "編集" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "削除" })).toBeInTheDocument();
 });
 
 test("creates a new skill from new button", async () => {
@@ -142,6 +143,7 @@ test("creates a new skill from new button", async () => {
 });
 
 test("edits skill content in modal editor", async () => {
+  const confirmMock = vi.spyOn(window, "confirm").mockReturnValue(true);
   const fetchMock = vi
     .spyOn(globalThis, "fetch")
     .mockResolvedValueOnce(
@@ -222,6 +224,7 @@ test("edits skill content in modal editor", async () => {
     target: { value: "# Updated Skill\n" },
   });
   fireEvent.click(screen.getByRole("button", { name: "更新" }));
+  expect(confirmMock).toHaveBeenCalledWith("Skill alpha を更新しますか？");
 
   await waitFor(() => {
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -235,6 +238,109 @@ test("edits skill content in modal editor", async () => {
   });
   await waitFor(() => {
     expect(screen.queryByRole("dialog", { name: "編集 - alpha" })).not.toBeInTheDocument();
+  });
+});
+
+test("cancels skill update when confirmation is dismissed", async () => {
+  const confirmMock = vi.spyOn(window, "confirm").mockReturnValue(false);
+  const fetchMock = vi
+    .spyOn(globalThis, "fetch")
+    .mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          skills: [
+            {
+              name: "alpha",
+              path: "/tmp/.codex/skills/alpha/SKILL.md",
+              source: "global",
+              projectName: "",
+              editable: true,
+            },
+          ],
+        }),
+      ),
+    )
+    .mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          name: "alpha",
+          path: "/tmp/.codex/skills/alpha/SKILL.md",
+          content: "# Alpha Skill\n",
+          source: "global",
+          projectName: "",
+          editable: true,
+        }),
+      ),
+    );
+
+  render(
+    <MemoryRouter initialEntries={["/skills"]}>
+      <SkillsPage />
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("alpha")).toBeInTheDocument();
+  });
+
+  fireEvent.click(screen.getByText("alpha"));
+  await waitFor(() => {
+    expect(screen.getByRole("dialog", { name: "編集 - alpha" })).toBeInTheDocument();
+  });
+
+  fireEvent.click(screen.getByRole("button", { name: "更新" }));
+  expect(confirmMock).toHaveBeenCalledWith("Skill alpha を更新しますか？");
+
+  await waitFor(() => {
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+  expect(screen.getByRole("dialog", { name: "編集 - alpha" })).toBeInTheDocument();
+});
+
+test("deletes skill from list", async () => {
+  const fetchMock = vi
+    .spyOn(globalThis, "fetch")
+    .mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          skills: [
+            {
+              name: "alpha",
+              path: "/tmp/.codex/skills/alpha/SKILL.md",
+              source: "global",
+              projectName: "",
+              editable: true,
+            },
+          ],
+        }),
+      ),
+    )
+    .mockResolvedValueOnce(new Response(null, { status: 204 }))
+    .mockResolvedValueOnce(new Response(JSON.stringify({ skills: [] })));
+  const confirmMock = vi.spyOn(window, "confirm").mockReturnValue(true);
+
+  render(
+    <MemoryRouter initialEntries={["/skills"]}>
+      <SkillsPage />
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("alpha")).toBeInTheDocument();
+  });
+
+  fireEvent.click(screen.getByRole("button", { name: "削除" }));
+  expect(confirmMock).toHaveBeenCalledWith("Skill alpha を削除しますか？");
+
+  await waitFor(() => {
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/skills/alpha",
+      expect.objectContaining({ method: "DELETE" }),
+    );
+  });
+  await waitFor(() => {
+    expect(screen.getByText("Skill は見つかりませんでした。")).toBeInTheDocument();
   });
 });
 
@@ -268,4 +374,5 @@ test("renders project skill as read-only", async () => {
   expect(screen.getByText("Project: impl")).toBeInTheDocument();
   expect(screen.getByText("読み取り専用")).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "編集" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "削除" })).not.toBeInTheDocument();
 });

@@ -212,6 +212,13 @@ def update_skill(skill_name: str):
     return jsonify(skill.to_dict())
 
 
+@api_bp.delete("/skills/<path:skill_name>")
+def delete_skill(skill_name: str):
+    service = SkillService(_skill_repository())
+    service.delete_skill(skill_name)
+    return "", 204
+
+
 def _project_repository() -> ProjectRepository:
     projects_file = Path(current_app.config["PROJECTS_FILE"])
     return ProjectRepository(projects_file)
