@@ -175,6 +175,7 @@ export function SkillsPage() {
                   id="skill-search"
                   type="search"
                   aria-label="Search"
+                  autoFocus
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
                   placeholder="Search"
