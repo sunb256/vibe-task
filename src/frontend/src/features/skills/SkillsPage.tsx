@@ -100,6 +100,10 @@ export function SkillsPage() {
     if (!editSkill) {
       return;
     }
+    const ok = window.confirm(`Skill ${editSkill.name} を更新しますか？`);
+    if (!ok) {
+      return;
+    }
     setIsSaving(true);
     setEditError("");
     try {
