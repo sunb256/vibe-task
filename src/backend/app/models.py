@@ -7,16 +7,12 @@ class ProjectRecord:
     id: str
     name: str
     repository_path: str
-    action_list_path: str
-    done_list_path: str
 
     def to_dict(self) -> dict[str, str | bool]:
         return {
             "id": self.id,
             "name": self.name,
             "repositoryPath": self.repository_path,
-            "actionListPath": self.action_list_path,
-            "doneListPath": self.done_list_path,
         }
 
 

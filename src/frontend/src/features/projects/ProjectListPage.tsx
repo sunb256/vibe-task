@@ -365,8 +365,6 @@ function toFormState(project: Project): ProjectFormState {
   return {
     name: project.name,
     repositoryPath: project.repositoryPath,
-    actionListPath: project.actionListPath,
-    doneListPath: project.doneListPath,
   };
 }
 
@@ -385,13 +383,6 @@ function filterProjects(projects: Project[], searchQuery: string) {
   return projects.filter((project) => {
     const name = project.name.toLowerCase();
     const repositoryPath = project.repositoryPath.toLowerCase();
-    const actionListPath = project.actionListPath.toLowerCase();
-    const doneListPath = project.doneListPath.toLowerCase();
-    return (
-      name.includes(query) ||
-      repositoryPath.includes(query) ||
-      actionListPath.includes(query) ||
-      doneListPath.includes(query)
-    );
+    return name.includes(query) || repositoryPath.includes(query);
   });
 }

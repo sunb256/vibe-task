@@ -50,6 +50,7 @@ docker compose up --build -d
 
 ## Misc
 
-### icons
+### Design
 
- - [Lucide](https://lucide.dev/)
+ - [icons - Lucide](https://lucide.dev/)
+ - [font - SolidLinker](https://hicchicc.github.io/00ff/)

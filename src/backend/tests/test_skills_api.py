@@ -22,8 +22,6 @@ def test_lists_project_skill_files(client, project_repo: Path):
         json={
             "name": "impl",
             "repositoryPath": str(project_repo),
-            "actionListPath": "tasks/action.yml",
-            "doneListPath": "tasks/done.yml",
         },
     )
     assert created.status_code == 201

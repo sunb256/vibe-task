@@ -10,7 +10,8 @@ from app.repositories.task_repository import TaskRepository
 class ProjectService:
     def __init__(self, project_repository: ProjectRepository) -> None:
         self.project_repository = project_repository
-        self.task_repository = TaskRepository()
+        tasks_root = self.project_repository.projects_file.parent / "projects"
+        self.task_repository = TaskRepository(tasks_root)
 
     def list_projects(self) -> list[ProjectRecord]:
         return self.project_repository.list_projects()
@@ -18,42 +19,28 @@ class ProjectService:
     def create_project(self, payload: dict) -> ProjectRecord:
         name = self._require_text(payload, "name")
         repository_path = self._require_repository_path(payload)
-        action_list_path = self._require_relative_path(payload, "actionListPath")
-        done_list_path = self._require_relative_path(payload, "doneListPath")
-        preview = ProjectRecord(
-            id="preview",
+        project = self.project_repository.create_project(
             name=name,
             repository_path=repository_path,
-            action_list_path=action_list_path,
-            done_list_path=done_list_path,
         )
-        self.task_repository.list_tasks(preview)
-        return self.project_repository.create_project(
-            name=name,
-            repository_path=repository_path,
-            action_list_path=action_list_path,
-            done_list_path=done_list_path,
-        )
+        self.task_repository.ensure_project_files(project)
+        return project
 
     def update_project(self, project_id: str, payload: dict) -> ProjectRecord:
         name = self._require_text(payload, "name")
         repository_path = self._require_repository_path(payload)
-        action_list_path = self._require_relative_path(payload, "actionListPath")
-        done_list_path = self._require_relative_path(payload, "doneListPath")
-        preview = ProjectRecord(
+        current = self.project_repository.get_project(project_id)
+        next_project = ProjectRecord(
             id=project_id,
             name=name,
             repository_path=repository_path,
-            action_list_path=action_list_path,
-            done_list_path=done_list_path,
         )
-        self.task_repository.list_tasks(preview)
+        self.task_repository.relocate_project_files(current, next_project)
+        self.task_repository.ensure_project_files(next_project)
         return self.project_repository.update_project(
             project_id=project_id,
             name=name,
             repository_path=repository_path,
-            action_list_path=action_list_path,
-            done_list_path=done_list_path,
         )
 
     def delete_project(self, project_id: str) -> None:
@@ -81,12 +68,6 @@ class ProjectService:
         if not resolved.exists() or not resolved.is_dir():
             raise AppError("repositoryPath must be an existing directory", 400)
         return resolved
-
-    def _require_relative_path(self, payload: dict, field: str) -> str:
-        value = self._require_text(payload, field)
-        if Path(value).is_absolute():
-            raise AppError(f"{field} must be relative", 400)
-        return value
 
     def _require_text(self, payload: dict, field: str) -> str:
         value = payload.get(field)

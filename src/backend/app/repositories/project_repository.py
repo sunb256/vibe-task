@@ -30,8 +30,6 @@ class ProjectRepository:
         self,
         name: str,
         repository_path: str,
-        action_list_path: str,
-        done_list_path: str,
     ) -> ProjectRecord:
         document = self._load_document()
         projects = document.setdefault("projects", [])
@@ -39,8 +37,6 @@ class ProjectRepository:
             id=self._next_project_id(projects),
             name=name,
             repository_path=repository_path,
-            action_list_path=action_list_path,
-            done_list_path=done_list_path,
         )
         projects.append(project.to_dict())
         self._write_document(document)
@@ -51,8 +47,6 @@ class ProjectRepository:
         project_id: str,
         name: str,
         repository_path: str,
-        action_list_path: str,
-        done_list_path: str,
     ) -> ProjectRecord:
         document = self._load_document()
         projects = document.setdefault("projects", [])
@@ -61,8 +55,6 @@ class ProjectRepository:
             id=project_id,
             name=name,
             repository_path=repository_path,
-            action_list_path=action_list_path,
-            done_list_path=done_list_path,
         )
         projects[index] = project.to_dict()
         self._write_document(document)
@@ -171,8 +163,6 @@ class ProjectRepository:
                 id=str(item["id"]),
                 name=str(item["name"]),
                 repository_path=str(item["repositoryPath"]),
-                action_list_path=str(item["actionListPath"]),
-                done_list_path=str(item["doneListPath"]),
             )
         except (KeyError, TypeError) as error:
             raise AppError("projects file is invalid", 400) from error

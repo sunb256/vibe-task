@@ -71,8 +71,6 @@ test("does not render the removed project subtitle", async () => {
         id: "project-1",
         name: "impl",
         repositoryPath: "/tmp/impl",
-        actionListPath: "tasks/action.yml",
-        doneListPath: "tasks/done.yml",
       },
     ],
   });
@@ -117,6 +115,11 @@ test("does not render the removed project subtitle", async () => {
     expect(screen.getByText("impl")).toBeInTheDocument();
   });
   expect(screen.getByRole("link", { name: "Project" })).toHaveAttribute("href", "/");
+  expect(
+    screen
+      .getByRole("link", { name: "Project" })
+      .querySelector('img[src="/assets/images/vibe_task_logo_active.png"]'),
+  ).not.toBeNull();
   expect(screen.getByRole("link", { name: "Custom Prompt" })).toHaveAttribute(
     "href",
     "/custom-prompt",
@@ -236,8 +239,6 @@ test("swaps task ids with up/down buttons", async () => {
         id: "project-1",
         name: "impl",
         repositoryPath: "/tmp/impl",
-        actionListPath: "tasks/action.yml",
-        doneListPath: "tasks/done.yml",
       },
     ],
   });
@@ -351,8 +352,6 @@ test("uses cached tasks on revisit before refetch resolves", async () => {
         id: "project-1",
         name: "impl",
         repositoryPath: "/tmp/impl",
-        actionListPath: "tasks/action.yml",
-        doneListPath: "tasks/done.yml",
       },
     ],
   });
@@ -403,8 +402,6 @@ test("creates a new action task from modal editor", async () => {
         id: "project-1",
         name: "impl",
         repositoryPath: "/tmp/impl",
-        actionListPath: "tasks/action.yml",
-        doneListPath: "tasks/done.yml",
       },
     ],
   });
@@ -536,8 +533,6 @@ test("edits a task in modal editor and supports keyboard shortcuts", async () =>
         id: "project-1",
         name: "impl",
         repositoryPath: "/tmp/impl",
-        actionListPath: "tasks/action.yml",
-        doneListPath: "tasks/done.yml",
       },
     ],
   });
