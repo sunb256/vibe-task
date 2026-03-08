@@ -10,7 +10,7 @@ class ProjectRecord:
     action_list_path: str
     done_list_path: str
 
-    def to_dict(self) -> dict[str, str]:
+    def to_dict(self) -> dict[str, str | bool]:
         return {
             "id": self.id,
             "name": self.name,
@@ -59,10 +59,25 @@ class SkillRecord:
     name: str
     path: str
     content: str
+    source: str = "global"
+    project_name: str = ""
+    editable: bool = True
 
     def to_dict(self) -> dict[str, str]:
         return {
             "name": self.name,
             "path": self.path,
             "content": self.content,
+            "source": self.source,
+            "projectName": self.project_name,
+            "editable": self.editable,
+        }
+
+    def to_summary_dict(self) -> dict[str, str | bool]:
+        return {
+            "name": self.name,
+            "path": self.path,
+            "source": self.source,
+            "projectName": self.project_name,
+            "editable": self.editable,
         }

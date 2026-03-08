@@ -171,11 +171,8 @@ def delete_prompt(prompt_name: str):
 
 @api_bp.get("/skills")
 def list_skills():
-    service = SkillService(_skill_repository())
-    skills = [
-        {"name": skill.name, "path": skill.path}
-        for skill in service.list_skills()
-    ]
+    service = SkillService(_skill_repository(), _project_repository())
+    skills = [skill.to_summary_dict() for skill in service.list_skills()]
     return jsonify({"skills": skills})
 
 
