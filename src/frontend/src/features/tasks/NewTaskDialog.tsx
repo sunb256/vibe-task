@@ -190,9 +190,9 @@ function isSaveShortcut(event: KeyboardEvent) {
 }
 
 function dialogSubmitButtonClass() {
-  return "inline-flex h-9 min-w-[4.5rem] items-center justify-center whitespace-nowrap rounded-md bg-[var(--accent)] px-3 text-sm font-medium tracking-tight text-white shadow-[0_1px_0_rgba(255,255,255,0.08)_inset] transition hover:bg-[var(--accent-strong)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-60";
+  return "inline-flex h-10 min-w-[4.5rem] items-center justify-center whitespace-nowrap rounded-md bg-[var(--accent)] px-4 text-sm font-medium tracking-tight text-white shadow-[0_1px_0_rgba(255,255,255,0.08)_inset] transition hover:bg-[var(--accent-strong)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-60";
 }
 
 function dialogCancelButtonClass() {
-  return "inline-flex h-9 min-w-[4.5rem] items-center justify-center whitespace-nowrap rounded-md border border-[var(--border)] bg-white px-3 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60";
+  return "inline-flex h-10 min-w-[4.5rem] items-center justify-center whitespace-nowrap rounded-md border border-[var(--border)] bg-white px-4 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60";
 }
