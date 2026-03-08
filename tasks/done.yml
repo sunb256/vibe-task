@@ -553,7 +553,7 @@ task:
       TOP画面
       Project一覧はカードタイプでなくリスト形式にしたい。数が増えてきたら見にくいので
   - id: 70
-    url: '-'
+    url: https://github.com/sunb256/vibe-task/pull/75
     title: TOP画面のProject一覧にインクリメンタル検索を追加
     action: |
       TOP画面
