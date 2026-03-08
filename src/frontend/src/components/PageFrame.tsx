@@ -51,7 +51,7 @@ export function PageFrame(props: PageFrameProps) {
         </div>
       </header>
       <main className="min-h-screen px-4 pb-8 pt-14 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto flex min-h-[calc(100vh-5.5rem)] max-w-6xl flex-col">
           <header className={frameClass}>
             <div className={titleWrapClass}>
               {eyebrow ? (
@@ -68,7 +68,10 @@ export function PageFrame(props: PageFrameProps) {
             </div>
             {actions ? <div className="w-full md:flex-1">{actions}</div> : null}
           </header>
-          {children}
+          <div className="flex-1">{children}</div>
+          <footer className="mt-auto pt-2">
+            <hr className="border-0 border-t border-[var(--border)] opacity-70" />
+          </footer>
         </div>
       </main>
     </>
