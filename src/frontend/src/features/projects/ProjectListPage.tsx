@@ -225,6 +225,7 @@ export function ProjectListPage() {
                 id="project-search"
                 type="search"
                 aria-label="Search"
+                autoFocus
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder="Search"
