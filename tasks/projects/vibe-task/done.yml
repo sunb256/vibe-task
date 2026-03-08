@@ -861,7 +861,7 @@ task:
       devブランチで作業してください
 
   - id: '104'
-    url: https://github.com/sunb256/vibe-task/pull/110
+    url: https://github.com/sunb256/vibe-task/pull/111
     title: 固定ヘッダMENU選択時のロゴ付近カーソルちらつきを改善
     action: |
       固定ヘッダのMENUを選択すると、カーソルがロゴにあたってしまい、カーソルのちらつきが発生してします。これを改良したい
