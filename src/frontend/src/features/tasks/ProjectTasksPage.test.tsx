@@ -147,7 +147,9 @@ test("does not render the removed project subtitle", async () => {
   expect(todoToggle).toHaveClass("bg-blue-100", "text-blue-700", "rounded-full");
   expect(doneToggle).toHaveClass("rounded-full");
   expect(screen.getByRole("columnheader", { name: "id" })).toHaveClass("whitespace-nowrap");
+  expect(screen.getByRole("columnheader", { name: "task" })).toHaveClass("w-full");
   expect(screen.getByRole("columnheader", { name: "actions" })).toHaveClass("pl-1", "pr-3");
+  expect(screen.getByRole("columnheader", { name: "actions" })).toHaveClass("w-[13rem]");
   expect(screen.getByRole("columnheader", { name: "url" })).toHaveClass("text-center");
   expect(screen.getByRole("link", { name: "PR#4" })).toHaveAttribute(
     "href",
@@ -157,9 +159,9 @@ test("does not render the removed project subtitle", async () => {
   const editButtons = screen.getAllByRole("button", { name: "編集" });
   expect(editButtons).toHaveLength(1);
   expect(screen.getAllByRole("button", { name: "削除" })).toHaveLength(1);
-  expect(editButtons[0]).toHaveClass("w-20");
+  expect(editButtons[0]).toHaveClass("w-[4.5rem]");
   expect(editButtons[0].closest("td")).toHaveClass("pl-1", "pr-3");
-  expect(screen.getAllByRole("button", { name: "削除" })[0]).toHaveClass("w-20");
+  expect(screen.getAllByRole("button", { name: "削除" })[0]).toHaveClass("w-[4.5rem]");
   expect(screen.getAllByRole("button", { name: "削除" })[0]).toHaveClass(
     "bg-white",
     "border-rose-200",
@@ -177,7 +179,7 @@ test("does not render the removed project subtitle", async () => {
   expect(screen.queryByText("done-title-10")).not.toBeInTheDocument();
   expect(screen.queryByText("done-title-2")).not.toBeInTheDocument();
   expect(screen.getByText("first task")).toHaveClass("line-clamp-6");
-  expect(screen.getByText("first task")).toHaveClass("max-w-[44rem]");
+  expect(screen.getByText("first task")).toHaveClass("max-w-[56rem]");
   expect(screen.getByText("first task")).toHaveClass("break-all");
   expect(screen.getByText("first task")).toHaveClass("text-black");
   fireEvent.click(screen.getByText("TODO #1", { selector: "span" }));

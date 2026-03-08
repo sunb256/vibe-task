@@ -265,8 +265,8 @@ export function ProjectTasksPage() {
               <thead>
                 <tr className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
                   <th className="px-3 whitespace-nowrap">id</th>
-                  <th className="px-3">task</th>
-                  <th className="pl-1 pr-3">actions</th>
+                  <th className="px-3 w-full">task</th>
+                  <th className="pl-1 pr-3 w-[13rem] whitespace-nowrap">actions</th>
                   <th className="px-3 text-center">url</th>
                 </tr>
               </thead>
@@ -287,7 +287,7 @@ export function ProjectTasksPage() {
                           {sourceTag(task)}
                         </span>
                       </td>
-                      <td className="border-y border-[var(--border)] bg-[var(--panel-strong)] transition group-hover:bg-zinc-50/70 group-focus-within:bg-zinc-50/70">
+                      <td className="w-full min-w-[34rem] border-y border-[var(--border)] bg-[var(--panel-strong)] transition group-hover:bg-zinc-50/70 group-focus-within:bg-zinc-50/70">
                         <button
                           type="button"
                           aria-label={`task ${task.id} を編集`}
@@ -301,27 +301,27 @@ export function ProjectTasksPage() {
                             {showTaskTitle(task.title) ? (
                               <p className="font-semibold text-[var(--ink)]">{task.title}</p>
                             ) : null}
-                            <p className="line-clamp-6 max-w-[44rem] whitespace-pre-wrap break-all text-black">
+                            <p className="line-clamp-6 max-w-[56rem] whitespace-pre-wrap break-all text-black">
                               {task.action}
                             </p>
                           </div>
                         </button>
                       </td>
-                      <td className="border-y border-[var(--border)] bg-[var(--panel-strong)] pl-1 pr-3 py-3 transition group-hover:bg-zinc-50/70 group-focus-within:bg-zinc-50/70">
-                        <div className="flex items-center gap-2">
+                      <td className="w-[13rem] whitespace-nowrap border-y border-[var(--border)] bg-[var(--panel-strong)] pl-1 pr-3 py-3 transition group-hover:bg-zinc-50/70 group-focus-within:bg-zinc-50/70">
+                        <div className="flex items-center gap-1">
                           <button
                             type="button"
                             onClick={(event) => {
                               event.stopPropagation();
                               openEditDialog(task);
                             }}
-                            className="inline-flex w-20 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 py-2 font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
+                            className="inline-flex w-[4.5rem] items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 py-2 font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
                           >
                             編集
                           </button>
                           <PrimaryButton
                             type="button"
-                            className="w-20 border border-rose-200 bg-white !text-rose-700 hover:border-rose-300 hover:bg-rose-50 focus-visible:outline-rose-300"
+                            className="w-[4.5rem] border border-rose-200 bg-white !text-rose-700 hover:border-rose-300 hover:bg-rose-50 focus-visible:outline-rose-300"
                             onClick={(event) => {
                               event.stopPropagation();
                               void handleDelete(task);
