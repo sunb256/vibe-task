@@ -238,26 +238,22 @@ export function ProjectListPage() {
         }
       >
         <section className="space-y-3">
-          <div className="flex items-center gap-2">
-            <label htmlFor="project-search" className="text-sm font-medium text-[var(--ink)]">
-              Search
-            </label>
-            <div className="relative w-full max-w-sm">
-              <img
-                src="/assets/images/search.svg"
-                alt=""
-                aria-hidden="true"
-                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-65"
-              />
-              <input
-                id="project-search"
-                type="search"
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Project検索"
-                className="h-9 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-sm outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12"
-              />
-            </div>
+          <div className="relative w-full max-w-sm">
+            <img
+              src="/assets/images/search.svg"
+              alt=""
+              aria-hidden="true"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-65"
+            />
+            <input
+              id="project-search"
+              type="search"
+              aria-label="Search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search"
+              className="h-9 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-sm outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12"
+            />
           </div>
           {error ? <Notice tone="error" message={error} /> : null}
           {isLoading ? <Notice tone="neutral" message="Loading projects..." /> : null}
