@@ -1,6 +1,6 @@
 import { afterEach, vi } from "vitest";
 
-import { createSkill, fetchSkill, fetchSkills, updateSkill } from "./skillApi";
+import { createSkill, deleteSkill, fetchSkill, fetchSkills, updateSkill } from "./skillApi";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -38,7 +38,7 @@ test("fetchSkills and fetchSkill request the skills endpoints with no-store", as
   );
 });
 
-test("createSkill and updateSkill use correct HTTP methods and payload", async () => {
+test("createSkill, updateSkill, deleteSkill use correct HTTP methods and payload", async () => {
   const fetchMock = vi
     .spyOn(globalThis, "fetch")
     .mockResolvedValueOnce(
@@ -64,10 +64,12 @@ test("createSkill and updateSkill use correct HTTP methods and payload", async (
           editable: true,
         }),
       ),
-    );
+    )
+    .mockResolvedValueOnce(new Response(null, { status: 204 }));
 
   await createSkill("alpha", "# Alpha Skill\n");
   await updateSkill("alpha", "# Updated Skill\n");
+  await deleteSkill("alpha");
 
   expect(fetchMock).toHaveBeenNthCalledWith(
     1,
@@ -75,6 +77,13 @@ test("createSkill and updateSkill use correct HTTP methods and payload", async (
     expect.objectContaining({
       method: "POST",
       body: JSON.stringify({ name: "alpha", content: "# Alpha Skill\n" }),
+    }),
+  );
+  expect(fetchMock).toHaveBeenNthCalledWith(
+    3,
+    "/api/skills/alpha",
+    expect.objectContaining({
+      method: "DELETE",
     }),
   );
   expect(fetchMock).toHaveBeenNthCalledWith(
