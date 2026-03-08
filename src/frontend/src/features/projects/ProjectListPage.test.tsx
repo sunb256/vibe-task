@@ -53,6 +53,7 @@ test("renders project list", async () => {
   expect(searchInput.parentElement?.parentElement).toHaveClass("flex", "items-center", "gap-2");
   expect(screen.getByRole("button", { name: "編集" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "削除" })).toBeInTheDocument();
+  expect(screen.getByRole("separator")).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "NEW" })).not.toBeInTheDocument();
   expect(
     screen.queryByText(

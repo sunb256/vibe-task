@@ -630,3 +630,10 @@ task:
       Project画面のヘッダ部をTOP画面のUIと合わせたい
 
       ヘッダ部のVIBE TASK表記はやめてタイトルだけにして、メインコンテンツのヘッダ部と統合したい
+  - id: 79
+    url: https://github.com/sunb256/vibe-task/pull/81
+    title: 全画面共通フッタに薄いhr線を追加
+    action: |-
+      フッタ部を作りたい
+
+      記載は今のところないが <hr/>　で薄い線を入れておきたい
