@@ -893,3 +893,12 @@ task:
     title: frontend全体のエラー処理を共通化して保守性を改善
     action: |
       全体的にリファクタリングして
+
+  - id: '109'
+    url: https://github.com/sunb256/vibe-task/pull/119
+    title: Docker環境でCustom PromptのMarkdown参照を有効化
+    action: |
+      別環境だと、Custom Promptのmarkdwonが見つからない現象が出た
+      実装を直したんだけど、今もそうなのか確認して
+
+      まだ治っていなければ、この環境以外でも動くように修正して

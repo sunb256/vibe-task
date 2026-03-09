@@ -44,6 +44,8 @@ docker compose up --build -d
 - frontend: http://127.0.0.1:5555
 - bind mount
   - `tasks/projects.yml`:  
+  - `${HOME}/.codex/prompts`
+    - Custom Prompt (`*.md`)
   - `${HOME}/ghq`
     - `repositoryPath`
       - `$HOME/ghq/github.com/...` 
