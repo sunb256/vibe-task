@@ -20,7 +20,9 @@ services:
     volumes:
       - ./src/backend:/app/src/backend
       - ./tasks:/app/tasks
+      # project directory
       - ${HOME}/ghq:${HOME}/ghq
+      - ${HOME}/app:${HOME}/app
     restart: unless-stopped
 
   frontend:
