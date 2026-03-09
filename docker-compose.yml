@@ -20,6 +20,8 @@ services:
     volumes:
       - ./src/backend:/app/src/backend
       - ./tasks:/app/tasks
+      # codex custom prompts
+      - ${HOME}/.codex/prompts:${HOME}/.codex/prompts
       # project directory
       - ${HOME}/ghq:${HOME}/ghq
       - ${HOME}/app:${HOME}/app
