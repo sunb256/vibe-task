@@ -1,8 +1,1 @@
-task:
-  - id: '109'
-    url: '-'
-    title: '-'
-    action: |
-      別環境だと、Custom Promptのmarkdwonが見つからない現象が出た
-      
-      この環境以外でも動くように修正して
+task: []
