@@ -35,6 +35,8 @@ npm run dev
 
 ```bash
 cp .env.local .env
+# -> edit port, UID, GID, proxy ...
+
 docker compose up --build -d
 ```
 
