@@ -850,3 +850,9 @@ task:
       編集と削除ボタンを入れてください
 
       devブランチで作業して
+
+  - id: '110'
+    url: https://github.com/sunb256/vibe-task/pull/121
+    title: Custom Prompt画面に検索機能を追加して一覧UIを統一
+    action: |-
+      Custom Prompt画面にも検索追加して、UIはほかの画面と同じにして
