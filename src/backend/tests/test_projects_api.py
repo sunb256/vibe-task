@@ -203,6 +203,51 @@ def test_accepts_repository_path_with_env_var(client, project_repo: Path, monkey
     assert created["repositoryPath"] == "$PROJECT_REPO_ROOT"
 
 
+def test_returns_default_app_settings(client):
+    response = client.get("/api/settings")
+
+    assert response.status_code == 200
+    assert response.get_json()["settings"] == {"headerColor": "#09090b"}
+
+
+def test_updates_app_settings_and_includes_them_in_export(client):
+    response = client.patch("/api/settings", json={"headerColor": "#2563eb"})
+
+    assert response.status_code == 200
+    assert response.get_json()["settings"] == {"headerColor": "#2563eb"}
+
+    exported = client.get("/api/projects/export")
+
+    assert exported.status_code == 200
+    assert "settings:" in exported.get_json()["content"]
+    assert "#2563eb" in exported.get_json()["content"]
+
+
+def test_imports_projects_file_with_app_settings(client):
+    content = (
+        "settings:\n"
+        '  headerColor: "#0f766e"\n'
+        "projects:\n"
+        "  - id: 10\n"
+        "    name: imported\n"
+        "    repositoryPath: /tmp/imported\n"
+    )
+
+    response = client.post("/api/projects/import", json={"content": content})
+
+    assert response.status_code == 204
+    settings = client.get("/api/settings")
+    assert settings.status_code == 200
+    assert settings.get_json()["settings"] == {"headerColor": "#0f766e"}
+
+
+def test_rejects_invalid_header_color(client):
+    response = client.patch("/api/settings", json={"headerColor": "blue"})
+
+    assert response.status_code == 400
+    assert response.get_json()["error"] == "headerColor must be a hex color"
+
+
 def test_exports_projects_file(client, project_repo: Path):
     created = client.post(
         "/api/projects",

@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Any
 
+DEFAULT_HEADER_COLOR = "#09090b"
+
 
 @dataclass(slots=True)
 class ProjectRecord:
@@ -76,4 +78,14 @@ class SkillRecord:
             "source": self.source,
             "projectName": self.project_name,
             "editable": self.editable,
+        }
+
+
+@dataclass(slots=True)
+class AppSettingsRecord:
+    header_color: str = DEFAULT_HEADER_COLOR
+
+    def to_dict(self) -> dict[str, str]:
+        return {
+            "headerColor": self.header_color,
         }

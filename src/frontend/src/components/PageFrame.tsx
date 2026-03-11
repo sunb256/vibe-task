@@ -1,5 +1,9 @@
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+
+import { ProjectSettingsDialog } from "../features/projects/ProjectSettingsDialog";
+import { createTopBarStyle, defaultAppSettings, type AppSettings } from "../lib/appSettings";
+import { fetchAppSettings } from "../lib/appSettingsApi";
 
 type PageFrameProps = {
   title: ReactNode;
@@ -12,6 +16,8 @@ type PageFrameProps = {
 
 export function PageFrame(props: PageFrameProps) {
   const { pathname } = useLocation();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [settings, setSettings] = useState<AppSettings>(defaultAppSettings);
   const {
     title,
     eyebrow = "VIBE TASK",
@@ -24,11 +30,35 @@ export function PageFrame(props: PageFrameProps) {
   const frameClass = headerClass(headerStyle);
   const titleWrapClass = titleClass(headerStyle);
   const logoSrc = selectLogoSrc(pathname);
+  const topBarStyle = createTopBarStyle(settings);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSettings() {
+      try {
+        const loaded = await fetchAppSettings();
+        if (!cancelled && hasCustomSettings(loaded)) {
+          setSettings(loaded);
+        }
+      } catch {
+        return;
+      }
+    }
+
+    void loadSettings();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-zinc-800 bg-[rgba(9,9,11,0.94)] px-4 text-white backdrop-blur sm:px-6 lg:px-8">
-        <div className="mx-auto flex h-10 max-w-6xl items-center">
+      <header
+        style={topBarStyle}
+        className="fixed inset-x-0 top-0 z-50 border-b border-[color:var(--topbar-border)] bg-[color:var(--topbar-bg)] px-4 text-[color:var(--topbar-ink)] backdrop-blur sm:px-6 lg:px-8"
+      >
+        <div className="mx-auto flex h-10 max-w-6xl items-center justify-between gap-4">
           <nav className="flex items-center gap-4" aria-label="global menu">
             <NavLink
               to="/"
@@ -56,6 +86,13 @@ export function PageFrame(props: PageFrameProps) {
               Skills
             </NavLink>
           </nav>
+          <button
+            type="button"
+            onClick={() => setIsSettingsOpen(true)}
+            className="inline-flex h-7 items-center rounded-md border border-[color:var(--topbar-border)] px-2.5 text-sm font-semibold text-[color:var(--topbar-ink)] transition hover:bg-[color:var(--topbar-hover)]"
+          >
+            Setting
+          </button>
         </div>
       </header>
       <main className="min-h-screen px-4 pb-8 pt-14 sm:px-6 lg:px-8">
@@ -82,6 +119,12 @@ export function PageFrame(props: PageFrameProps) {
           </footer>
         </div>
       </main>
+      <ProjectSettingsDialog
+        isOpen={isSettingsOpen}
+        settings={settings}
+        onClose={() => setIsSettingsOpen(false)}
+        onSaved={setSettings}
+      />
     </>
   );
 }
@@ -94,9 +137,16 @@ function selectLogoSrc(pathname: string) {
 }
 
 function menuLinkClass(isActive: boolean) {
-  const activeTone = "text-white";
-  const inactiveTone = "text-zinc-400 hover:text-zinc-200";
+  const activeTone = "text-[color:var(--topbar-ink)]";
+  const inactiveTone = "text-[color:var(--topbar-muted)] hover:text-[color:var(--topbar-ink)]";
   return `inline-flex h-6 items-center px-0.5 text-sm font-semibold transition ${isActive ? activeTone : inactiveTone}`;
+}
+
+function hasCustomSettings(settings: AppSettings | null | undefined) {
+  if (!settings) {
+    return false;
+  }
+  return settings.headerColor !== defaultAppSettings.headerColor;
 }
 
 function headerClass(headerStyle: PageFrameProps["headerStyle"]) {

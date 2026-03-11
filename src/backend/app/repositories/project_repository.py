@@ -1,11 +1,14 @@
 from pathlib import Path
 from io import StringIO
+import re
 
 from ruamel.yaml import YAML
 from ruamel.yaml.error import YAMLError
 
 from app.errors import AppError
-from app.models import ProjectRecord
+from app.models import AppSettingsRecord, ProjectRecord
+
+HEADER_COLOR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 
 
 class ProjectRepository:
@@ -88,6 +91,16 @@ class ProjectRepository:
         document = self._parse_document(content)
         self._write_document(document)
 
+    def get_app_settings(self) -> AppSettingsRecord:
+        document = self._load_document()
+        return self._to_app_settings(document.get("settings"))
+
+    def update_app_settings(self, header_color: str) -> AppSettingsRecord:
+        document = self._load_document()
+        document["settings"] = {"headerColor": header_color}
+        self._write_document(document)
+        return self._to_app_settings(document["settings"])
+
     def _next_project_id(self, projects: list[dict]) -> str:
         return str(self._max_project_id(projects) + 1)
 
@@ -123,6 +136,7 @@ class ProjectRepository:
         if not isinstance(document, dict):
             raise AppError("projects file is invalid", 400)
         self._read_projects(document)
+        self._read_settings(document)
         document.setdefault("projects", [])
         return document
 
@@ -139,6 +153,7 @@ class ProjectRepository:
         if not isinstance(document, dict):
             raise AppError("projects file is invalid", 400)
         self._read_projects(document)
+        self._read_settings(document)
         document.setdefault("projects", [])
         return document
 
@@ -151,6 +166,9 @@ class ProjectRepository:
                 raise AppError("projects file is invalid", 400)
             self._to_project_record(item)
         return projects
+
+    def _read_settings(self, document: dict) -> AppSettingsRecord:
+        return self._to_app_settings(document.get("settings"))
 
     def _dump_document(self, document: dict) -> str:
         buffer = StringIO()
@@ -166,3 +184,13 @@ class ProjectRepository:
             )
         except (KeyError, TypeError) as error:
             raise AppError("projects file is invalid", 400) from error
+
+    def _to_app_settings(self, item: object) -> AppSettingsRecord:
+        if item is None:
+            return AppSettingsRecord()
+        if not isinstance(item, dict):
+            raise AppError("projects file is invalid", 400)
+        header_color = item.get("headerColor", AppSettingsRecord().header_color)
+        if not isinstance(header_color, str) or not HEADER_COLOR_RE.fullmatch(header_color):
+            raise AppError("projects file is invalid", 400)
+        return AppSettingsRecord(header_color=header_color.lower())

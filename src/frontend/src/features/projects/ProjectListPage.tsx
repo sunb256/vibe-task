@@ -20,7 +20,6 @@ import {
   updateProject,
 } from "./projectApi";
 import { NewProjectDialog } from "./NewProjectDialog";
-import { ProjectSettingsDialog } from "./ProjectSettingsDialog";
 import { defaultProjectForm, type Project, type ProjectFormState } from "./types";
 
 export function ProjectListPage() {
@@ -31,7 +30,6 @@ export function ProjectListPage() {
   const [editError, setEditError] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -231,17 +229,10 @@ export function ProjectListPage() {
                 className="h-9 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12"
               />
             </div>
-            <div className="flex shrink-0 items-center justify-end gap-2">
+            <div className="flex shrink-0 items-center justify-end">
               <PrimaryButton className="whitespace-nowrap" onClick={() => setIsDialogOpen(true)}>
                 新規プロジェクト
               </PrimaryButton>
-              <button
-                type="button"
-                onClick={() => setIsSettingsOpen(true)}
-                className="whitespace-nowrap rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
-              >
-                Setting
-              </button>
             </div>
           </div>
           {error ? <Notice tone="error" message={error} /> : null}
@@ -344,11 +335,6 @@ export function ProjectListPage() {
         initialForm={editForm}
         onClose={closeEditDialog}
         onSubmit={handleUpdate}
-      />
-      <ProjectSettingsDialog
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        onImported={loadProjects}
       />
     </>
   );

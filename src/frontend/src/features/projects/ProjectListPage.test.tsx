@@ -2,6 +2,11 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, vi } from "vitest";
 
+vi.mock("../../lib/appSettingsApi", () => ({
+  fetchAppSettings: vi.fn().mockResolvedValue({ headerColor: "#09090b" }),
+  updateAppSettings: vi.fn(),
+}));
+
 import { ProjectListPage } from "./ProjectListPage";
 
 afterEach(() => {

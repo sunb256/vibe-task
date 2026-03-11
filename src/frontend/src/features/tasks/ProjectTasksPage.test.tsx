@@ -2,6 +2,11 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, vi } from "vitest";
 
+vi.mock("../../lib/appSettingsApi", () => ({
+  fetchAppSettings: vi.fn().mockResolvedValue({ headerColor: "#09090b" }),
+  updateAppSettings: vi.fn(),
+}));
+
 import { ProjectTasksPage } from "./ProjectTasksPage";
 import { resetProjectTasksPageCacheForTest } from "./projectTasksPageCache";
 

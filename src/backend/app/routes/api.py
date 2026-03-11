@@ -6,6 +6,7 @@ from app.errors import AppError
 from app.repositories.project_repository import ProjectRepository
 from app.repositories.prompt_repository import PromptRepository
 from app.repositories.skill_repository import SkillRepository
+from app.services.app_settings_service import AppSettingsService
 from app.services.project_service import ProjectService
 from app.services.prompt_service import PromptService
 from app.services.skill_service import SkillService
@@ -76,6 +77,23 @@ def import_projects():
     service = ProjectService(_project_repository())
     service.import_projects_text(content)
     return "", 204
+
+
+@api_bp.get("/settings")
+def get_settings():
+    service = AppSettingsService(_project_repository())
+    settings = service.get_settings()
+    return jsonify({"settings": settings.to_dict()})
+
+
+@api_bp.patch("/settings")
+def update_settings():
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        raise AppError("request body must be an object", 400)
+    service = AppSettingsService(_project_repository())
+    settings = service.update_settings(payload)
+    return jsonify({"settings": settings.to_dict()})
 
 
 @api_bp.get("/projects/<project_id>/tasks")
