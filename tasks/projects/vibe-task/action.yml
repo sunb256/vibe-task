@@ -1,1 +1,17 @@
-task: []
+task:
+  - id: '110'
+    url: '-'
+    title: '-'
+    action: |-
+      Skill画面も検索機能を同じように作成して
+
+      devブランチで作業してpushして下さい
+  - id: '111'
+    url: '-'
+    title: '-'
+    action: |
+      固定ヘッダにSettingを作成して
+      
+      そのSetting画面に固定ヘッダの帯を変更できるUIを作成してください
+      
+      既にTOP画面にSettingがあるのでそれをなくして固定ヘッダへ移動して下さい

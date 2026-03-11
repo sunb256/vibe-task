@@ -120,7 +120,41 @@ test("renders Windows home path as $HOME in skills list", async () => {
   expect(screen.getByText("$HOME/.codex/skills/alpha/SKILL.md")).toBeInTheDocument();
 });
 
-test("filters skills by skill name", async () => {
+test("filters skills by displayed home alias path", async () => {
+  vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+    new Response(
+      JSON.stringify({
+        skills: [
+          {
+            name: "alpha",
+            path: "/home/sunb/.codex/skills/alpha/SKILL.md",
+            source: "global",
+            projectName: "",
+            editable: true,
+          },
+        ],
+      }),
+    ),
+  );
+
+  render(
+    <MemoryRouter initialEntries={["/skills"]}>
+      <SkillsPage />
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("alpha")).toBeInTheDocument();
+  });
+
+  fireEvent.change(screen.getByRole("searchbox", { name: "Search" }), {
+    target: { value: "$HOME/.codex/skills/alpha" },
+  });
+
+  expect(screen.getByText("alpha")).toBeInTheDocument();
+});
+
+test("filters skills by search query", async () => {
   vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
     new Response(
       JSON.stringify({
@@ -134,9 +168,9 @@ test("filters skills by skill name", async () => {
           },
           {
             name: "beta",
-            path: "/tmp/.codex/skills/beta/SKILL.md",
-            source: "global",
-            projectName: "",
+            path: "/tmp/projects/impl/.codex/skills/beta/SKILL.md",
+            source: "project",
+            projectName: "impl",
             editable: true,
           },
         ],
@@ -160,7 +194,15 @@ test("filters skills by skill name", async () => {
   expect(screen.getByText("alpha")).toBeInTheDocument();
   expect(screen.queryByText("beta")).not.toBeInTheDocument();
 
-  fireEvent.change(searchInput, { target: { value: "/tmp/.codex/skills" } });
+  fireEvent.change(searchInput, { target: { value: "/tmp/projects/impl" } });
+  expect(screen.getByText("beta")).toBeInTheDocument();
+  expect(screen.queryByText("alpha")).not.toBeInTheDocument();
+
+  fireEvent.change(searchInput, { target: { value: "impl" } });
+  expect(screen.getByText("beta")).toBeInTheDocument();
+  expect(screen.queryByText("alpha")).not.toBeInTheDocument();
+
+  fireEvent.change(searchInput, { target: { value: "not-found" } });
   expect(screen.getByText("検索条件に一致するSkillはありません。")).toBeInTheDocument();
 
   fireEvent.change(searchInput, { target: { value: "" } });
