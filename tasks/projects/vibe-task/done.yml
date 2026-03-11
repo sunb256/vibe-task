@@ -909,3 +909,9 @@ task:
       Skill画面も検索機能を同じように作成して
 
       devブランチで作業してpushして下さい
+  - id: '111'
+    url: https://github.com/sunb256/vibe-task/pull/124
+    title: Custom Prompt画面に検索機能を追加
+    action: |-
+      Custom Prompt画面でも検索ができるようにする
+      devブランチで作業してpushして下さい
