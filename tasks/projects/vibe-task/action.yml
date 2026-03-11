@@ -1,1 +1,6 @@
-task: []
+task:
+  - id: '112'
+    url: '-'
+    title: '-'
+    action: |-
+      Skill画面にも検索追加して、UIはほかの画面と同じにして
