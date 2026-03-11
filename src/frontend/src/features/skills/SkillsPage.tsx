@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Notice } from "../../components/Notice";
 import { PageFrame } from "../../components/PageFrame";
 import { PrimaryButton } from "../../components/PrimaryButton";
+import { displayPath } from "../../lib/displayPath";
 import { readErrorMessage } from "../../lib/readErrorMessage";
 import { NewTaskDialog } from "../tasks/NewTaskDialog";
 import { createSkill, deleteSkill, fetchSkill, fetchSkills, updateSkill } from "./skillApi";
@@ -278,18 +279,6 @@ export function SkillsPage() {
       />
     </>
   );
-}
-
-function displayPath(path: string) {
-  const linuxHome = /^\/home\/[^/]+(\/.*)?$/.exec(path);
-  if (linuxHome) {
-    return `$HOME${linuxHome[1] ?? ""}`;
-  }
-  const macHome = /^\/Users\/[^/]+(\/.*)?$/.exec(path);
-  if (macHome) {
-    return `$HOME${macHome[1] ?? ""}`;
-  }
-  return path;
 }
 
 function filterSkills(skills: SkillSummary[], searchQuery: string) {

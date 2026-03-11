@@ -1,8 +1,8 @@
-import os
 from pathlib import Path
 
 from app.errors import AppError
 from app.models import ProjectRecord
+from app.path_utils import resolve_user_path
 from app.repositories.project_repository import ProjectRepository
 from app.repositories.task_repository import TaskRepository
 
@@ -63,8 +63,7 @@ class ProjectService:
         return repository_path
 
     def _validate_repository_path(self, repository_path: str) -> Path:
-        expanded = os.path.expandvars(repository_path)
-        resolved = Path(expanded).expanduser().resolve()
+        resolved = resolve_user_path(repository_path)
         if not resolved.exists() or not resolved.is_dir():
             raise AppError("repositoryPath must be an existing directory", 400)
         return resolved
