@@ -10,9 +10,3 @@ task:
       既にTOP画面にSettingがあるのでそれをなくして固定ヘッダへ移動して下さい
 
       devブランチで作業してpushして下さい
-  - id: '111'
-    url: '-'
-    title: '-'
-    action: |-
-      Custom Prompt画面でも検索ができるようにする
-      devブランチで作業してpushして下さい
