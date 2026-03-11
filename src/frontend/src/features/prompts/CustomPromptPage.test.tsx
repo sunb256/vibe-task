@@ -88,6 +88,33 @@ test("renders custom prompt list with menu", async () => {
   expect(screen.getByRole("button", { name: "削除" })).toBeInTheDocument();
 });
 
+test("renders Windows home path as $HOME in prompt list", async () => {
+  vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+    new Response(
+      JSON.stringify({
+        prompts: [
+          {
+            name: "alpha.md",
+            path: "C:\\Users\\sunb\\.codex\\prompts\\alpha.md",
+          },
+        ],
+      }),
+    ),
+  );
+
+  render(
+    <MemoryRouter initialEntries={["/custom-prompt"]}>
+      <CustomPromptPage />
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("alpha.md")).toBeInTheDocument();
+  });
+
+  expect(screen.getByText("$HOME/.codex/prompts/alpha.md")).toBeInTheDocument();
+});
+
 test("edits prompt content in modal editor", async () => {
   const fetchMock = vi
     .spyOn(globalThis, "fetch")

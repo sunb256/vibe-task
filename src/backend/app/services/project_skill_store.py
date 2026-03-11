@@ -1,8 +1,8 @@
-import os
 from pathlib import Path
 
 from app.errors import AppError
 from app.models import ProjectRecord, SkillRecord
+from app.path_utils import resolve_user_path
 from app.repositories.project_repository import ProjectRepository
 from app.repositories.skill_repository import SKILL_FILE_NAME
 
@@ -101,8 +101,7 @@ class ProjectSkillStore:
         )
 
     def _resolve_repository_path(self, repository_path: str) -> Path:
-        expanded = os.path.expandvars(repository_path)
-        return Path(expanded).expanduser().resolve()
+        return resolve_user_path(repository_path)
 
     def _skill_roots(self, repository_path: Path) -> tuple[Path, Path]:
         return (

@@ -1,5 +1,9 @@
 from pathlib import Path
 
+import pytest
+
+from app import path_utils
+
 
 def project_payload(name: str, repository_path: str) -> dict[str, str]:
     return {
@@ -201,6 +205,29 @@ def test_accepts_repository_path_with_env_var(client, project_repo: Path, monkey
     assert response.status_code == 201
     created = response.get_json()
     assert created["repositoryPath"] == "$PROJECT_REPO_ROOT"
+
+
+@pytest.mark.parametrize("repository_path", ["$HOME/ghq/impl", "${HOME}/ghq/impl"])
+def test_accepts_repository_path_with_home_alias_when_home_env_missing(
+    client,
+    tmp_path: Path,
+    monkeypatch,
+    repository_path: str,
+):
+    home_dir = tmp_path / "home"
+    project_repo = home_dir / "ghq" / "impl"
+    project_repo.mkdir(parents=True)
+    monkeypatch.delenv("HOME", raising=False)
+    monkeypatch.setattr(path_utils, "_home_dir", lambda: home_dir)
+
+    response = client.post(
+        "/api/projects",
+        json=project_payload("impl-home", repository_path),
+    )
+
+    assert response.status_code == 201
+    created = response.get_json()
+    assert created["repositoryPath"] == repository_path
 
 
 def test_exports_projects_file(client, project_repo: Path):

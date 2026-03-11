@@ -90,6 +90,36 @@ test("renders skills list and global menu", async () => {
   expect(screen.getByRole("button", { name: "削除" })).toBeInTheDocument();
 });
 
+test("renders Windows home path as $HOME in skills list", async () => {
+  vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+    new Response(
+      JSON.stringify({
+        skills: [
+          {
+            name: "alpha",
+            path: "C:\\Users\\sunb\\.codex\\skills\\alpha\\SKILL.md",
+            source: "global",
+            projectName: "",
+            editable: true,
+          },
+        ],
+      }),
+    ),
+  );
+
+  render(
+    <MemoryRouter initialEntries={["/skills"]}>
+      <SkillsPage />
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("alpha")).toBeInTheDocument();
+  });
+
+  expect(screen.getByText("$HOME/.codex/skills/alpha/SKILL.md")).toBeInTheDocument();
+});
+
 test("filters skills by skill name", async () => {
   vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
     new Response(

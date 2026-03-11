@@ -30,6 +30,11 @@ npm run dev
 ```
 -> http://127.0.0.1:5555
 
+- `repositoryPath` examples
+  - recommended: `~/ghq/github.com/...`
+  - Unix/macOS: `$HOME/ghq/github.com/...`
+  - Windows native: `$HOME\\ghq\\github.com\\...` or `C:\\Users\\<user>\\ghq\\github.com\\...`
+
 
 ## Docker / docker-compose
 

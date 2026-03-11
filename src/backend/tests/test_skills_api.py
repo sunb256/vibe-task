@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from app import path_utils
+
 
 def test_lists_skill_files(client):
     response = client.get("/api/skills")
@@ -34,6 +36,35 @@ def test_lists_project_skill_files(client, project_repo: Path):
     assert local["name"] == "local"
     assert local["source"] == "project"
     assert local["projectName"] == "impl"
+    assert local["editable"] is True
+
+
+def test_lists_project_skill_files_for_home_alias_repository_path(client, tmp_path: Path, monkeypatch):
+    home_dir = tmp_path / "home"
+    project_repo = home_dir / "ghq" / "impl"
+    local_skill = project_repo / ".codex" / "skills" / "local"
+    local_skill.mkdir(parents=True)
+    (local_skill / "SKILL.md").write_text("# Local Skill\n", encoding="utf-8")
+    monkeypatch.delenv("HOME", raising=False)
+    monkeypatch.setattr(path_utils, "_home_dir", lambda: home_dir)
+
+    created = client.post(
+        "/api/projects",
+        json={
+            "name": "impl-home",
+            "repositoryPath": "${HOME}/ghq/impl",
+        },
+    )
+    assert created.status_code == 201
+
+    response = client.get("/api/skills")
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    local = next(skill for skill in payload["skills"] if skill["path"].endswith("local/SKILL.md"))
+    assert local["name"] == "local"
+    assert local["source"] == "project"
+    assert local["projectName"] == "impl-home"
     assert local["editable"] is True
 
 
