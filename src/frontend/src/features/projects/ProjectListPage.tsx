@@ -21,7 +21,6 @@ import {
   updateProject,
 } from "./projectApi";
 import { NewProjectDialog } from "./NewProjectDialog";
-import { ProjectSettingsDialog } from "./ProjectSettingsDialog";
 import { defaultProjectForm, type Project, type ProjectFormState } from "./types";
 
 export function ProjectListPage() {
@@ -32,7 +31,6 @@ export function ProjectListPage() {
   const [editError, setEditError] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -212,6 +210,7 @@ export function ProjectListPage() {
       <PageFrame
         eyebrow={null}
         title={<span className="inline-flex h-9 items-center pl-1">Project 一覧</span>}
+        onImported={loadProjects}
       >
         <section className="space-y-3 rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
           <div className="mb-4 flex w-full items-center justify-between gap-2">
@@ -237,13 +236,6 @@ export function ProjectListPage() {
               <PrimaryButton className="whitespace-nowrap" onClick={() => setIsDialogOpen(true)}>
                 新規プロジェクト
               </PrimaryButton>
-              <button
-                type="button"
-                onClick={() => setIsSettingsOpen(true)}
-                className="whitespace-nowrap rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
-              >
-                Setting
-              </button>
             </div>
           </div>
           {error ? <Notice tone="error" message={error} /> : null}
@@ -346,11 +338,6 @@ export function ProjectListPage() {
         initialForm={editForm}
         onClose={closeEditDialog}
         onSubmit={handleUpdate}
-      />
-      <ProjectSettingsDialog
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        onImported={loadProjects}
       />
     </>
   );

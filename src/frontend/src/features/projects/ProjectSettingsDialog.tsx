@@ -2,21 +2,27 @@ import { type FormEvent, type MouseEvent, useEffect, useState } from "react";
 
 import { Notice } from "../../components/Notice";
 import { PrimaryButton } from "../../components/PrimaryButton";
+import type { HeaderBandId } from "../../lib/headerBand";
+import { getHeaderBand, listHeaderBands } from "../../lib/headerBand";
 import { readErrorMessage } from "../../lib/readErrorMessage";
 import { exportProjectsFile, importProjectsFile } from "./projectApi";
+import { fetchSettings, updateSettings } from "./settingsApi";
 
 type ProjectSettingsDialogProps = {
   isOpen: boolean;
   onClose: () => void;
-  onImported: () => Promise<void>;
+  onImported?: () => Promise<void> | void;
+  headerBandId: HeaderBandId;
+  onHeaderBandChange: (bandId: HeaderBandId) => void;
 };
 
 export function ProjectSettingsDialog(props: ProjectSettingsDialogProps) {
-  const { isOpen, onClose, onImported } = props;
+  const { isOpen, onClose, onImported, headerBandId, onHeaderBandChange } = props;
   const [error, setError] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [isUpdatingBand, setIsUpdatingBand] = useState(false);
 
   useEffect(() => {
     if (!isOpen) {
@@ -53,12 +59,27 @@ export function ProjectSettingsDialog(props: ProjectSettingsDialogProps) {
     try {
       const content = await file.text();
       await importProjectsFile(content);
-      await onImported();
+      await onImported?.();
+      const settings = await fetchSettings();
+      onHeaderBandChange(settings.headerBand);
       onClose();
     } catch (saveError) {
       setError(readErrorMessage(saveError, "projects.yml のインポートに失敗しました。"));
     } finally {
       setIsImporting(false);
+    }
+  }
+
+  async function handleBandChange(bandId: HeaderBandId) {
+    setError("");
+    setIsUpdatingBand(true);
+    try {
+      const settings = await updateSettings(bandId);
+      onHeaderBandChange(settings.headerBand);
+    } catch (saveError) {
+      setError(readErrorMessage(saveError, "固定ヘッダ設定の更新に失敗しました。"));
+    } finally {
+      setIsUpdatingBand(false);
     }
   }
 
@@ -71,7 +92,7 @@ export function ProjectSettingsDialog(props: ProjectSettingsDialogProps) {
 
   return (
     <div
-      className="fixed inset-0 z-10 flex items-center justify-center bg-black/45 px-4 py-8 backdrop-blur-[2px]"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/45 px-4 py-8 backdrop-blur-[2px]"
       onMouseDown={handleBackdropMouseDown}
     >
       <div
@@ -88,6 +109,46 @@ export function ProjectSettingsDialog(props: ProjectSettingsDialogProps) {
           </div>
         </div>
         <div className="grid gap-4">
+          <section className="rounded-lg border border-[var(--border)] bg-white/70 p-4">
+            <h3 className="text-sm font-semibold text-[var(--ink)]">固定ヘッダ</h3>
+            <p className="mt-1 text-sm text-[var(--muted)]">
+              固定ヘッダの帯カラーを切り替えます。
+            </p>
+            <div role="radiogroup" aria-label="固定ヘッダの帯" className="mt-3 grid gap-3 md:grid-cols-3">
+              {listHeaderBands().map((band) => (
+                <label
+                  key={band.id}
+                  className={`grid gap-3 rounded-lg border p-3 transition ${
+                    headerBandId === band.id
+                      ? "border-[var(--accent)] bg-zinc-50 shadow-[0_0_0_1px_var(--accent)]"
+                      : "border-[var(--border)] bg-white hover:border-zinc-300"
+                  }`}
+                >
+                  <span className="flex items-start justify-between gap-3">
+                    <span className="grid gap-1">
+                      <span className="text-sm font-semibold text-[var(--ink)]">{band.label}</span>
+                      <span className="text-xs leading-5 text-[var(--muted)]">
+                        {band.description}
+                      </span>
+                    </span>
+                    <input
+                      type="radio"
+                      name="header-band"
+                      value={band.id}
+                      checked={headerBandId === band.id}
+                      disabled={isUpdatingBand}
+                      onChange={() => void handleBandChange(band.id)}
+                    />
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="h-8 rounded-md border"
+                    style={previewStyle(band.id)}
+                  />
+                </label>
+              ))}
+            </div>
+          </section>
           <section className="rounded-lg border border-[var(--border)] bg-white/70 p-4">
             <h3 className="text-sm font-semibold text-[var(--ink)]">データエクスポート</h3>
             <p className="mt-1 text-sm text-[var(--muted)]">projects.yml をダウンロードします。</p>
@@ -140,4 +201,12 @@ function downloadYaml(fileName: string, content: string) {
   link.download = fileName;
   link.click();
   URL.revokeObjectURL(objectUrl);
+}
+
+function previewStyle(bandId: HeaderBandId) {
+  const band = getHeaderBand(bandId);
+  return {
+    backgroundColor: band.background,
+    borderColor: band.border,
+  };
 }

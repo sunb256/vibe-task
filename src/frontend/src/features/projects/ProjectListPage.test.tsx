@@ -8,9 +8,35 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+function settingsResponse(headerBand = "zinc") {
+  return new Response(JSON.stringify({ headerBand }));
+}
+
+function mockFetchRoutes(routes: Record<string, Response | Response[]>) {
+  const routeMap = new Map(
+    Object.entries(routes).map(([key, value]) => [key, Array.isArray(value) ? value : [value]]),
+  );
+
+  return vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
+    const key = requestKey(input, init);
+    const responses = routeMap.get(key);
+    if (!responses || responses.length === 0) {
+      throw new Error(`Unexpected fetch: ${key}`);
+    }
+    return responses.shift() as Response;
+  });
+}
+
+function requestKey(input: string | URL | Request, init?: RequestInit) {
+  const method = (init?.method ?? (input instanceof Request ? input.method : "GET")).toUpperCase();
+  const url = typeof input === "string" ? input : input instanceof Request ? input.url : String(input);
+  return `${method} ${url}`;
+}
+
 test("renders project list", async () => {
-  vi.spyOn(globalThis, "fetch").mockResolvedValue(
-    new Response(
+  const fetchMock = mockFetchRoutes({
+    "GET /api/settings": settingsResponse(),
+    "GET /api/projects": new Response(
       JSON.stringify({
         projects: [
           {
@@ -21,7 +47,8 @@ test("renders project list", async () => {
         ],
       }),
     ),
-  );
+    "PATCH /api/settings": new Response(JSON.stringify({ headerBand: "navy" })),
+  });
 
   render(
     <MemoryRouter>
@@ -106,8 +133,29 @@ test("renders project list", async () => {
 
   fireEvent.click(screen.getByRole("button", { name: "Setting" }));
   const settingsDialog = screen.getByRole("dialog", { name: "Setting" });
+  const globalHeader = document.querySelector("header.fixed");
   expect(settingsDialog).toBeInTheDocument();
+  expect(globalHeader).not.toBeNull();
+  if (!globalHeader) {
+    throw new Error("global header is missing");
+  }
   expect(settingsDialog).toHaveClass("max-w-5xl");
+  expect(globalHeader).toHaveStyle({ backgroundColor: "rgba(9, 9, 11, 0.94)" });
+  expect(screen.getByRole("radio", { name: /Graphite/ })).toBeChecked();
+  fireEvent.click(screen.getByRole("radio", { name: /Navy/ }));
+  await waitFor(() => {
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      3,
+      "/api/settings",
+      expect.objectContaining({
+        method: "PATCH",
+        body: JSON.stringify({ headerBand: "navy" }),
+      }),
+    );
+  });
+  await waitFor(() => {
+    expect(globalHeader).toHaveStyle({ backgroundColor: "rgba(30, 41, 59, 0.94)" });
+  });
   expect(screen.getByRole("button", { name: "projects.yml をエクスポート" })).toBeInTheDocument();
   expect(screen.queryByText("projects.yml を読み込んで置き換えます。")).not.toBeInTheDocument();
   expect(screen.getByRole("button", { name: "インポート" })).toBeDisabled();
@@ -130,9 +178,9 @@ test("renders project list", async () => {
 });
 
 test("deletes a project from the top page card", async () => {
-  const fetchMock = vi
-    .spyOn(globalThis, "fetch")
-    .mockResolvedValueOnce(
+  const fetchMock = mockFetchRoutes({
+    "GET /api/settings": settingsResponse(),
+    "GET /api/projects": [
       new Response(
         JSON.stringify({
           projects: [
@@ -144,9 +192,10 @@ test("deletes a project from the top page card", async () => {
           ],
         }),
       ),
-    )
-    .mockResolvedValueOnce(new Response(null, { status: 204 }))
-    .mockResolvedValueOnce(new Response(JSON.stringify({ projects: [] })));
+      new Response(JSON.stringify({ projects: [] })),
+    ],
+    "DELETE /api/projects/project-1": new Response(null, { status: 204 }),
+  });
   const confirmMock = vi.spyOn(window, "confirm").mockReturnValue(true);
 
   render(
@@ -164,7 +213,7 @@ test("deletes a project from the top page card", async () => {
   expect(confirmMock).toHaveBeenCalledTimes(1);
   await waitFor(() => {
     expect(fetchMock).toHaveBeenNthCalledWith(
-      2,
+      3,
       "/api/projects/project-1",
       expect.objectContaining({ method: "DELETE" }),
     );
@@ -175,8 +224,9 @@ test("deletes a project from the top page card", async () => {
 });
 
 test("does not call delete api when deletion is canceled", async () => {
-  const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
-    new Response(
+  const fetchMock = mockFetchRoutes({
+    "GET /api/settings": settingsResponse(),
+    "GET /api/projects": new Response(
       JSON.stringify({
         projects: [
           {
@@ -187,7 +237,7 @@ test("does not call delete api when deletion is canceled", async () => {
         ],
       }),
     ),
-  );
+  });
   vi.spyOn(window, "confirm").mockReturnValue(false);
 
   render(
@@ -202,12 +252,13 @@ test("does not call delete api when deletion is canceled", async () => {
 
   fireEvent.click(screen.getByRole("button", { name: "削除" }));
 
-  expect(fetchMock).toHaveBeenCalledTimes(1);
+  expect(fetchMock).toHaveBeenCalledTimes(2);
 });
 
 test("filters project list incrementally by search query", async () => {
-  vi.spyOn(globalThis, "fetch").mockResolvedValue(
-    new Response(
+  mockFetchRoutes({
+    "GET /api/settings": settingsResponse(),
+    "GET /api/projects": new Response(
       JSON.stringify({
         projects: [
           {
@@ -223,7 +274,7 @@ test("filters project list incrementally by search query", async () => {
         ],
       }),
     ),
-  );
+  });
 
   render(
     <MemoryRouter>
@@ -254,9 +305,9 @@ test("filters project list incrementally by search query", async () => {
 });
 
 test("reorders project list by drag and drop", async () => {
-  const fetchMock = vi
-    .spyOn(globalThis, "fetch")
-    .mockResolvedValueOnce(
+  const fetchMock = mockFetchRoutes({
+    "GET /api/settings": settingsResponse(),
+    "GET /api/projects": [
       new Response(
         JSON.stringify({
           projects: [
@@ -273,9 +324,6 @@ test("reorders project list by drag and drop", async () => {
           ],
         }),
       ),
-    )
-    .mockResolvedValueOnce(new Response(null, { status: 204 }))
-    .mockResolvedValueOnce(
       new Response(
         JSON.stringify({
           projects: [
@@ -292,7 +340,9 @@ test("reorders project list by drag and drop", async () => {
           ],
         }),
       ),
-    );
+    ],
+    "PATCH /api/projects/reorder": new Response(null, { status: 204 }),
+  });
 
   render(
     <MemoryRouter>
@@ -318,7 +368,7 @@ test("reorders project list by drag and drop", async () => {
 
   await waitFor(() => {
     expect(fetchMock).toHaveBeenNthCalledWith(
-      2,
+      3,
       "/api/projects/reorder",
       expect.objectContaining({
         method: "PATCH",
@@ -336,8 +386,9 @@ test("reorders project list by drag and drop", async () => {
 });
 
 test("navigates when clicking project list row area", async () => {
-  vi.spyOn(globalThis, "fetch").mockResolvedValue(
-    new Response(
+  mockFetchRoutes({
+    "GET /api/settings": settingsResponse(),
+    "GET /api/projects": new Response(
       JSON.stringify({
         projects: [
           {
@@ -348,7 +399,7 @@ test("navigates when clicking project list row area", async () => {
         ],
       }),
     ),
-  );
+  });
 
   render(
     <MemoryRouter initialEntries={["/"]}>

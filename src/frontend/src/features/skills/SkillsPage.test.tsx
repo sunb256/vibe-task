@@ -47,9 +47,35 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+function settingsResponse(headerBand = "zinc") {
+  return new Response(JSON.stringify({ headerBand }));
+}
+
+function mockFetchRoutes(routes: Record<string, Response | Response[]>) {
+  const routeMap = new Map(
+    Object.entries(routes).map(([key, value]) => [key, Array.isArray(value) ? value : [value]]),
+  );
+
+  return vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
+    const key = requestKey(input, init);
+    const responses = routeMap.get(key);
+    if (!responses || responses.length === 0) {
+      throw new Error(`Unexpected fetch: ${key}`);
+    }
+    return responses.shift() as Response;
+  });
+}
+
+function requestKey(input: string | URL | Request, init?: RequestInit) {
+  const method = (init?.method ?? (input instanceof Request ? input.method : "GET")).toUpperCase();
+  const url = typeof input === "string" ? input : input instanceof Request ? input.url : String(input);
+  return `${method} ${url}`;
+}
+
 test("renders skills list and global menu", async () => {
-  vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
-    new Response(
+  mockFetchRoutes({
+    "GET /api/settings": settingsResponse(),
+    "GET /api/skills": new Response(
       JSON.stringify({
         skills: [
           {
@@ -62,7 +88,7 @@ test("renders skills list and global menu", async () => {
         ],
       }),
     ),
-  );
+  });
 
   render(
     <MemoryRouter initialEntries={["/skills"]}>
@@ -80,6 +106,7 @@ test("renders skills list and global menu", async () => {
     "/custom-prompt",
   );
   expect(screen.getByRole("link", { name: "Skills" })).toHaveAttribute("href", "/skills");
+  expect(screen.getByRole("button", { name: "Setting" })).toBeInTheDocument();
   expect(screen.getByRole("heading", { level: 1, name: "Skills" })).toBeInTheDocument();
   const searchInput = screen.getByRole("searchbox", { name: "Search" });
   expect(searchInput).toBeInTheDocument();
@@ -91,8 +118,9 @@ test("renders skills list and global menu", async () => {
 });
 
 test("renders Windows home path as $HOME in skills list", async () => {
-  vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
-    new Response(
+  mockFetchRoutes({
+    "GET /api/settings": settingsResponse(),
+    "GET /api/skills": new Response(
       JSON.stringify({
         skills: [
           {
@@ -105,7 +133,7 @@ test("renders Windows home path as $HOME in skills list", async () => {
         ],
       }),
     ),
-  );
+  });
 
   render(
     <MemoryRouter initialEntries={["/skills"]}>
@@ -121,8 +149,9 @@ test("renders Windows home path as $HOME in skills list", async () => {
 });
 
 test("filters skills by displayed home alias path", async () => {
-  vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
-    new Response(
+  mockFetchRoutes({
+    "GET /api/settings": settingsResponse(),
+    "GET /api/skills": new Response(
       JSON.stringify({
         skills: [
           {
@@ -135,7 +164,7 @@ test("filters skills by displayed home alias path", async () => {
         ],
       }),
     ),
-  );
+  });
 
   render(
     <MemoryRouter initialEntries={["/skills"]}>
@@ -155,8 +184,9 @@ test("filters skills by displayed home alias path", async () => {
 });
 
 test("filters skills by search query", async () => {
-  vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
-    new Response(
+  mockFetchRoutes({
+    "GET /api/settings": settingsResponse(),
+    "GET /api/skills": new Response(
       JSON.stringify({
         skills: [
           {
@@ -176,7 +206,7 @@ test("filters skills by search query", async () => {
         ],
       }),
     ),
-  );
+  });
 
   render(
     <MemoryRouter initialEntries={["/skills"]}>
@@ -211,20 +241,10 @@ test("filters skills by search query", async () => {
 });
 
 test("creates a new skill from new button", async () => {
-  const fetchMock = vi
-    .spyOn(globalThis, "fetch")
-    .mockResolvedValueOnce(new Response(JSON.stringify({ skills: [] })))
-    .mockResolvedValueOnce(
-      new Response(
-        JSON.stringify({
-          name: "new-skill",
-          path: "/tmp/.codex/skills/new-skill/SKILL.md",
-          content: "# new-skill\n",
-        }),
-        { status: 201 },
-      ),
-    )
-    .mockResolvedValueOnce(
+  const fetchMock = mockFetchRoutes({
+    "GET /api/settings": settingsResponse(),
+    "GET /api/skills": [
+      new Response(JSON.stringify({ skills: [] })),
       new Response(
         JSON.stringify({
           skills: [
@@ -238,7 +258,16 @@ test("creates a new skill from new button", async () => {
           ],
         }),
       ),
-    );
+    ],
+    "POST /api/skills": new Response(
+      JSON.stringify({
+        name: "new-skill",
+        path: "/tmp/.codex/skills/new-skill/SKILL.md",
+        content: "# new-skill\n",
+      }),
+      { status: 201 },
+    ),
+  });
   vi.spyOn(window, "prompt").mockReturnValue("new-skill");
 
   render(
@@ -254,7 +283,7 @@ test("creates a new skill from new button", async () => {
 
   await waitFor(() => {
     expect(fetchMock).toHaveBeenNthCalledWith(
-      2,
+      3,
       "/api/skills",
       expect.objectContaining({
         method: "POST",
@@ -267,9 +296,9 @@ test("creates a new skill from new button", async () => {
 
 test("edits skill content in modal editor", async () => {
   const confirmMock = vi.spyOn(window, "confirm").mockReturnValue(true);
-  const fetchMock = vi
-    .spyOn(globalThis, "fetch")
-    .mockResolvedValueOnce(
+  const fetchMock = mockFetchRoutes({
+    "GET /api/settings": settingsResponse(),
+    "GET /api/skills": [
       new Response(
         JSON.stringify({
           skills: [
@@ -283,32 +312,6 @@ test("edits skill content in modal editor", async () => {
           ],
         }),
       ),
-    )
-    .mockResolvedValueOnce(
-      new Response(
-        JSON.stringify({
-          name: "alpha",
-          path: "/tmp/.codex/skills/alpha/SKILL.md",
-          content: "# Alpha Skill\n",
-          source: "global",
-          projectName: "",
-          editable: true,
-        }),
-      ),
-    )
-    .mockResolvedValueOnce(
-      new Response(
-        JSON.stringify({
-          name: "alpha",
-          path: "/tmp/.codex/skills/alpha/SKILL.md",
-          content: "# Updated Skill\n",
-          source: "global",
-          projectName: "",
-          editable: true,
-        }),
-      ),
-    )
-    .mockResolvedValueOnce(
       new Response(
         JSON.stringify({
           skills: [
@@ -322,7 +325,28 @@ test("edits skill content in modal editor", async () => {
           ],
         }),
       ),
-    );
+    ],
+    "GET /api/skills/alpha": new Response(
+      JSON.stringify({
+        name: "alpha",
+        path: "/tmp/.codex/skills/alpha/SKILL.md",
+        content: "# Alpha Skill\n",
+        source: "global",
+        projectName: "",
+        editable: true,
+      }),
+    ),
+    "PATCH /api/skills/alpha": new Response(
+      JSON.stringify({
+        name: "alpha",
+        path: "/tmp/.codex/skills/alpha/SKILL.md",
+        content: "# Updated Skill\n",
+        source: "global",
+        projectName: "",
+        editable: true,
+      }),
+    ),
+  });
 
   render(
     <MemoryRouter initialEntries={["/skills"]}>
@@ -351,7 +375,7 @@ test("edits skill content in modal editor", async () => {
 
   await waitFor(() => {
     expect(fetchMock).toHaveBeenNthCalledWith(
-      3,
+      4,
       "/api/skills/alpha",
       expect.objectContaining({
         method: "PATCH",
@@ -366,35 +390,32 @@ test("edits skill content in modal editor", async () => {
 
 test("cancels skill update when confirmation is dismissed", async () => {
   const confirmMock = vi.spyOn(window, "confirm").mockReturnValue(false);
-  const fetchMock = vi
-    .spyOn(globalThis, "fetch")
-    .mockResolvedValueOnce(
-      new Response(
-        JSON.stringify({
-          skills: [
-            {
-              name: "alpha",
-              path: "/tmp/.codex/skills/alpha/SKILL.md",
-              source: "global",
-              projectName: "",
-              editable: true,
-            },
-          ],
-        }),
-      ),
-    )
-    .mockResolvedValueOnce(
-      new Response(
-        JSON.stringify({
-          name: "alpha",
-          path: "/tmp/.codex/skills/alpha/SKILL.md",
-          content: "# Alpha Skill\n",
-          source: "global",
-          projectName: "",
-          editable: true,
-        }),
-      ),
-    );
+  const fetchMock = mockFetchRoutes({
+    "GET /api/settings": settingsResponse(),
+    "GET /api/skills": new Response(
+      JSON.stringify({
+        skills: [
+          {
+            name: "alpha",
+            path: "/tmp/.codex/skills/alpha/SKILL.md",
+            source: "global",
+            projectName: "",
+            editable: true,
+          },
+        ],
+      }),
+    ),
+    "GET /api/skills/alpha": new Response(
+      JSON.stringify({
+        name: "alpha",
+        path: "/tmp/.codex/skills/alpha/SKILL.md",
+        content: "# Alpha Skill\n",
+        source: "global",
+        projectName: "",
+        editable: true,
+      }),
+    ),
+  });
 
   render(
     <MemoryRouter initialEntries={["/skills"]}>
@@ -415,15 +436,15 @@ test("cancels skill update when confirmation is dismissed", async () => {
   expect(confirmMock).toHaveBeenCalledWith("Skill alpha を更新しますか？");
 
   await waitFor(() => {
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
   });
   expect(screen.getByRole("dialog", { name: "編集 - alpha" })).toBeInTheDocument();
 });
 
 test("deletes skill from list", async () => {
-  const fetchMock = vi
-    .spyOn(globalThis, "fetch")
-    .mockResolvedValueOnce(
+  const fetchMock = mockFetchRoutes({
+    "GET /api/settings": settingsResponse(),
+    "GET /api/skills": [
       new Response(
         JSON.stringify({
           skills: [
@@ -437,9 +458,10 @@ test("deletes skill from list", async () => {
           ],
         }),
       ),
-    )
-    .mockResolvedValueOnce(new Response(null, { status: 204 }))
-    .mockResolvedValueOnce(new Response(JSON.stringify({ skills: [] })));
+      new Response(JSON.stringify({ skills: [] })),
+    ],
+    "DELETE /api/skills/alpha": new Response(null, { status: 204 }),
+  });
   const confirmMock = vi.spyOn(window, "confirm").mockReturnValue(true);
 
   render(
@@ -457,7 +479,7 @@ test("deletes skill from list", async () => {
 
   await waitFor(() => {
     expect(fetchMock).toHaveBeenNthCalledWith(
-      2,
+      3,
       "/api/skills/alpha",
       expect.objectContaining({ method: "DELETE" }),
     );
@@ -468,9 +490,9 @@ test("deletes skill from list", async () => {
 });
 
 test("shows project skill buttons and deletes with project scope", async () => {
-  const fetchMock = vi
-    .spyOn(globalThis, "fetch")
-    .mockResolvedValueOnce(
+  const fetchMock = mockFetchRoutes({
+    "GET /api/settings": settingsResponse(),
+    "GET /api/skills": [
       new Response(
         JSON.stringify({
           skills: [
@@ -484,9 +506,13 @@ test("shows project skill buttons and deletes with project scope", async () => {
           ],
         }),
       ),
-    )
-    .mockResolvedValueOnce(new Response(null, { status: 204 }))
-    .mockResolvedValueOnce(new Response(JSON.stringify({ skills: [] })));
+      new Response(JSON.stringify({ skills: [] })),
+    ],
+    "DELETE /api/skills/local-skill?source=project&projectName=impl": new Response(
+      null,
+      { status: 204 },
+    ),
+  });
   const confirmMock = vi.spyOn(window, "confirm").mockReturnValue(true);
 
   render(
@@ -508,7 +534,7 @@ test("shows project skill buttons and deletes with project scope", async () => {
 
   await waitFor(() => {
     expect(fetchMock).toHaveBeenNthCalledWith(
-      2,
+      3,
       "/api/skills/local-skill?source=project&projectName=impl",
       expect.objectContaining({ method: "DELETE" }),
     );

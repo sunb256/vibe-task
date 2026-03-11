@@ -17,6 +17,16 @@ class ProjectRecord:
 
 
 @dataclass(slots=True)
+class AppSettingsRecord:
+    header_band: str
+
+    def to_dict(self) -> dict[str, str]:
+        return {
+            "headerBand": self.header_band,
+        }
+
+
+@dataclass(slots=True)
 class TaskRecord:
     project_id: str
     source: str
