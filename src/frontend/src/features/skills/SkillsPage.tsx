@@ -286,5 +286,18 @@ function filterSkills(skills: SkillSummary[], searchQuery: string) {
   if (!query) {
     return skills;
   }
-  return skills.filter((skill) => skill.name.toLowerCase().includes(query));
+  return skills.filter((skill) => skillMatchesQuery(skill, query));
+}
+
+function skillMatchesQuery(skill: SkillSummary, query: string) {
+  const path = skill.path.toLowerCase();
+  const visiblePath = displayPath(skill.path).toLowerCase();
+  const projectName = skill.projectName.toLowerCase();
+
+  return (
+    skill.name.toLowerCase().includes(query) ||
+    path.includes(query) ||
+    visiblePath.includes(query) ||
+    projectName.includes(query)
+  );
 }
