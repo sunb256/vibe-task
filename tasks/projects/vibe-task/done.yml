@@ -915,3 +915,14 @@ task:
     action: |-
       Custom Prompt画面でも検索ができるようにする
       devブランチで作業してpushして下さい
+  - id: '112'
+    url: https://github.com/sunb256/vibe-task/pull/125
+    title: 固定ヘッダのSettingを共通化し帯設定をprojects.ymlへ永続化
+    action: |-
+      固定ヘッダにSettingを作成して
+
+      そのSetting画面に固定ヘッダの帯を変更できるUIを作成してください
+
+      既にTOP画面にSettingがあるのでそれをなくして固定ヘッダへ移動して下さい
+
+      devブランチで作業してpushして下さい

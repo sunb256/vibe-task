@@ -1,12 +1,1 @@
-task:
-  - id: '112'
-    url: '-'
-    title: '-'
-    action: |
-      固定ヘッダにSettingを作成して
-
-      そのSetting画面に固定ヘッダの帯を変更できるUIを作成してください
-
-      既にTOP画面にSettingがあるのでそれをなくして固定ヘッダへ移動して下さい
-
-      devブランチで作業してpushして下さい
+task: []
