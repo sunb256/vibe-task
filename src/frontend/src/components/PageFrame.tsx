@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { GlobalMenu } from "./GlobalMenu";
+import { GlobalHeader } from "./GlobalHeader";
 
 type PageFrameProps = {
   title: ReactNode;
@@ -8,6 +8,7 @@ type PageFrameProps = {
   subtitle?: string | null;
   headerStyle?: "panel" | "plain";
   actions?: ReactNode;
+  onImported?: () => Promise<void> | void;
   children: ReactNode;
 };
 
@@ -18,6 +19,7 @@ export function PageFrame(props: PageFrameProps) {
     subtitle,
     headerStyle = "panel",
     actions,
+    onImported,
     children,
   } =
     props;
@@ -26,11 +28,7 @@ export function PageFrame(props: PageFrameProps) {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-zinc-800 bg-[rgba(9,9,11,0.94)] px-4 text-white backdrop-blur sm:px-6 lg:px-8">
-        <div className="mx-auto flex h-10 max-w-6xl items-center">
-          <GlobalMenu />
-        </div>
-      </header>
+      <GlobalHeader onImported={onImported} />
       <main className="min-h-screen px-4 pb-8 pt-14 sm:px-6 lg:px-8">
         <div className="mx-auto flex min-h-[calc(100vh-5.5rem)] max-w-6xl flex-col">
           <header className={frameClass}>

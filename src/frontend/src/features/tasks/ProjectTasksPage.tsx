@@ -205,6 +205,24 @@ export function ProjectTasksPage() {
     }
   }
 
+  async function handleImported() {
+    setError("");
+    try {
+      await refreshTasks(projectId, setTasks);
+    } catch (loadError) {
+      setError(readErrorMessage(loadError, "タスク一覧の取得に失敗しました。"));
+      return;
+    }
+    try {
+      const loadedProject = await readProject(projectId);
+      saveProjectCache(projectId, loadedProject);
+      setProject(loadedProject);
+    } catch {
+      saveProjectCache(projectId, null);
+      setProject(null);
+    }
+  }
+
   const orderedTasks = orderTasks(tasks);
   const visibleTasks = filterTasks(orderedTasks, showTodo, showDone);
   const todoCount = countTasks(tasks, "action");
@@ -214,6 +232,7 @@ export function ProjectTasksPage() {
     <PageFrame
       eyebrow={null}
       title={<span className="inline-flex h-9 items-center pl-1">{project ? project.name : "Project"}</span>}
+      onImported={handleImported}
     >
       <section className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
         <div className="mb-4 flex w-full items-center justify-start gap-2 pl-2">

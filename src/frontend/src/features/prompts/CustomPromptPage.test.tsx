@@ -47,9 +47,35 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+function settingsResponse(headerBand = "zinc") {
+  return new Response(JSON.stringify({ headerBand }));
+}
+
+function mockFetchRoutes(routes: Record<string, Response | Response[]>) {
+  const routeMap = new Map(
+    Object.entries(routes).map(([key, value]) => [key, Array.isArray(value) ? value : [value]]),
+  );
+
+  return vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
+    const key = requestKey(input, init);
+    const responses = routeMap.get(key);
+    if (!responses || responses.length === 0) {
+      throw new Error(`Unexpected fetch: ${key}`);
+    }
+    return responses.shift() as Response;
+  });
+}
+
+function requestKey(input: string | URL | Request, init?: RequestInit) {
+  const method = (init?.method ?? (input instanceof Request ? input.method : "GET")).toUpperCase();
+  const url = typeof input === "string" ? input : input instanceof Request ? input.url : String(input);
+  return `${method} ${url}`;
+}
+
 test("renders custom prompt list with menu", async () => {
-  vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
-    new Response(
+  mockFetchRoutes({
+    "GET /api/settings": settingsResponse(),
+    "GET /api/prompts": new Response(
       JSON.stringify({
         prompts: [
           {
@@ -59,7 +85,7 @@ test("renders custom prompt list with menu", async () => {
         ],
       }),
     ),
-  );
+  });
 
   render(
     <MemoryRouter initialEntries={["/custom-prompt"]}>
@@ -77,6 +103,7 @@ test("renders custom prompt list with menu", async () => {
     "/custom-prompt",
   );
   expect(screen.getByRole("link", { name: "Skills" })).toHaveAttribute("href", "/skills");
+  expect(screen.getByRole("button", { name: "Setting" })).toBeInTheDocument();
   expect(screen.queryByText("VIBE TASK")).not.toBeInTheDocument();
   expect(screen.getByRole("heading", { level: 1, name: "Custom Prompt" })).toBeInTheDocument();
   const searchInput = screen.getByRole("searchbox", { name: "Search" });
@@ -92,8 +119,9 @@ test("renders custom prompt list with menu", async () => {
 });
 
 test("renders Windows home path as $HOME in prompt list", async () => {
-  vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
-    new Response(
+  mockFetchRoutes({
+    "GET /api/settings": settingsResponse(),
+    "GET /api/prompts": new Response(
       JSON.stringify({
         prompts: [
           {
@@ -103,7 +131,7 @@ test("renders Windows home path as $HOME in prompt list", async () => {
         ],
       }),
     ),
-  );
+  });
 
   render(
     <MemoryRouter initialEntries={["/custom-prompt"]}>
@@ -119,8 +147,9 @@ test("renders Windows home path as $HOME in prompt list", async () => {
 });
 
 test("filters prompts by displayed home alias path", async () => {
-  vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
-    new Response(
+  mockFetchRoutes({
+    "GET /api/settings": settingsResponse(),
+    "GET /api/prompts": new Response(
       JSON.stringify({
         prompts: [
           {
@@ -130,7 +159,7 @@ test("filters prompts by displayed home alias path", async () => {
         ],
       }),
     ),
-  );
+  });
 
   render(
     <MemoryRouter initialEntries={["/custom-prompt"]}>
@@ -150,8 +179,9 @@ test("filters prompts by displayed home alias path", async () => {
 });
 
 test("filters prompts by search query", async () => {
-  vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
-    new Response(
+  mockFetchRoutes({
+    "GET /api/settings": settingsResponse(),
+    "GET /api/prompts": new Response(
       JSON.stringify({
         prompts: [
           {
@@ -165,7 +195,7 @@ test("filters prompts by search query", async () => {
         ],
       }),
     ),
-  );
+  });
 
   render(
     <MemoryRouter initialEntries={["/custom-prompt"]}>
@@ -196,40 +226,35 @@ test("filters prompts by search query", async () => {
 });
 
 test("edits prompt content in modal editor", async () => {
-  const fetchMock = vi
-    .spyOn(globalThis, "fetch")
-    .mockResolvedValueOnce(
+  const fetchMock = mockFetchRoutes({
+    "GET /api/settings": settingsResponse(),
+    "GET /api/prompts": [
       new Response(
         JSON.stringify({
           prompts: [{ name: "alpha.md", path: "/tmp/.codex/prompts/alpha.md" }],
         }),
       ),
-    )
-    .mockResolvedValueOnce(
-      new Response(
-        JSON.stringify({
-          name: "alpha.md",
-          path: "/tmp/.codex/prompts/alpha.md",
-          content: "# Alpha\n",
-        }),
-      ),
-    )
-    .mockResolvedValueOnce(
-      new Response(
-        JSON.stringify({
-          name: "alpha.md",
-          path: "/tmp/.codex/prompts/alpha.md",
-          content: "# Updated\n",
-        }),
-      ),
-    )
-    .mockResolvedValueOnce(
       new Response(
         JSON.stringify({
           prompts: [{ name: "alpha.md", path: "/tmp/.codex/prompts/alpha.md" }],
         }),
       ),
-    );
+    ],
+    "GET /api/prompts/alpha.md": new Response(
+      JSON.stringify({
+        name: "alpha.md",
+        path: "/tmp/.codex/prompts/alpha.md",
+        content: "# Alpha\n",
+      }),
+    ),
+    "PATCH /api/prompts/alpha.md": new Response(
+      JSON.stringify({
+        name: "alpha.md",
+        path: "/tmp/.codex/prompts/alpha.md",
+        content: "# Updated\n",
+      }),
+    ),
+  });
 
   render(
     <MemoryRouter initialEntries={["/custom-prompt"]}>
@@ -270,7 +295,7 @@ test("edits prompt content in modal editor", async () => {
 
   await waitFor(() => {
     expect(fetchMock).toHaveBeenNthCalledWith(
-      3,
+      4,
       "/api/prompts/alpha.md",
       expect.objectContaining({
         method: "PATCH",
@@ -284,17 +309,18 @@ test("edits prompt content in modal editor", async () => {
 });
 
 test("deletes prompt from list", async () => {
-  const fetchMock = vi
-    .spyOn(globalThis, "fetch")
-    .mockResolvedValueOnce(
+  const fetchMock = mockFetchRoutes({
+    "GET /api/settings": settingsResponse(),
+    "GET /api/prompts": [
       new Response(
         JSON.stringify({
           prompts: [{ name: "alpha.md", path: "/tmp/.codex/prompts/alpha.md" }],
         }),
       ),
-    )
-    .mockResolvedValueOnce(new Response(null, { status: 204 }))
-    .mockResolvedValueOnce(new Response(JSON.stringify({ prompts: [] })));
+      new Response(JSON.stringify({ prompts: [] })),
+    ],
+    "DELETE /api/prompts/alpha.md": new Response(null, { status: 204 }),
+  });
   vi.spyOn(window, "confirm").mockReturnValue(true);
 
   render(
@@ -311,7 +337,7 @@ test("deletes prompt from list", async () => {
 
   await waitFor(() => {
     expect(fetchMock).toHaveBeenNthCalledWith(
-      2,
+      3,
       "/api/prompts/alpha.md",
       expect.objectContaining({ method: "DELETE" }),
     );

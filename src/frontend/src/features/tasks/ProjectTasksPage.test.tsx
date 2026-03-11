@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { afterEach, vi } from "vitest";
+import { afterEach, beforeEach, vi } from "vitest";
 
 import { ProjectTasksPage } from "./ProjectTasksPage";
 import { resetProjectTasksPageCacheForTest } from "./projectTasksPageCache";
@@ -58,6 +58,12 @@ vi.mock("./taskApi", () => ({
 
 import { fetchProjects } from "../projects/projectApi";
 import { createActionTask, fetchTasks, swapTaskId, updateTaskAction } from "./taskApi";
+
+beforeEach(() => {
+  vi.spyOn(globalThis, "fetch").mockResolvedValue(
+    new Response(JSON.stringify({ headerBand: "zinc" })),
+  );
+});
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -125,6 +131,7 @@ test("does not render the removed project subtitle", async () => {
     "/custom-prompt",
   );
   expect(screen.getByRole("link", { name: "Skills" })).toHaveAttribute("href", "/skills");
+  expect(screen.getByRole("button", { name: "Setting" })).toBeInTheDocument();
   expect(screen.queryByText("VIBE TASK")).not.toBeInTheDocument();
   expect(screen.getByRole("heading", { level: 1, name: "impl" })).toBeInTheDocument();
   expect(screen.getAllByRole("columnheader").map((header) => header.textContent)).toEqual([

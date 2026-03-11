@@ -5,7 +5,7 @@ from ruamel.yaml import YAML
 from ruamel.yaml.error import YAMLError
 
 from app.errors import AppError
-from app.models import ProjectRecord
+from app.models import AppSettingsRecord, ProjectRecord
 
 
 class ProjectRepository:
@@ -88,6 +88,20 @@ class ProjectRepository:
         document = self._parse_document(content)
         self._write_document(document)
 
+    def get_settings(self) -> AppSettingsRecord:
+        document = self._load_document()
+        settings = self._read_settings(document)
+        header_band = settings.get("headerBand", "zinc")
+        return AppSettingsRecord(header_band=str(header_band))
+
+    def update_settings(self, header_band: str) -> AppSettingsRecord:
+        document = self._load_document()
+        settings = self._read_settings(document)
+        settings["headerBand"] = header_band
+        document["settings"] = settings
+        self._write_document(document)
+        return AppSettingsRecord(header_band=header_band)
+
     def _next_project_id(self, projects: list[dict]) -> str:
         return str(self._max_project_id(projects) + 1)
 
@@ -123,6 +137,7 @@ class ProjectRepository:
         if not isinstance(document, dict):
             raise AppError("projects file is invalid", 400)
         self._read_projects(document)
+        self._read_settings(document)
         document.setdefault("projects", [])
         return document
 
@@ -139,6 +154,7 @@ class ProjectRepository:
         if not isinstance(document, dict):
             raise AppError("projects file is invalid", 400)
         self._read_projects(document)
+        self._read_settings(document)
         document.setdefault("projects", [])
         return document
 
@@ -151,6 +167,19 @@ class ProjectRepository:
                 raise AppError("projects file is invalid", 400)
             self._to_project_record(item)
         return projects
+
+    def _read_settings(self, document: dict) -> dict:
+        settings = document.get("settings", {})
+        if settings is None:
+            return {}
+        if not isinstance(settings, dict):
+            raise AppError("projects file is invalid", 400)
+        header_band = settings.get("headerBand")
+        if header_band is None:
+            return settings
+        if not isinstance(header_band, str):
+            raise AppError("projects file is invalid", 400)
+        return settings
 
     def _dump_document(self, document: dict) -> str:
         buffer = StringIO()
