@@ -1,11 +1,4 @@
 task:
-  - id: '110'
-    url: '-'
-    title: '-'
-    action: |-
-      Skill画面も検索機能を同じように作成して
-
-      devブランチで作業してpushして下さい
   - id: '111'
     url: '-'
     title: '-'

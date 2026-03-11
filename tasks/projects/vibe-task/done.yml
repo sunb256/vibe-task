@@ -257,6 +257,13 @@ task:
       TODO(xx)/DONE(xx)は
       TODO #xx
       DONE #xx とする
+  - id: 110
+    url: https://github.com/sunb256/vibe-task/pull/123
+    title: Skills画面でパスとProject名でも検索できるようにする
+    action: |-
+      Skill画面も検索機能を同じように作成して
+
+      devブランチで作業してpushして下さい
 
   - id: 27
     url: https://github.com/sunb256/vibe-task/pull/31
