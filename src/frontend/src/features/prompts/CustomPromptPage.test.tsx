@@ -79,6 +79,7 @@ test("renders custom prompt list with menu", async () => {
   expect(screen.getByRole("link", { name: "Skills" })).toHaveAttribute("href", "/skills");
   expect(screen.queryByText("VIBE TASK")).not.toBeInTheDocument();
   expect(screen.getByRole("heading", { level: 1, name: "Custom Prompt" })).toBeInTheDocument();
+  expect(screen.getByRole("searchbox", { name: "Search" })).toBeInTheDocument();
   expect(screen.getByText("$HOME/.codex/prompts/alpha.md")).toBeInTheDocument();
   const row = screen.getByText("alpha.md").closest("article");
   expect(row?.querySelector('img[src="/assets/images/file-text.svg"]')).not.toBeNull();
@@ -86,6 +87,46 @@ test("renders custom prompt list with menu", async () => {
   expect(row).toHaveClass("hover:border-amber-200", "hover:bg-amber-50/60");
   expect(screen.getByRole("button", { name: "編集" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "削除" })).toBeInTheDocument();
+});
+
+test("filters prompts by name and path", async () => {
+  vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+    new Response(
+      JSON.stringify({
+        prompts: [
+          { name: "alpha.md", path: "/tmp/.codex/prompts/alpha.md" },
+          { name: "beta.md", path: "/tmp/custom/beta.md" },
+        ],
+      }),
+    ),
+  );
+
+  render(
+    <MemoryRouter initialEntries={["/custom-prompt"]}>
+      <CustomPromptPage />
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("alpha.md")).toBeInTheDocument();
+    expect(screen.getByText("beta.md")).toBeInTheDocument();
+  });
+
+  const searchInput = screen.getByRole("searchbox", { name: "Search" });
+  fireEvent.change(searchInput, { target: { value: "alp" } });
+  expect(screen.getByText("alpha.md")).toBeInTheDocument();
+  expect(screen.queryByText("beta.md")).not.toBeInTheDocument();
+
+  fireEvent.change(searchInput, { target: { value: "/tmp/custom" } });
+  expect(screen.queryByText("alpha.md")).not.toBeInTheDocument();
+  expect(screen.getByText("beta.md")).toBeInTheDocument();
+
+  fireEvent.change(searchInput, { target: { value: "missing" } });
+  expect(screen.getByText("検索条件に一致するPromptはありません。")).toBeInTheDocument();
+
+  fireEvent.change(searchInput, { target: { value: "" } });
+  expect(screen.getByText("alpha.md")).toBeInTheDocument();
+  expect(screen.getByText("beta.md")).toBeInTheDocument();
 });
 
 test("edits prompt content in modal editor", async () => {

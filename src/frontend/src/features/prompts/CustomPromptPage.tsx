@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Notice } from "../../components/Notice";
 import { PageFrame } from "../../components/PageFrame";
@@ -10,6 +10,7 @@ const emptyContent = "";
 
 export function CustomPromptPage() {
   const [prompts, setPrompts] = useState<PromptSummary[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState("");
   const [editError, setEditError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -19,6 +20,7 @@ export function CustomPromptPage() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editPrompt, setEditPrompt] = useState<PromptFile | null>(null);
   const [editContent, setEditContent] = useState(emptyContent);
+  const visiblePrompts = useMemo(() => filterPrompts(prompts, searchQuery), [prompts, searchQuery]);
 
   useEffect(() => {
     void loadPrompts();
@@ -108,12 +110,34 @@ export function CustomPromptPage() {
         title={<span className="inline-flex h-9 items-center pl-1">Custom Prompt</span>}
       >
         <section className="space-y-3 rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
+          <div className="mb-4 flex w-full items-center gap-2">
+            <div className="relative w-full min-w-48 max-w-64">
+              <img
+                src="/assets/images/search.svg"
+                alt=""
+                aria-hidden="true"
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-65"
+              />
+              <input
+                id="prompt-search"
+                type="search"
+                aria-label="Search"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Search"
+                className="h-9 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12"
+              />
+            </div>
+          </div>
           {error ? <Notice tone="error" message={error} /> : null}
           {isLoading ? <Notice tone="neutral" message="Loading prompts..." /> : null}
           {!error && !isLoading && prompts.length === 0 ? (
             <Notice tone="neutral" message="Prompt は見つかりませんでした。" />
           ) : null}
-          {prompts.map((prompt) => (
+          {!error && !isLoading && prompts.length > 0 && visiblePrompts.length === 0 ? (
+            <Notice tone="neutral" message="検索条件に一致するPromptはありません。" />
+          ) : null}
+          {visiblePrompts.map((prompt) => (
             <article
               key={prompt.name}
               role="button"
@@ -222,4 +246,16 @@ function displayPath(path: string) {
     return `$HOME${macHome[1] ?? ""}`;
   }
   return path;
+}
+
+function filterPrompts(prompts: PromptSummary[], searchQuery: string) {
+  const query = searchQuery.trim().toLowerCase();
+  if (!query) {
+    return prompts;
+  }
+  return prompts.filter((prompt) => {
+    const name = prompt.name.toLowerCase();
+    const path = prompt.path.toLowerCase();
+    return name.includes(query) || path.includes(query);
+  });
 }
