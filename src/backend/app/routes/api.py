@@ -124,8 +124,11 @@ def update_task(project_id: str, source: str, task_id: str):
     action = payload.get("action")
     if not isinstance(action, str):
         raise AppError("action is required", 400)
+    next_source = payload.get("nextSource")
+    if next_source is not None and not isinstance(next_source, str):
+        raise AppError("nextSource must be a string", 400)
     service = TaskService(_project_repository())
-    task = service.update_action(project_id, source, task_id, action)
+    task = service.update_task(project_id, source, task_id, action, next_source)
     return jsonify(task.to_dict())
 
 

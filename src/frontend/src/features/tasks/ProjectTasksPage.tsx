@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { type Dispatch, type SetStateAction, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { Notice } from "../../components/Notice";
@@ -19,11 +19,17 @@ import {
   deleteTask,
   fetchTasks,
   swapTaskId,
-  updateTaskAction,
+  updateTask,
 } from "./taskApi";
-import type { TaskRecord } from "./types";
+import type { TaskRecord, TaskSource } from "./types";
 
 const defaultTaskAction = "";
+const defaultVisibleSources: Record<TaskSource, boolean> = {
+  action: true,
+  pending: true,
+  done: false,
+  cancel: false,
+};
 
 export function ProjectTasksPage() {
   const { projectId = "" } = useParams();
@@ -41,8 +47,8 @@ export function ProjectTasksPage() {
   const [editTask, setEditTask] = useState<TaskRecord | null>(null);
   const [newTaskAction, setNewTaskAction] = useState(defaultTaskAction);
   const [editTaskAction, setEditTaskAction] = useState("");
-  const [showTodo, setShowTodo] = useState(true);
-  const [showDone, setShowDone] = useState(false);
+  const [editTaskSource, setEditTaskSource] = useState<TaskSource>("action");
+  const [visibleSources, setVisibleSources] = useState(defaultVisibleSources);
   const createButtonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
@@ -155,6 +161,7 @@ export function ProjectTasksPage() {
     setEditError("");
     setEditTask(task);
     setEditTaskAction(task.action);
+    setEditTaskSource(task.source);
     setIsEditOpen(true);
   }
 
@@ -166,7 +173,14 @@ export function ProjectTasksPage() {
     setIsEditOpen(false);
     setEditTask(null);
     setEditTaskAction("");
+    setEditTaskSource("action");
     createButtonRef.current?.focus();
+  }
+
+  function handleEditTaskSource(status: string) {
+    if (isTaskSource(status)) {
+      setEditTaskSource(status);
+    }
   }
 
   async function handleCreate() {
@@ -174,7 +188,7 @@ export function ProjectTasksPage() {
     setCreateError("");
     try {
       const created = await createActionTask(projectId);
-      await updateTaskAction(projectId, "action", created.id, newTaskAction);
+      await updateTask(projectId, "action", created.id, newTaskAction);
       await refreshTasks(projectId, setTasks);
       setIsCreateOpen(false);
       createButtonRef.current?.focus();
@@ -192,11 +206,13 @@ export function ProjectTasksPage() {
     setIsEditing(true);
     setEditError("");
     try {
-      await updateTaskAction(projectId, editTask.source, editTask.id, editTaskAction);
+      const nextSource = editTaskSource === editTask.source ? undefined : editTaskSource;
+      await updateTask(projectId, editTask.source, editTask.id, editTaskAction, nextSource);
       await refreshTasks(projectId, setTasks);
       setIsEditOpen(false);
       setEditTask(null);
       setEditTaskAction("");
+      setEditTaskSource("action");
       createButtonRef.current?.focus();
     } catch (saveError) {
       setEditError(readErrorMessage(saveError, "task の更新に失敗しました。"));
@@ -224,9 +240,7 @@ export function ProjectTasksPage() {
   }
 
   const orderedTasks = orderTasks(tasks);
-  const visibleTasks = filterTasks(orderedTasks, showTodo, showDone);
-  const todoCount = countTasks(tasks, "action");
-  const doneCount = countTasks(tasks, "done");
+  const visibleTasks = filterTasks(orderedTasks, visibleSources);
 
   return (
     <PageFrame
@@ -244,22 +258,17 @@ export function ProjectTasksPage() {
           >
             新規タスク(N)
           </PrimaryButton>
-          <button
-            type="button"
-            aria-pressed={showTodo}
-            onClick={() => setShowTodo((value) => !value)}
-            className={`${sourceFilterClass("todo", showTodo)} ml-2`}
-          >
-            {`TODO(${todoCount})`}
-          </button>
-          <button
-            type="button"
-            aria-pressed={showDone}
-            onClick={() => setShowDone((value) => !value)}
-            className={sourceFilterClass("done", showDone)}
-          >
-            {`DONE(${doneCount})`}
-          </button>
+          {TASK_FILTER_ORDER.map((source, index) => (
+            <button
+              key={source}
+              type="button"
+              aria-pressed={visibleSources[source]}
+              onClick={() => toggleSourceFilter(source, setVisibleSources)}
+              className={`${sourceFilterClass(source, visibleSources[source])} ${index === 0 ? "ml-2" : ""}`}
+            >
+              {`${sourceLabel(source)}(${countTasks(tasks, source)})`}
+            </button>
+          ))}
         </div>
         {error ? <Notice tone="error" message={error} /> : null}
         {isLoading ? <Notice tone="neutral" message="Loading tasks..." /> : null}
@@ -387,7 +396,10 @@ export function ProjectTasksPage() {
         submitLabel="更新"
         submittingLabel="更新中..."
         enableShortcut
+        statusValue={editTaskSource}
+        statusOptions={TASK_STATUS_OPTIONS}
         onActionChange={setEditTaskAction}
+        onStatusChange={handleEditTaskSource}
         onClose={closeEditDialog}
         onSubmit={handleEdit}
       />
@@ -471,46 +483,33 @@ function showTaskTitle(title: string) {
 }
 
 function sourceBadgeTone(source: TaskRecord["source"]) {
-  if (source === "done") {
-    return "bg-emerald-100 text-emerald-700";
-  }
-  return "bg-blue-100 text-blue-700";
+  return SOURCE_META[source].badgeClass;
 }
 
 function sourceLabel(source: TaskRecord["source"]) {
-  if (source === "done") {
-    return "DONE";
-  }
-  return "TODO";
+  return SOURCE_META[source].label;
 }
 
 function sourceTag(task: TaskRecord) {
   return `${sourceLabel(task.source)} #${task.id}`;
 }
 
-function sourceFilterClass(source: "todo" | "done", active: boolean) {
-  const tone =
-    source === "todo"
-      ? "border-blue-200 bg-blue-100 text-blue-700"
-      : "border-emerald-200 bg-emerald-100 text-emerald-700";
+function sourceFilterClass(source: TaskSource, active: boolean) {
+  const tone = SOURCE_META[source].filterClass;
   const inactive = "border-[var(--border)] bg-white text-[var(--muted)]";
   const toneClass = active ? tone : inactive;
   return `inline-flex h-8 items-center rounded-full border px-3 text-xs font-semibold uppercase tracking-[0.08em] transition ${toneClass}`;
 }
 
 function orderTasks(tasks: TaskRecord[]) {
-  const actionTasks = tasks.filter((task) => task.source === "action").sort(compareTaskIdAsc);
-  const doneTasks = tasks.filter((task) => task.source === "done").sort(compareTaskIdDesc);
-  return [...actionTasks, ...doneTasks];
+  return TASK_FILTER_ORDER.flatMap((source) => {
+    const sort = SOURCE_META[source].descending ? compareTaskIdDesc : compareTaskIdAsc;
+    return tasks.filter((task) => task.source === source).sort(sort);
+  });
 }
 
-function filterTasks(tasks: TaskRecord[], showTodo: boolean, showDone: boolean) {
-  return tasks.filter((task) => {
-    if (task.source === "action") {
-      return showTodo;
-    }
-    return showDone;
-  });
+function filterTasks(tasks: TaskRecord[], visibleSources: Record<TaskSource, boolean>) {
+  return tasks.filter((task) => visibleSources[task.source]);
 }
 
 function countTasks(tasks: TaskRecord[], source: TaskRecord["source"]) {
@@ -593,3 +592,57 @@ function isEditableTarget(target: EventTarget | null) {
   }
   return target.isContentEditable;
 }
+
+function isTaskSource(value: string): value is TaskSource {
+  return value === "action" || value === "pending" || value === "done" || value === "cancel";
+}
+
+function toggleSourceFilter(
+  source: TaskSource,
+  setVisibleSources: Dispatch<SetStateAction<Record<TaskSource, boolean>>>,
+) {
+  setVisibleSources((current) => ({
+    ...current,
+    [source]: !current[source],
+  }));
+}
+
+const TASK_FILTER_ORDER: TaskSource[] = ["action", "pending", "done", "cancel"];
+const SOURCE_META: Record<
+  TaskSource,
+  {
+    label: string;
+    badgeClass: string;
+    filterClass: string;
+    descending: boolean;
+  }
+> = {
+  action: {
+    label: "TODO",
+    badgeClass: "bg-blue-100 text-blue-700",
+    filterClass: "border-blue-200 bg-blue-100 text-blue-700",
+    descending: false,
+  },
+  pending: {
+    label: "PENDING",
+    badgeClass: "bg-amber-100 text-amber-700",
+    filterClass: "border-amber-200 bg-amber-100 text-amber-700",
+    descending: false,
+  },
+  done: {
+    label: "DONE",
+    badgeClass: "bg-emerald-100 text-emerald-700",
+    filterClass: "border-emerald-200 bg-emerald-100 text-emerald-700",
+    descending: true,
+  },
+  cancel: {
+    label: "CANCEL",
+    badgeClass: "bg-zinc-200 text-zinc-700",
+    filterClass: "border-zinc-300 bg-zinc-200 text-zinc-700",
+    descending: true,
+  },
+};
+const TASK_STATUS_OPTIONS = TASK_FILTER_ORDER.map((source) => ({
+  value: source,
+  label: SOURCE_META[source].label,
+}));
