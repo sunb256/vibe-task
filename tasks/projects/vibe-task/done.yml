@@ -938,3 +938,8 @@ task:
     title: 固定ヘッダ設定の拡張とTask状態のPENDING/CANCEL追加
     action: |
       固定ヘッダの色を今の倍に増やして。暗めの色がいいです。任意の色も変更できるといいです
+  - id: '115'
+    url: https://github.com/sunb256/vibe-task/pull/127
+    title: frontendをMermaid化してfrontend.mdを追加
+    action: |-
+      frontendをmermaidして。名称はfrontend.mdにして
