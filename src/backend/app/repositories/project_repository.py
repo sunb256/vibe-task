@@ -92,15 +92,27 @@ class ProjectRepository:
         document = self._load_document()
         settings = self._read_settings(document)
         header_band = settings.get("headerBand", "zinc")
-        return AppSettingsRecord(header_band=str(header_band))
+        custom_header_color = settings.get("customHeaderColor", "")
+        return AppSettingsRecord(
+            header_band=str(header_band),
+            custom_header_color=str(custom_header_color),
+        )
 
-    def update_settings(self, header_band: str) -> AppSettingsRecord:
+    def update_settings(
+        self,
+        header_band: str,
+        custom_header_color: str,
+    ) -> AppSettingsRecord:
         document = self._load_document()
         settings = self._read_settings(document)
         settings["headerBand"] = header_band
+        settings["customHeaderColor"] = custom_header_color
         document["settings"] = settings
         self._write_document(document)
-        return AppSettingsRecord(header_band=header_band)
+        return AppSettingsRecord(
+            header_band=header_band,
+            custom_header_color=custom_header_color,
+        )
 
     def _next_project_id(self, projects: list[dict]) -> str:
         return str(self._max_project_id(projects) + 1)
@@ -176,8 +188,11 @@ class ProjectRepository:
             raise AppError("projects file is invalid", 400)
         header_band = settings.get("headerBand")
         if header_band is None:
-            return settings
+            header_band = "zinc"
         if not isinstance(header_band, str):
+            raise AppError("projects file is invalid", 400)
+        custom_header_color = settings.get("customHeaderColor", "")
+        if not isinstance(custom_header_color, str):
             raise AppError("projects file is invalid", 400)
         return settings
 

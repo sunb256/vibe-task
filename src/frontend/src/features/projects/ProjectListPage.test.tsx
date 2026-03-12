@@ -8,8 +8,8 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-function settingsResponse(headerBand = "zinc") {
-  return new Response(JSON.stringify({ headerBand }));
+function settingsResponse(headerBand = "zinc", customHeaderColor = "") {
+  return new Response(JSON.stringify({ headerBand, customHeaderColor }));
 }
 
 function mockFetchRoutes(routes: Record<string, Response | Response[]>) {
@@ -47,7 +47,10 @@ test("renders project list", async () => {
         ],
       }),
     ),
-    "PATCH /api/settings": new Response(JSON.stringify({ headerBand: "navy" })),
+    "PATCH /api/settings": [
+      new Response(JSON.stringify({ headerBand: "navy", customHeaderColor: "#1f2937" })),
+      new Response(JSON.stringify({ headerBand: "custom", customHeaderColor: "#123456" })),
+    ],
   });
 
   render(
@@ -141,6 +144,7 @@ test("renders project list", async () => {
   }
   expect(settingsDialog).toHaveClass("max-w-5xl");
   expect(globalHeader).toHaveStyle({ backgroundColor: "rgba(9, 9, 11, 0.94)" });
+  expect(screen.getAllByRole("radio", { name: /Graphite|Navy|Copper|Forest|Plum|Charcoal|Custom/ })).toHaveLength(7);
   expect(screen.getByRole("radio", { name: /Graphite/ })).toBeChecked();
   fireEvent.click(screen.getByRole("radio", { name: /Navy/ }));
   await waitFor(() => {
@@ -149,12 +153,27 @@ test("renders project list", async () => {
       "/api/settings",
       expect.objectContaining({
         method: "PATCH",
-        body: JSON.stringify({ headerBand: "navy" }),
+        body: JSON.stringify({ headerBand: "navy", customHeaderColor: "#1f2937" }),
       }),
     );
   });
   await waitFor(() => {
     expect(globalHeader).toHaveStyle({ backgroundColor: "rgba(30, 41, 59, 0.94)" });
+  });
+  fireEvent.change(screen.getByLabelText("HEX"), { target: { value: "#123456" } });
+  fireEvent.click(screen.getByRole("button", { name: "任意色を適用" }));
+  await waitFor(() => {
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      4,
+      "/api/settings",
+      expect.objectContaining({
+        method: "PATCH",
+        body: JSON.stringify({ headerBand: "custom", customHeaderColor: "#123456" }),
+      }),
+    );
+  });
+  await waitFor(() => {
+    expect(globalHeader).toHaveStyle({ backgroundColor: "rgba(18, 52, 86, 0.94)" });
   });
   expect(screen.getByRole("button", { name: "projects.yml をエクスポート" })).toBeInTheDocument();
   expect(screen.queryByText("projects.yml を読み込んで置き換えます。")).not.toBeInTheDocument();

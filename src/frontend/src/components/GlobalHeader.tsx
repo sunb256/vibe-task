@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 
-import type { HeaderBandId } from "../lib/headerBand";
-import { defaultBandId, getHeaderBand } from "../lib/headerBand";
+import { defaultBandId, resolveHeaderBandStyle } from "../lib/headerBand";
 import { ProjectSettingsDialog } from "../features/projects/ProjectSettingsDialog";
+import type { AppSettings } from "../features/projects/settingsApi";
 import { fetchSettings } from "../features/projects/settingsApi";
 import { GlobalMenu } from "./GlobalMenu";
 
@@ -13,21 +13,24 @@ type GlobalHeaderProps = {
 export function GlobalHeader(props: GlobalHeaderProps) {
   const { onImported } = props;
   const [isOpen, setIsOpen] = useState(false);
-  const [bandId, setBandId] = useState<HeaderBandId>(defaultBandId);
-  const band = getHeaderBand(bandId);
+  const [settings, setSettings] = useState<AppSettings>({
+    headerBand: defaultBandId,
+    customHeaderColor: "",
+  });
+  const band = resolveHeaderBandStyle(settings.headerBand, settings.customHeaderColor);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadSettings() {
       try {
-        const settings = await fetchSettings();
+        const nextSettings = await fetchSettings();
         if (!cancelled) {
-          setBandId(settings.headerBand);
+          setSettings(nextSettings);
         }
       } catch {
         if (!cancelled) {
-          setBandId(defaultBandId);
+          setSettings({ headerBand: defaultBandId, customHeaderColor: "" });
         }
       }
     }
@@ -55,8 +58,8 @@ export function GlobalHeader(props: GlobalHeaderProps) {
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         onImported={onImported}
-        headerBandId={bandId}
-        onHeaderBandChange={setBandId}
+        settings={settings}
+        onSettingsChange={setSettings}
       />
     </>
   );

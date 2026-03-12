@@ -2,27 +2,32 @@ import { type FormEvent, type MouseEvent, useEffect, useState } from "react";
 
 import { Notice } from "../../components/Notice";
 import { PrimaryButton } from "../../components/PrimaryButton";
-import type { HeaderBandId } from "../../lib/headerBand";
-import { getHeaderBand, listHeaderBands } from "../../lib/headerBand";
+import {
+  listHeaderBands,
+  normalizeCustomHeaderColor,
+  resolveHeaderBandStyle,
+  type HeaderBandId,
+} from "../../lib/headerBand";
 import { readErrorMessage } from "../../lib/readErrorMessage";
 import { exportProjectsFile, importProjectsFile } from "./projectApi";
-import { fetchSettings, updateSettings } from "./settingsApi";
+import { fetchSettings, updateSettings, type AppSettings } from "./settingsApi";
 
 type ProjectSettingsDialogProps = {
   isOpen: boolean;
   onClose: () => void;
   onImported?: () => Promise<void> | void;
-  headerBandId: HeaderBandId;
-  onHeaderBandChange: (bandId: HeaderBandId) => void;
+  settings: AppSettings;
+  onSettingsChange: (settings: AppSettings) => void;
 };
 
 export function ProjectSettingsDialog(props: ProjectSettingsDialogProps) {
-  const { isOpen, onClose, onImported, headerBandId, onHeaderBandChange } = props;
+  const { isOpen, onClose, onImported, settings, onSettingsChange } = props;
   const [error, setError] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [isUpdatingBand, setIsUpdatingBand] = useState(false);
+  const [customColor, setCustomColor] = useState("#1f2937");
 
   useEffect(() => {
     if (!isOpen) {
@@ -30,7 +35,8 @@ export function ProjectSettingsDialog(props: ProjectSettingsDialogProps) {
     }
     setError("");
     setFile(null);
-  }, [isOpen]);
+    setCustomColor(normalizeDialogColor(settings.customHeaderColor));
+  }, [isOpen, settings.customHeaderColor]);
 
   if (!isOpen) {
     return null;
@@ -61,7 +67,7 @@ export function ProjectSettingsDialog(props: ProjectSettingsDialogProps) {
       await importProjectsFile(content);
       await onImported?.();
       const settings = await fetchSettings();
-      onHeaderBandChange(settings.headerBand);
+      onSettingsChange(settings);
       onClose();
     } catch (saveError) {
       setError(readErrorMessage(saveError, "projects.yml のインポートに失敗しました。"));
@@ -70,17 +76,31 @@ export function ProjectSettingsDialog(props: ProjectSettingsDialogProps) {
     }
   }
 
-  async function handleBandChange(bandId: HeaderBandId) {
+  async function saveSettings(nextSettings: AppSettings) {
     setError("");
     setIsUpdatingBand(true);
     try {
-      const settings = await updateSettings(bandId);
-      onHeaderBandChange(settings.headerBand);
+      const saved = await updateSettings(nextSettings);
+      onSettingsChange(saved);
     } catch (saveError) {
       setError(readErrorMessage(saveError, "固定ヘッダ設定の更新に失敗しました。"));
     } finally {
       setIsUpdatingBand(false);
     }
+  }
+
+  async function handleBandChange(bandId: HeaderBandId) {
+    await saveSettings({
+      headerBand: bandId,
+      customHeaderColor: normalizeCustomHeaderColor(customColor),
+    });
+  }
+
+  async function handleCustomApply() {
+    await saveSettings({
+      headerBand: "custom",
+      customHeaderColor: normalizeCustomHeaderColor(customColor),
+    });
   }
 
   function handleBackdropMouseDown(event: MouseEvent<HTMLDivElement>) {
@@ -112,14 +132,14 @@ export function ProjectSettingsDialog(props: ProjectSettingsDialogProps) {
           <section className="rounded-lg border border-[var(--border)] bg-white/70 p-4">
             <h3 className="text-sm font-semibold text-[var(--ink)]">固定ヘッダ</h3>
             <p className="mt-1 text-sm text-[var(--muted)]">
-              固定ヘッダの帯カラーを切り替えます。
+              暗めの固定ヘッダ帯を切り替えます。任意色は Custom から設定できます。
             </p>
-            <div role="radiogroup" aria-label="固定ヘッダの帯" className="mt-3 grid gap-3 md:grid-cols-3">
+            <div role="radiogroup" aria-label="固定ヘッダの帯" className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               {listHeaderBands().map((band) => (
                 <label
                   key={band.id}
                   className={`grid gap-3 rounded-lg border p-3 transition ${
-                    headerBandId === band.id
+                    settings.headerBand === band.id
                       ? "border-[var(--accent)] bg-zinc-50 shadow-[0_0_0_1px_var(--accent)]"
                       : "border-[var(--border)] bg-white hover:border-zinc-300"
                   }`}
@@ -135,7 +155,7 @@ export function ProjectSettingsDialog(props: ProjectSettingsDialogProps) {
                       type="radio"
                       name="header-band"
                       value={band.id}
-                      checked={headerBandId === band.id}
+                      checked={settings.headerBand === band.id}
                       disabled={isUpdatingBand}
                       onChange={() => void handleBandChange(band.id)}
                     />
@@ -143,8 +163,40 @@ export function ProjectSettingsDialog(props: ProjectSettingsDialogProps) {
                   <span
                     aria-hidden="true"
                     className="h-8 rounded-md border"
-                    style={previewStyle(band.id)}
+                    style={previewStyle(band.id, customColor)}
                   />
+                  {band.id === "custom" ? (
+                    <div className="grid gap-3 border-t border-[var(--border)] pt-3">
+                      <label className="grid gap-1 text-xs text-[var(--muted)]">
+                        カラーピッカー
+                        <input
+                          type="color"
+                          value={normalizeDialogColor(customColor)}
+                          disabled={isUpdatingBand}
+                          onChange={(event) => setCustomColor(event.target.value)}
+                          className="h-10 w-full rounded-md border border-[var(--border)] bg-white p-1"
+                        />
+                      </label>
+                      <label className="grid gap-1 text-xs text-[var(--muted)]">
+                        HEX
+                        <input
+                          type="text"
+                          inputMode="text"
+                          value={customColor}
+                          disabled={isUpdatingBand}
+                          onChange={(event) => setCustomColor(formatHexInput(event.target.value))}
+                          className="rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)]"
+                        />
+                      </label>
+                      <PrimaryButton
+                        type="button"
+                        onClick={() => void handleCustomApply()}
+                        disabled={isUpdatingBand || !normalizeCustomHeaderColor(customColor)}
+                      >
+                        任意色を適用
+                      </PrimaryButton>
+                    </div>
+                  ) : null}
                 </label>
               ))}
             </div>
@@ -203,10 +255,25 @@ function downloadYaml(fileName: string, content: string) {
   URL.revokeObjectURL(objectUrl);
 }
 
-function previewStyle(bandId: HeaderBandId) {
-  const band = getHeaderBand(bandId);
+function previewStyle(bandId: HeaderBandId, customColor: string) {
+  const band = resolveHeaderBandStyle(bandId, customColor);
   return {
     backgroundColor: band.background,
     borderColor: band.border,
   };
+}
+
+function normalizeDialogColor(value: string) {
+  return normalizeCustomHeaderColor(value) || "#1f2937";
+}
+
+function formatHexInput(value: string) {
+  const normalized = value.trim().toLowerCase().replace(/[^#0-9a-f]/g, "");
+  if (!normalized) {
+    return "#";
+  }
+  if (normalized.startsWith("#")) {
+    return normalized.slice(0, 7);
+  }
+  return `#${normalized.slice(0, 6)}`;
 }
