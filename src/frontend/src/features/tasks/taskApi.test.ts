@@ -1,6 +1,6 @@
 import { afterEach, vi } from "vitest";
 
-import { deleteTask, fetchTasks, swapTaskId, updateTaskAction } from "./taskApi";
+import { deleteTask, fetchTasks, swapTaskId, updateTask } from "./taskApi";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -33,7 +33,7 @@ test("fetchTasks requests the project task list", async () => {
   expect(response.tasks[0].id).toBe("1");
 });
 
-test("updateTaskAction, deleteTask, and swapTaskId use the scoped task endpoint", async () => {
+test("updateTask, deleteTask, and swapTaskId use the scoped task endpoint", async () => {
   const fetchMock = vi
     .spyOn(globalThis, "fetch")
     .mockResolvedValueOnce(
@@ -51,7 +51,7 @@ test("updateTaskAction, deleteTask, and swapTaskId use the scoped task endpoint"
     .mockResolvedValueOnce(new Response(null, { status: 204 }))
     .mockResolvedValueOnce(new Response(null, { status: 204 }));
 
-  await updateTaskAction("project-1", "action", "1", "updated");
+  await updateTask("project-1", "action", "1", "updated", "pending");
   await deleteTask("project-1", "done", "2");
   await swapTaskId("project-1", "action", "1", "2");
 
@@ -60,7 +60,7 @@ test("updateTaskAction, deleteTask, and swapTaskId use the scoped task endpoint"
     "/api/projects/project-1/tasks/action/1",
     expect.objectContaining({
       method: "PATCH",
-      body: JSON.stringify({ action: "updated" }),
+      body: JSON.stringify({ action: "updated", nextSource: "pending" }),
     }),
   );
   expect(fetchMock).toHaveBeenNthCalledWith(

@@ -3,6 +3,11 @@ import { type FormEvent, type MouseEvent, useEffect, useRef } from "react";
 
 import { Notice } from "../../components/Notice";
 
+type DialogStatusOption = {
+  value: string;
+  label: string;
+};
+
 type NewTaskDialogProps = {
   isOpen: boolean;
   isSaving: boolean;
@@ -14,7 +19,11 @@ type NewTaskDialogProps = {
   submitLabel: string;
   submittingLabel: string;
   enableShortcut?: boolean;
+  statusLabel?: string;
+  statusValue?: string;
+  statusOptions?: DialogStatusOption[];
   onActionChange: (action: string) => void;
+  onStatusChange?: (status: string) => void;
   onClose: () => void;
   onSubmit: () => Promise<void>;
 };
@@ -31,7 +40,11 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
     submitLabel,
     submittingLabel,
     enableShortcut,
+    statusLabel,
+    statusValue,
+    statusOptions,
     onActionChange,
+    onStatusChange,
     onClose,
     onSubmit,
   } = props;
@@ -177,17 +190,38 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
             />
           </div>
           {error ? <Notice tone="error" message={error} /> : null}
-          <div className="flex justify-end gap-2">
-            <button type="submit" disabled={isSaving} className={dialogSubmitButtonClass()}>
-              {isSaving ? submittingLabel : submitLabel}
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className={dialogCancelButtonClass()}
-            >
-              Cancel
-            </button>
+          <div className="flex items-center justify-between gap-4">
+            {statusOptions && statusValue !== undefined && onStatusChange ? (
+              <label className="flex items-center gap-2 text-sm font-semibold text-[var(--ink)]">
+                <span>{statusLabel ?? "状態"}</span>
+                <select
+                  value={statusValue}
+                  onChange={(event) => onStatusChange(event.target.value)}
+                  disabled={isSaving}
+                  className="h-10 rounded-md border border-[var(--border)] bg-white px-3 text-sm font-medium text-[var(--ink)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {statusOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : (
+              <span />
+            )}
+            <div className="flex justify-end gap-2">
+              <button type="submit" disabled={isSaving} className={dialogSubmitButtonClass()}>
+                {isSaving ? submittingLabel : submitLabel}
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className={dialogCancelButtonClass()}
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </form>
       </div>

@@ -1,6 +1,7 @@
 import re
 from collections.abc import MutableSequence
 from pathlib import Path
+from typing import Final
 
 from ruamel.yaml import YAML
 from ruamel.yaml.error import YAMLError
@@ -8,6 +9,14 @@ from ruamel.yaml.scalarstring import LiteralScalarString
 
 from app.errors import AppError
 from app.models import ProjectRecord, TaskRecord
+
+TASK_SOURCES: Final[tuple[str, ...]] = ("action", "pending", "done", "cancel")
+SOURCE_FILES: Final[dict[str, str]] = {
+    "action": "action.yml",
+    "pending": "pending.yml",
+    "done": "done.yml",
+    "cancel": "cancel.yml",
+}
 
 
 class TaskRepository:
@@ -20,7 +29,7 @@ class TaskRepository:
     def ensure_project_files(self, project: ProjectRecord) -> None:
         project_dir = self._resolve_project_dir(project)
         project_dir.mkdir(parents=True, exist_ok=True)
-        for source in ("action", "done"):
+        for source in TASK_SOURCES:
             path = project_dir / self._source_file_name(source)
             if path.exists():
                 continue
@@ -42,7 +51,7 @@ class TaskRepository:
 
     def list_tasks(self, project: ProjectRecord) -> list[TaskRecord]:
         records: list[TaskRecord] = []
-        for source in ("action", "done"):
+        for source in TASK_SOURCES:
             document = self._load_source(project, source)
             records.extend(self._to_task_records(project.id, source, document))
         return records
@@ -57,19 +66,26 @@ class TaskRepository:
         task = self._find_task(document, task_id)
         return self._to_task_record(project.id, source, task)
 
-    def update_action(
+    def update_task(
         self,
         project: ProjectRecord,
         source: str,
         task_id: str,
         action: str,
+        next_source: str | None,
     ) -> TaskRecord:
         path = self._resolve_source_path(project, source)
         document = self._load_yaml(path)
-        task = self._find_task(document, task_id)
-        task["action"] = LiteralScalarString(action.rstrip("\n") + "\n")
+        task = self._update_task_action(document, task_id, action)
+        target_source = self._normalize_next_source(source, next_source)
+        if target_source == source:
+            self._write_yaml(path, document)
+            return self._to_task_record(project.id, source, task)
+        target_document = self._load_source(project, target_source)
+        moved_task = self._move_task(document, target_document, task_id)
+        self._write_yaml(self._resolve_source_path(project, target_source), target_document)
         self._write_yaml(path, document)
-        return self._to_task_record(project.id, source, task)
+        return self._to_task_record(project.id, target_source, moved_task)
 
     def delete_task(self, project: ProjectRecord, source: str, task_id: str) -> None:
         path = self._resolve_source_path(project, source)
@@ -118,9 +134,7 @@ class TaskRepository:
     ) -> str:
         if source != "action" or len(tasks) > 0:
             return self._next_task_id(tasks)
-        done_document = self._load_source(project, "done")
-        done_tasks = self._get_task_items(done_document)
-        return str(self._max_task_id(done_tasks) + 1)
+        return str(self._max_other_task_id(project, source) + 1)
 
     def _to_task_records(
         self,
@@ -149,6 +163,41 @@ class TaskRepository:
     def _load_source(self, project: ProjectRecord, source: str) -> dict:
         path = self._resolve_source_path(project, source)
         return self._load_yaml(path)
+
+    def _update_task_action(
+        self,
+        document: dict,
+        task_id: str,
+        action: str,
+    ) -> dict:
+        task = self._find_task(document, task_id)
+        task["action"] = LiteralScalarString(action.rstrip("\n") + "\n")
+        return task
+
+    def _normalize_next_source(self, source: str, next_source: str | None) -> str:
+        if next_source is None:
+            return source
+        normalized = next_source.strip()
+        if not normalized:
+            raise AppError("nextSource is invalid", 400)
+        self._source_file_name(normalized)
+        return normalized
+
+    def _move_task(
+        self,
+        document: dict,
+        target_document: dict,
+        task_id: str,
+    ) -> dict:
+        tasks = self._get_task_items(document)
+        index = self._find_task_index(tasks, task_id)
+        task = tasks[index]
+        if not isinstance(task, dict):
+            raise AppError("task item is invalid", 400)
+        del tasks[index]
+        target_tasks = self._get_task_items(target_document)
+        target_tasks.append(task)
+        return task
 
     def _load_yaml(self, path: Path) -> dict:
         if not path.exists():
@@ -185,6 +234,16 @@ class TaskRepository:
     def _next_task_id(self, tasks: MutableSequence) -> str:
         return str(self._max_task_id(tasks) + 1)
 
+    def _max_other_task_id(self, project: ProjectRecord, source: str) -> int:
+        max_id = 0
+        for current_source in TASK_SOURCES:
+            if current_source == source:
+                continue
+            document = self._load_source(project, current_source)
+            tasks = self._get_task_items(document)
+            max_id = max(max_id, self._max_task_id(tasks))
+        return max_id
+
     def _max_task_id(self, tasks: MutableSequence) -> int:
         max_id = 0
         for item in tasks:
@@ -209,11 +268,10 @@ class TaskRepository:
         return project_dir / self._source_file_name(source)
 
     def _source_file_name(self, source: str) -> str:
-        if source == "action":
-            return "action.yml"
-        if source == "done":
-            return "done.yml"
-        raise AppError("invalid source", 400)
+        file_name = SOURCE_FILES.get(source)
+        if file_name is None:
+            raise AppError("invalid source", 400)
+        return file_name
 
     def _resolve_project_dir(self, project: ProjectRecord) -> Path:
         root = self.projects_root.resolve()

@@ -926,3 +926,10 @@ task:
       既にTOP画面にSettingがあるのでそれをなくして固定ヘッダへ移動して下さい
 
       devブランチで作業してpushして下さい
+  - id: '113'
+    url: https://github.com/sunb256/vibe-task/pull/126
+    title: 固定ヘッダ設定の永続化とTask状態のPENDING/CANCEL追加
+    action: |-
+      タスクについて、TODO、DONEがあるが、PENDING(薄黄色)とCANCEL(グレー)という状態を新たに追加したい。
+
+      これらの状態はタスクの編集画面の更新、Cancelボタンと同じ行で設定できるようにしたい。

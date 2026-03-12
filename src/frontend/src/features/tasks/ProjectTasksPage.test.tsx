@@ -53,11 +53,11 @@ vi.mock("./taskApi", () => ({
   deleteTask: vi.fn(),
   fetchTasks: vi.fn(),
   swapTaskId: vi.fn(),
-  updateTaskAction: vi.fn(),
+  updateTask: vi.fn(),
 }));
 
 import { fetchProjects } from "../projects/projectApi";
-import { createActionTask, fetchTasks, swapTaskId, updateTaskAction } from "./taskApi";
+import { createActionTask, fetchTasks, swapTaskId, updateTask } from "./taskApi";
 
 beforeEach(() => {
   vi.spyOn(globalThis, "fetch").mockResolvedValue(
@@ -155,11 +155,17 @@ test("does not render the removed project subtitle", async () => {
   expect(table).toHaveClass("border-spacing-y-1");
   expect(createButton.compareDocumentPosition(table) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   const todoToggle = screen.getByRole("button", { name: "TODO(1)" });
+  const pendingToggle = screen.getByRole("button", { name: "PENDING(0)" });
   const doneToggle = screen.getByRole("button", { name: "DONE(2)" });
+  const cancelToggle = screen.getByRole("button", { name: "CANCEL(0)" });
   expect(todoToggle).toHaveAttribute("aria-pressed", "true");
+  expect(pendingToggle).toHaveAttribute("aria-pressed", "true");
   expect(doneToggle).toHaveAttribute("aria-pressed", "false");
+  expect(cancelToggle).toHaveAttribute("aria-pressed", "false");
   expect(todoToggle).toHaveClass("bg-blue-100", "text-blue-700", "rounded-full");
+  expect(pendingToggle).toHaveClass("bg-amber-100", "text-amber-700", "rounded-full");
   expect(doneToggle).toHaveClass("rounded-full");
+  expect(cancelToggle).toHaveClass("rounded-full");
   expect(screen.getByRole("columnheader", { name: "id" })).toHaveClass("whitespace-nowrap");
   expect(screen.getByRole("columnheader", { name: "task" })).toHaveClass("w-full");
   expect(screen.getByRole("columnheader", { name: "actions" })).toHaveClass("pl-1", "pr-3");
@@ -212,6 +218,7 @@ test("does not render the removed project subtitle", async () => {
     "min-w-[4.5rem]",
     "whitespace-nowrap",
   );
+  expect(screen.getByLabelText("状態")).toHaveValue("action");
   fireEvent.keyDown(window, { key: "Escape" });
   expect(screen.queryByRole("dialog", { name: "編集 - #1" })).not.toBeInTheDocument();
   const taskCellButton = screen.getByRole("button", { name: "task 1 を編集" });
@@ -235,8 +242,8 @@ test("does not render the removed project subtitle", async () => {
   expect(screen.getByText("done-title-10")).toBeInTheDocument();
   expect(screen.getByText("done-title-2")).toBeInTheDocument();
   expect(screen.getByText("DONE #10", { selector: "span" })).toHaveClass(
-    "bg-emerald-100",
-    "text-emerald-700",
+    "bg-[#dcf5e3]",
+    "text-[#3f7651]",
   );
 });
 
@@ -462,7 +469,7 @@ test("creates a new action task from modal editor", async () => {
     url: "-",
     action: "TODO\n",
   });
-  vi.mocked(updateTaskAction).mockResolvedValue({
+  vi.mocked(updateTask).mockResolvedValue({
     projectId: "project-1",
     source: "action",
     id: "2",
@@ -532,7 +539,7 @@ test("creates a new action task from modal editor", async () => {
 
   await waitFor(() => {
     expect(createActionTask).toHaveBeenCalledWith("project-1");
-    expect(updateTaskAction).toHaveBeenCalledWith(
+    expect(updateTask).toHaveBeenCalledWith(
       "project-1",
       "action",
       "2",
@@ -570,7 +577,7 @@ test("edits a task in modal editor and supports keyboard shortcuts", async () =>
       tasks: [
         {
           projectId: "project-1",
-          source: "action",
+          source: "pending",
           id: "1",
           title: "-",
           url: "-",
@@ -578,9 +585,9 @@ test("edits a task in modal editor and supports keyboard shortcuts", async () =>
         },
       ],
     });
-  vi.mocked(updateTaskAction).mockResolvedValue({
+  vi.mocked(updateTask).mockResolvedValue({
     projectId: "project-1",
-    source: "action",
+    source: "pending",
     id: "1",
     title: "-",
     url: "-",
@@ -602,23 +609,27 @@ test("edits a task in modal editor and supports keyboard shortcuts", async () =>
   fireEvent.click(screen.getByRole("button", { name: "編集" }));
   expect(screen.getByRole("dialog", { name: "編集 - #1" })).toBeInTheDocument();
   expect(screen.getByLabelText("task-editor")).toHaveFocus();
+  fireEvent.change(screen.getByLabelText("状態"), {
+    target: { value: "pending" },
+  });
   fireEvent.change(screen.getByLabelText("task-editor"), {
     target: { value: "edited task" },
   });
   fireEvent.keyDown(window, { key: "Enter", ctrlKey: true });
 
   await waitFor(() => {
-    expect(updateTaskAction).toHaveBeenCalledWith("project-1", "action", "1", "edited task");
+    expect(updateTask).toHaveBeenCalledWith("project-1", "action", "1", "edited task", "pending");
     expect(screen.getByText("edited task")).toBeInTheDocument();
   });
   expect(screen.queryByRole("dialog", { name: "編集 - #1" })).not.toBeInTheDocument();
+  expect(screen.getByText("PENDING #1", { selector: "span" })).toBeInTheDocument();
 
   fireEvent.click(screen.getByRole("button", { name: "編集" }));
   expect(screen.getByRole("dialog", { name: "編集 - #1" })).toBeInTheDocument();
   fireEvent.keyDown(window, { key: "Escape" });
   expect(screen.queryByRole("dialog", { name: "編集 - #1" })).not.toBeInTheDocument();
   expect(screen.getByRole("button", { name: "新規タスク(N)" })).toHaveFocus();
-  expect(updateTaskAction).toHaveBeenCalledTimes(1);
+  expect(updateTask).toHaveBeenCalledTimes(1);
 });
 
 test("shows empty-state message when no task exists", async () => {

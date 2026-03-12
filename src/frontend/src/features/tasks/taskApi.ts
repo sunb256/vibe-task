@@ -19,15 +19,17 @@ export function fetchTask(projectId: string, source: TaskSource, taskId: string)
   return apiFetch<TaskRecord>(`/api/projects/${projectId}/tasks/${source}/${taskId}`);
 }
 
-export function updateTaskAction(
+export function updateTask(
   projectId: string,
   source: TaskSource,
   taskId: string,
   action: string,
+  nextSource?: TaskSource,
 ) {
+  const json = nextSource ? { action, nextSource } : { action };
   return apiFetch<TaskRecord>(`/api/projects/${projectId}/tasks/${source}/${taskId}`, {
     method: "PATCH",
-    json: { action },
+    json,
   });
 }
 

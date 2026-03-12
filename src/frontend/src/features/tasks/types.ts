@@ -1,4 +1,4 @@
-export type TaskSource = "action" | "done";
+export type TaskSource = "action" | "pending" | "done" | "cancel";
 
 export type TaskRecord = {
   projectId: string;
