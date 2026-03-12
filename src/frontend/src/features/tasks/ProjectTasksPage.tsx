@@ -631,8 +631,8 @@ const SOURCE_META: Record<
   },
   done: {
     label: "DONE",
-    badgeClass: "bg-emerald-100 text-emerald-700",
-    filterClass: "border-emerald-200 bg-emerald-100 text-emerald-700",
+    badgeClass: "bg-emerald-50 text-emerald-600",
+    filterClass: "border-emerald-100 bg-emerald-50 text-emerald-600",
     descending: true,
   },
   cancel: {

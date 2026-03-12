@@ -242,8 +242,8 @@ test("does not render the removed project subtitle", async () => {
   expect(screen.getByText("done-title-10")).toBeInTheDocument();
   expect(screen.getByText("done-title-2")).toBeInTheDocument();
   expect(screen.getByText("DONE #10", { selector: "span" })).toHaveClass(
-    "bg-emerald-100",
-    "text-emerald-700",
+    "bg-emerald-50",
+    "text-emerald-600",
   );
 });
 
