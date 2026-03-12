@@ -19,10 +19,12 @@ class ProjectRecord:
 @dataclass(slots=True)
 class AppSettingsRecord:
     header_band: str
+    custom_header_color: str = ""
 
     def to_dict(self) -> dict[str, str]:
         return {
             "headerBand": self.header_band,
+            "customHeaderColor": self.custom_header_color,
         }
 
 
