@@ -13,6 +13,7 @@ __pycache__/
 src/watcher/node_modules/
 src/watcher/dist/
 src/watcher/coverage/
+src/watcher/logs/
 
 
 .env
