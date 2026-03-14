@@ -5,6 +5,7 @@ import {
   formatCompletedAt,
   formatPromptText,
   mergeTaskDefaults,
+  parseConfigPathOption,
   parseRuntimeOptions,
 } from "../run.js";
 
@@ -128,4 +129,34 @@ test("parseRuntimeOptions uses prompts.task_file from config", () => {
     prompts: { task_file: "tasks.local.yml" },
   });
   assert.equal(runtime.taskFilePath, "tasks.local.yml");
+});
+
+test("parseConfigPathOption uses default path without args", () => {
+  const value = parseConfigPathOption([]);
+  assert.equal(value, "config/config.yml");
+});
+
+test("parseConfigPathOption parses short option", () => {
+  const value = parseConfigPathOption(["-c", "config/dev.yml"]);
+  assert.equal(value, "config/dev.yml");
+});
+
+test("parseConfigPathOption parses long option", () => {
+  const value = parseConfigPathOption(["--config", "config/prod.yml"]);
+  assert.equal(value, "config/prod.yml");
+});
+
+test("parseConfigPathOption parses long option with equal", () => {
+  const value = parseConfigPathOption(["--config=config/test.yml"]);
+  assert.equal(value, "config/test.yml");
+});
+
+test("parseConfigPathOption falls back when next token is option", () => {
+  const value = parseConfigPathOption(["--config", "--fullauto"]);
+  assert.equal(value, "config/config.yml");
+});
+
+test("parseRuntimeOptions ignores config option value as task file", () => {
+  const runtime = parseRuntimeOptions(["-c", "config/dev.yml", "tasks.demo.yml"], {});
+  assert.equal(runtime.taskFilePath, "tasks.demo.yml");
 });

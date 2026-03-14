@@ -20,10 +20,18 @@ npx tsx src/run.ts tasks.yml -h
 npx tsx src/run.ts tasks.yml -f
  # or
 npx tsx src/run.ts tasks.yml -f --max-auto-reply-count 5
+ # or
+npx tsx src/run.ts -c config/config.yml
+ # or
+npx tsx src/run.ts --config config/config.yml
 ```
 
 `config/config.yml` に `verbose` / `codex` / `thread` / `prompts` / `reply_wanted` を設定すると、
 引数なし実行時の既定値を変更できます。
+
+設定ファイルは引数で上書きできます。
+- `-c <PATH>` / `--config <PATH>`
+- `--config=<PATH>`
 
 `prompts` では task 入力文の共通化と既定オプションを設定できます。
 - `task_file`: 読み込む tasks ファイルパス（例: `tasks.yml`）

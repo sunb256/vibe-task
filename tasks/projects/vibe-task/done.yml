@@ -1095,3 +1095,12 @@ task:
       watcher
 
       config.ymlにconfig/config.yml　を置くようにしたい
+  - id: '132'
+    url: https://github.com/sunb256/vibe-task/pull/144
+    title: watcherでconfigファイルを引数指定可能にする
+    action: |
+      watcher config.ymlを引数で指定できるようにしたい
+
+      -c config.yml or --config config.yml 
+
+      引数ナシはデフォルトのconfig.ymlを読む

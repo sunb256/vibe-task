@@ -21,6 +21,7 @@ type RuntimeOptions = {
 const LOG_FILE_PATH = path.resolve("logs/log.log");
 const LOG_MAX_BYTES = 10 * 1024 * 1024;
 const LOG_MAX_FILES = 5;
+const DEFAULT_CONFIG_PATH = "config/config.yml";
 
 // 設定値から返信モードを決定し、旧設定も後方互換で解釈する。
 function resolveReplyMode(config: WatcherConfig): ReplyMode {
@@ -36,6 +37,31 @@ function parseNonNegativeInteger(value: string | undefined): number | undefined 
   if (!/^\d+$/.test(value)) return undefined;
   const parsed = Number(value);
   return Number.isSafeInteger(parsed) ? parsed : undefined;
+}
+
+// 設定ファイル引数として有効な値だけを返す。
+function getConfigValue(value: string | undefined): string | undefined {
+  if (!value || value.startsWith("-")) {
+    return undefined;
+  }
+  return value;
+}
+
+// CLI引数から設定ファイルパスを抽出する。
+export function parseConfigPathOption(args: string[]): string {
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (!arg) {
+      continue;
+    }
+    if (arg.startsWith("--config=")) {
+      return getConfigValue(arg.split("=")[1]) ?? DEFAULT_CONFIG_PATH;
+    }
+    if (arg === "--config" || arg === "-c") {
+      return getConfigValue(args[i + 1]) ?? DEFAULT_CONFIG_PATH;
+    }
+  }
+  return DEFAULT_CONFIG_PATH;
 }
 
 // CLI引数と設定を統合して実行時オプションを決める。
@@ -54,6 +80,13 @@ export function parseRuntimeOptions(args: string[], config: WatcherConfig): Runt
     }
     if (arg === "--max-auto-reply-count" || arg === "-r") {
       maxAutoReplyCountArg = parseNonNegativeInteger(args[i + 1]) ?? maxAutoReplyCountArg;
+      i += 1;
+      continue;
+    }
+    if (arg.startsWith("--config=")) {
+      continue;
+    }
+    if (arg === "--config" || arg === "-c") {
       i += 1;
       continue;
     }
@@ -126,7 +159,8 @@ function isEntryPoint(): boolean {
 
 // タスクファイルを順に処理してCodexとの対話実行を進める。
 async function main(): Promise<void> {
-  const configPath = path.resolve("config/config.yml");
+  const args = process.argv.slice(2);
+  const configPath = path.resolve(parseConfigPathOption(args));
   const config = await loadWatcherConfig(configPath);
   setupRotatingLog({
     filePath: LOG_FILE_PATH,
@@ -134,7 +168,7 @@ async function main(): Promise<void> {
     maxFiles: LOG_MAX_FILES,
   });
 
-  const runtime = parseRuntimeOptions(process.argv.slice(2), config);
+  const runtime = parseRuntimeOptions(args, config);
   const taskFilePath = runtime.taskFilePath;
   const absTaskFilePath = path.resolve(taskFilePath);
   const { tasks, defaults } = await loadTasks(absTaskFilePath);
