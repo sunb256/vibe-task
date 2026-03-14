@@ -3,7 +3,7 @@ import test from "node:test";
 import {
   handleNotificationMessage,
   type NotificationHandlerContext,
-} from "./notification.js";
+} from "../app/notification.js";
 
 type ContextState = {
   activeTurnId: string | null;
