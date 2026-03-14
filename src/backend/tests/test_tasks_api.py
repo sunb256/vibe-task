@@ -115,6 +115,22 @@ def test_updates_action_text(client, project_repo: Path, project_tasks_root: Pat
     assert "updated action" in action_text
 
 
+def test_normalizes_crlf_action_text_on_update(client, project_repo: Path, project_tasks_root: Path):
+    project_id = create_project(client, project_repo, project_tasks_root)
+
+    response = client.patch(
+        f"/api/projects/{project_id}/tasks/action/1",
+        json={"action": "line 1\r\nline 2\r\n"},
+    )
+
+    assert response.status_code == 200
+    assert response.get_json()["action"] == "line 1\nline 2\n"
+    action_text = (project_tasks_root / "impl" / "action.yml").read_text(encoding="utf-8")
+    assert "line 1" in action_text
+    assert "line 2" in action_text
+    assert "\r" not in action_text
+
+
 def test_creates_action_task(client, project_repo: Path, project_tasks_root: Path):
     project_id = create_project(client, project_repo, project_tasks_root)
 

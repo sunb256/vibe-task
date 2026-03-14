@@ -171,8 +171,12 @@ class TaskRepository:
         action: str,
     ) -> dict:
         task = self._find_task(document, task_id)
-        task["action"] = LiteralScalarString(action.rstrip("\n") + "\n")
+        normalized = self._normalize_line_endings(action)
+        task["action"] = LiteralScalarString(normalized.rstrip("\n") + "\n")
         return task
+
+    def _normalize_line_endings(self, value: str) -> str:
+        return value.replace("\r\n", "\n").replace("\r", "\n")
 
     def _normalize_next_source(self, source: str, next_source: str | None) -> str:
         if next_source is None:
