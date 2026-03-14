@@ -21,6 +21,22 @@ function getStringArray(value: unknown): string[] | undefined {
   return [...value];
 }
 
+// 実行モード文字列を有効な値へ正規化する。
+function getReplyMode(value: unknown): "harfauto" | "fullauto" | undefined {
+  if (value === "harfauto" || value === "fullauto") {
+    return value;
+  }
+  if (value === "halfauto") {
+    return "harfauto";
+  }
+  return undefined;
+}
+
+// 0以上の整数設定値を取り出す。
+function getNonNegativeInteger(value: unknown): number | undefined {
+  return Number.isInteger(value) && (value as number) >= 0 ? (value as number) : undefined;
+}
+
 // YAML解析結果をWatcherConfigへ正規化する。
 function parseConfig(value: unknown): WatcherConfig {
   if (!isRecord(value)) return {};
@@ -43,6 +59,9 @@ function parseConfig(value: unknown): WatcherConfig {
     ? {
         suffixes: getStringArray(value.reply_wanted.suffixes),
         patterns: getStringArray(value.reply_wanted.patterns),
+        mode: getReplyMode(value.reply_wanted.mode),
+        auto_reply: getBoolean(value.reply_wanted.auto_reply),
+        max_auto_reply_count: getNonNegativeInteger(value.reply_wanted.max_auto_reply_count),
       }
     : undefined;
 

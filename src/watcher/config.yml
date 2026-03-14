@@ -13,6 +13,8 @@ thread:
   service_name: task-yml-runner
 
 reply_wanted:
+  mode: harfauto
+  max_auto_reply_count: 3
   suffixes:
     - "?"
     - "？"

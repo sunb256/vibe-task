@@ -1,8 +1,95 @@
 import * as assert from "node:assert/strict";
 import test from "node:test";
-import { formatCompletedAt } from "../run.js";
+import { formatCompletedAt, parseRuntimeOptions } from "../run.js";
 
 test("formatCompletedAt formats datetime", () => {
   const value = formatCompletedAt(new Date(2026, 2, 14, 9, 5, 7));
   assert.equal(value, "2026-03-14 09:05:07");
+});
+
+test("parseRuntimeOptions uses harfauto by default", () => {
+  const runtime = parseRuntimeOptions([], {});
+  assert.equal(runtime.replyMode, "harfauto");
+});
+
+test("parseRuntimeOptions enables fullauto from config mode", () => {
+  const runtime = parseRuntimeOptions([], {
+    reply_wanted: { mode: "fullauto" },
+  });
+  assert.equal(runtime.replyMode, "fullauto");
+});
+
+test("parseRuntimeOptions maps legacy auto_reply to fullauto", () => {
+  const runtime = parseRuntimeOptions([], {
+    reply_wanted: { auto_reply: true },
+  });
+  assert.equal(runtime.replyMode, "fullauto");
+});
+
+test("parseRuntimeOptions enables fullauto with -f", () => {
+  const runtime = parseRuntimeOptions(["-f"], {
+    reply_wanted: { mode: "harfauto" },
+  });
+  assert.equal(runtime.replyMode, "fullauto");
+  assert.equal(runtime.taskFilePath, "task.yml");
+});
+
+test("parseRuntimeOptions enables fullauto with --fullauto", () => {
+  const runtime = parseRuntimeOptions(["--fullauto"], {
+    reply_wanted: { mode: "harfauto" },
+  });
+  assert.equal(runtime.replyMode, "fullauto");
+});
+
+test("parseRuntimeOptions enables harfauto with -h", () => {
+  const runtime = parseRuntimeOptions(["-h"], {
+    reply_wanted: { mode: "fullauto" },
+  });
+  assert.equal(runtime.replyMode, "harfauto");
+});
+
+test("parseRuntimeOptions enables harfauto with --harfauto", () => {
+  const runtime = parseRuntimeOptions(["--harfauto"], {
+    reply_wanted: { mode: "fullauto" },
+  });
+  assert.equal(runtime.replyMode, "harfauto");
+});
+
+test("parseRuntimeOptions prefers harfauto over fullauto when both set", () => {
+  const runtime = parseRuntimeOptions(["-f", "--harfauto"], {});
+  assert.equal(runtime.replyMode, "harfauto");
+});
+
+test("parseRuntimeOptions keeps positional task file with -f", () => {
+  const runtime = parseRuntimeOptions(["-f", "tasks.demo.yml"], {});
+  assert.equal(runtime.replyMode, "fullauto");
+  assert.equal(runtime.taskFilePath, "tasks.demo.yml");
+});
+
+test("parseRuntimeOptions sets max auto reply count from config", () => {
+  const runtime = parseRuntimeOptions([], {
+    reply_wanted: { max_auto_reply_count: 5 },
+  });
+  assert.equal(runtime.maxAutoReplyCount, 5);
+});
+
+test("parseRuntimeOptions sets max auto reply count from long option", () => {
+  const runtime = parseRuntimeOptions(["--max-auto-reply-count=7"], {
+    reply_wanted: { max_auto_reply_count: 3 },
+  });
+  assert.equal(runtime.maxAutoReplyCount, 7);
+});
+
+test("parseRuntimeOptions sets max auto reply count from option with value", () => {
+  const runtime = parseRuntimeOptions(["--max-auto-reply-count", "8"], {
+    reply_wanted: { max_auto_reply_count: 3 },
+  });
+  assert.equal(runtime.maxAutoReplyCount, 8);
+});
+
+test("parseRuntimeOptions sets max auto reply count from short option", () => {
+  const runtime = parseRuntimeOptions(["-r", "9"], {
+    reply_wanted: { max_auto_reply_count: 3 },
+  });
+  assert.equal(runtime.maxAutoReplyCount, 9);
 });

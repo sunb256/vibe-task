@@ -8,15 +8,66 @@ import { loadTasks } from "./task/task-loader.js";
 import type { WatcherConfig } from "./shared/types.js";
 import { sleep } from "./shared/utils.js";
 
-// CLI引数と設定を統合して実行時オプションを決める。
-function parseRuntimeOptions(args: string[], config: WatcherConfig): {
+type ReplyMode = "harfauto" | "fullauto";
+
+type RuntimeOptions = {
   taskFilePath: string;
   verbose: boolean;
-} {
-  const taskFileArg = args.find((arg) => !arg.startsWith("--"));
+  replyMode: ReplyMode;
+  maxAutoReplyCount?: number;
+};
+
+// 設定値から返信モードを決定し、旧設定も後方互換で解釈する。
+function resolveReplyMode(config: WatcherConfig): ReplyMode {
+  if (config.reply_wanted?.mode) {
+    return config.reply_wanted.mode;
+  }
+  return config.reply_wanted?.auto_reply === true ? "fullauto" : "harfauto";
+}
+
+// 0以上の整数文字列を数値へ変換する。
+function parseNonNegativeInteger(value: string | undefined): number | undefined {
+  if (value === undefined) return undefined;
+  if (!/^\d+$/.test(value)) return undefined;
+  const parsed = Number(value);
+  return Number.isSafeInteger(parsed) ? parsed : undefined;
+}
+
+// CLI引数と設定を統合して実行時オプションを決める。
+export function parseRuntimeOptions(args: string[], config: WatcherConfig): RuntimeOptions {
+  let taskFileArg: string | undefined;
+  let maxAutoReplyCountArg: number | undefined;
+
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (!arg) {
+      continue;
+    }
+    if (arg.startsWith("--max-auto-reply-count=")) {
+      maxAutoReplyCountArg = parseNonNegativeInteger(arg.split("=")[1]) ?? maxAutoReplyCountArg;
+      continue;
+    }
+    if (arg === "--max-auto-reply-count" || arg === "-r") {
+      maxAutoReplyCountArg = parseNonNegativeInteger(args[i + 1]) ?? maxAutoReplyCountArg;
+      i += 1;
+      continue;
+    }
+    if (arg.startsWith("-")) {
+      continue;
+    }
+    if (!taskFileArg) {
+      taskFileArg = arg;
+    }
+  }
+
+  const hasHarfAuto = args.includes("-h") || args.includes("--harfauto") || args.includes("--halfauto");
+  const hasFullAuto = args.includes("-f") || args.includes("--fullauto");
+  const replyMode = hasHarfAuto ? "harfauto" : hasFullAuto ? "fullauto" : resolveReplyMode(config);
   return {
     taskFilePath: taskFileArg ?? config.task_file ?? "task.yml",
     verbose: args.includes("--verbose") || config.verbose === true,
+    replyMode,
+    maxAutoReplyCount: maxAutoReplyCountArg ?? config.reply_wanted?.max_auto_reply_count,
   };
 }
 
@@ -60,6 +111,8 @@ async function main(): Promise<void> {
   const client = new CodexAppServerClient(transport, {
     verbose: runtime.verbose,
     replyWanted: config.reply_wanted,
+    replyMode: runtime.replyMode,
+    maxAutoReplyCount: runtime.maxAutoReplyCount,
   });
 
   try {
@@ -77,13 +130,13 @@ async function main(): Promise<void> {
       serviceName: config.thread?.service_name ?? "task-yml-runner",
     });
 
-    console.log(`\nStarted thread: ${threadId}`);
+    // console.log(`\nStarted thread: ${threadId}`);
 
     for (const [index, task] of tasks.entries()) {
       if (index > 0) {
         console.log("");
       }
-      const taskHeader = `========== TASK ${task.id} ==========\n`;
+      const taskHeader = `\n========== TASK ${task.id} ==========\n`;
       console.log(taskHeader);
       console.log(task.action.trim());
       console.log("");
