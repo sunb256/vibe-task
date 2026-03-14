@@ -33,6 +33,7 @@ type ReplyWantedConfig = {
 };
 
 type CodexAppServerClientOptions = {
+  verbose?: boolean;
   replyWanted?: ReplyWantedConfig;
 };
 
@@ -83,11 +84,13 @@ export class CodexAppServerClient {
 
   constructor(transport: JsonlTransport, options?: CodexAppServerClientOptions) {
     this.transport = transport;
+    const verbose = options?.verbose === true;
     this.replySuffixes = mergeRules(options?.replyWanted?.suffixes, DEFAULT_REPLY_SUFFIXES);
     this.replyPattern = createReplyPattern(
       mergeRules(options?.replyWanted?.patterns, DEFAULT_REPLY_PATTERNS)
     );
     this.notificationContext = {
+      isVerbose: verbose,
       setActiveTurnId: (turnId) => {
         this.activeTurnId = turnId;
       },

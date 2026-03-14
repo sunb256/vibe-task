@@ -1,4 +1,5 @@
 task_file: tasks.yml
+verbose: false
 
 codex:
   command: codex

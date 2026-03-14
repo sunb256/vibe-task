@@ -7,6 +7,10 @@ function getString(value: unknown): string | undefined {
   return typeof value === "string" && value.trim() ? value : undefined;
 }
 
+function getBoolean(value: unknown): boolean | undefined {
+  return typeof value === "boolean" ? value : undefined;
+}
+
 function getStringArray(value: unknown): string[] | undefined {
   if (!Array.isArray(value) || value.some((x) => typeof x !== "string")) {
     return undefined;
@@ -40,6 +44,7 @@ function parseConfig(value: unknown): WatcherConfig {
 
   return {
     task_file: getString(value.task_file),
+    verbose: getBoolean(value.verbose),
     codex,
     thread,
     reply_wanted: replyWanted,

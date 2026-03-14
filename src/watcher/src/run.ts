@@ -4,13 +4,26 @@ import { CodexAppServerClient } from "./app/client.js";
 import { loadWatcherConfig } from "./config/config-loader.js";
 import { JsonlTransport } from "./transport/jsonl-transport.js";
 import { loadTasks } from "./task/task-loader.js";
+import type { WatcherConfig } from "./shared/types.js";
 import { sleep } from "./shared/utils.js";
+
+function parseRuntimeOptions(args: string[], config: WatcherConfig): {
+  taskFilePath: string;
+  verbose: boolean;
+} {
+  const taskFileArg = args.find((arg) => !arg.startsWith("--"));
+  return {
+    taskFilePath: taskFileArg ?? config.task_file ?? "task.yml",
+    verbose: args.includes("--verbose") || config.verbose === true,
+  };
+}
 
 async function main(): Promise<void> {
   const configPath = path.resolve("config.yml");
   const config = await loadWatcherConfig(configPath);
 
-  const taskFilePath = process.argv[2] ?? config.task_file ?? "task.yml";
+  const runtime = parseRuntimeOptions(process.argv.slice(2), config);
+  const taskFilePath = runtime.taskFilePath;
   const absTaskFilePath = path.resolve(taskFilePath);
   const { tasks, defaults } = await loadTasks(absTaskFilePath);
 
@@ -23,6 +36,7 @@ async function main(): Promise<void> {
 
   const transport = new JsonlTransport(proc);
   const client = new CodexAppServerClient(transport, {
+    verbose: runtime.verbose,
     replyWanted: config.reply_wanted,
   });
 

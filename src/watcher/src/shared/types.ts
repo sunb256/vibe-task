@@ -41,6 +41,7 @@ export type TaskFile = {
 
 export type WatcherConfig = {
   task_file?: string;
+  verbose?: boolean;
   codex?: {
     command?: string;
     args?: string[];
