@@ -39,6 +39,18 @@ export type TaskFile = {
   defaults?: TaskDefaults;
 };
 
+export type WatcherConfig = {
+  task_file?: string;
+  codex?: {
+    command?: string;
+    args?: string[];
+  };
+  thread?: {
+    personality?: string;
+    service_name?: string;
+  };
+};
+
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
