@@ -422,7 +422,6 @@ export class CodexAppServerClient {
         return;
       }
 
-      // console.log("\n\n[reply requested] Enterで終了、入力すると次の turn を開始します\n");
       console.log("\n\n* Enterで終了、入力すると次の turn を開始します\n");
       const answer = (await this.rl.question("> ")).trim();
 
