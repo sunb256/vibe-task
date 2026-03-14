@@ -1,10 +1,12 @@
 import type { JsonRpcNotification } from "../shared/types.js";
 import { isRecord } from "../shared/types.js";
 
+// unknown値をRecordへ安全に変換する。
 function getRecord(value: unknown): Record<string, unknown> | null {
   return isRecord(value) ? value : null;
 }
 
+// ネストした値をキー列でたどって取得する。
 function getPath(value: unknown, ...keys: string[]): unknown {
   let current: unknown = value;
   for (const key of keys) {
@@ -15,10 +17,12 @@ function getPath(value: unknown, ...keys: string[]): unknown {
   return current;
 }
 
+// 表示用にunknown値を文字列へ変換する。
 function display(value: unknown, fallback: string): string {
   return value === undefined || value === null ? fallback : String(value);
 }
 
+// agentMessage由来の本文テキストを抽出する。
 function extractAgentText(item: unknown): string {
   if (!item) return "";
 
@@ -57,12 +61,14 @@ type NotificationHandler = (
   context: NotificationHandlerContext
 ) => Promise<void> | void;
 
+// verbose設定時だけログを標準出力へ出す。
 function logVerbose(context: NotificationHandlerContext, message: string): void {
   if (!context.isVerbose) return;
   console.log(message);
 }
 
 const notificationHandlers: Record<string, NotificationHandler> = {
+  // スレッド開始通知をログ出力する。
   "thread/started": (params, context) => {
     logVerbose(
       context,
@@ -70,6 +76,7 @@ const notificationHandlers: Record<string, NotificationHandler> = {
     );
   },
 
+  // turn開始通知をログ出力しアクティブturnを更新する。
   "turn/started": (params, context) => {
     logVerbose(
       context,
@@ -81,6 +88,7 @@ const notificationHandlers: Record<string, NotificationHandler> = {
     }
   },
 
+  // item開始通知をログ出力し必要な初期化を行う。
   "item/started": (params, context) => {
     const item = getRecord(getPath(params, "item"));
     const type = display(item?.type, "unknown");
@@ -100,6 +108,7 @@ const notificationHandlers: Record<string, NotificationHandler> = {
     }
   },
 
+  // agentMessageの差分を逐次表示しバッファへ保持する。
   "item/agentMessage/delta": (params, context) => {
     const itemId = getPath(params, "itemId");
     const delta = getPath(params, "delta") ?? getPath(params, "text") ?? "";
@@ -113,17 +122,21 @@ const notificationHandlers: Record<string, NotificationHandler> = {
     }
   },
 
+  // reasoningテキスト差分は現在は表示しない。
   "item/reasoning/textDelta": () => {
     // raw reasoning は好みが分かれるのでデフォルトでは黙らせる
   },
 
+  // コマンド出力差分をそのまま標準出力へ流す。
   "item/commandExecution/outputDelta": (params) => {
     const chunk = getPath(params, "delta") ?? "";
     if (chunk) process.stdout.write(String(chunk));
   },
 
+  // fileChange差分は現状表示せず無視する。
   "item/fileChange/outputDelta": () => {},
 
+  // item完了通知を処理し最終メッセージを確定する。
   "item/completed": (params, context) => {
     const item = getRecord(getPath(params, "item"));
     const type = display(item?.type, "unknown");
@@ -147,6 +160,7 @@ const notificationHandlers: Record<string, NotificationHandler> = {
     }
   },
 
+  // サーバー要求完了通知をverbose時のみ表示する。
   "serverRequest/resolved": (params, context) => {
     logVerbose(
       context,
@@ -154,6 +168,7 @@ const notificationHandlers: Record<string, NotificationHandler> = {
     );
   },
 
+  // turn完了通知を処理して待機中turnを解放する。
   "turn/completed": (params, context) => {
     const turn = getPath(params, "turn");
     logVerbose(
@@ -168,11 +183,13 @@ const notificationHandlers: Record<string, NotificationHandler> = {
     context.resolveAndClearActiveTurn();
   },
 
+  // app-serverのエラー通知を標準エラーへ出力する。
   error: (params) => {
     console.error("[app-server error event]", JSON.stringify(params, null, 2));
   },
 };
 
+// 通知メソッドに対応するハンドラを呼び出す。
 export async function handleNotificationMessage(
   msg: JsonRpcNotification,
   context: NotificationHandlerContext

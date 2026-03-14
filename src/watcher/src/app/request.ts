@@ -1,10 +1,12 @@
 import type { JsonRpcId, JsonRpcRequest } from "../shared/types.js";
 import { isRecord } from "../shared/types.js";
 
+// unknown値をRecordへ安全に変換する。
 function getRecord(value: unknown): Record<string, unknown> | null {
   return isRecord(value) ? value : null;
 }
 
+// ネストしたプロパティを順に取得する。
 function getPath(value: unknown, ...keys: string[]): unknown {
   let current: unknown = value;
   for (const key of keys) {
@@ -15,6 +17,7 @@ function getPath(value: unknown, ...keys: string[]): unknown {
   return current;
 }
 
+// 表示用途でunknown値を文字列へ変換する。
 function display(value: unknown, fallback: string): string {
   return value === undefined || value === null ? fallback : String(value);
 }
@@ -35,6 +38,7 @@ export type ServerRequestHandlerContext = {
   respondError: (id: JsonRpcId, code: number, message: string, data?: unknown) => void;
 };
 
+// サーバーリクエスト種別ごとに対話処理を実行して応答する。
 export async function handleServerRequestMessage(
   msg: JsonRpcRequest,
   context: ServerRequestHandlerContext

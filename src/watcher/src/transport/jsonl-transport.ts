@@ -22,6 +22,7 @@ export class JsonlTransport {
   > = [];
   private serverRequestHandlers: Array<(msg: JsonRpcRequest) => Promise<void> | void> = [];
 
+  // 子プロセスの入出力を購読してJSONL処理を初期化する。
   constructor(proc: ChildProcessWithoutNullStreams) {
     this.proc = proc;
 
@@ -46,14 +47,17 @@ export class JsonlTransport {
     });
   }
 
+  // 通知メッセージ受信用のハンドラを登録する。
   onNotification(handler: (msg: JsonRpcNotification) => Promise<void> | void): void {
     this.notificationHandlers.push(handler);
   }
 
+  // サーバーリクエスト受信用のハンドラを登録する。
   onServerRequest(handler: (msg: JsonRpcRequest) => Promise<void> | void): void {
     this.serverRequestHandlers.push(handler);
   }
 
+  // JSON-RPCリクエストを送信して結果Promiseを返す。
   async request(method: string, params?: unknown): Promise<unknown> {
     const id = this.nextId++;
     const payload: JsonRpcRequest = { id, method, params };
@@ -64,26 +68,32 @@ export class JsonlTransport {
     });
   }
 
+  // JSON-RPC成功応答を送信する。
   respond(id: JsonRpcId, result: unknown): void {
     this.write({ id, result });
   }
 
+  // JSON-RPCエラー応答を送信する。
   respondError(id: JsonRpcId, code: number, message: string, data?: unknown): void {
     this.write({ id, error: { code, message, data } });
   }
 
+  // JSON-RPC通知を送信する。
   notify(method: string, params?: unknown): void {
     this.write({ method, params });
   }
 
+  // 子プロセスを終了してトランスポートを閉じる。
   close(): void {
     this.proc.kill();
   }
 
+  // 1行JSONLとして標準入力へ書き込む。
   private write(obj: unknown): void {
     this.proc.stdin.write(`${JSON.stringify(obj)}\n`);
   }
 
+  // 標準出力バッファを改行単位で分割して処理する。
   private drainStdout(): void {
     while (true) {
       const newlineIndex = this.stdoutBuffer.indexOf("\n");
@@ -106,6 +116,7 @@ export class JsonlTransport {
     }
   }
 
+  // JSON-RPCメッセージ種別を判定して対応ハンドラへ振り分ける。
   private async dispatch(msg: unknown): Promise<void> {
     if (!isRecord(msg)) return;
 

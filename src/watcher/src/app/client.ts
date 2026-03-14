@@ -9,10 +9,12 @@ import { handleServerRequestMessage } from "./request.js";
 import type { JsonRpcRequest } from "../shared/types.js";
 import { isRecord } from "../shared/types.js";
 
+// unknown値をRecordへ安全に変換する。
 function getRecord(value: unknown): Record<string, unknown> | null {
   return isRecord(value) ? value : null;
 }
 
+// ネストしたプロパティを順番に取り出す。
 function getPath(value: unknown, ...keys: string[]): unknown {
   let current: unknown = value;
   for (const key of keys) {
@@ -23,6 +25,7 @@ function getPath(value: unknown, ...keys: string[]): unknown {
   return current;
 }
 
+// 表示用にunknown値を文字列へ変換する。
 function display(value: unknown, fallback: string): string {
   return value === undefined || value === null ? fallback : String(value);
 }
@@ -51,11 +54,13 @@ const DEFAULT_REPLY_PATTERNS = [
   "どうぞ",
 ];
 
+// 既定ルールと設定ルールを重複なく統合する。
 function mergeRules(value: string[] | undefined, fallback: string[]): string[] {
   const merged = [...fallback, ...(value ?? [])];
   return [...new Set(merged.map((rule) => rule.trim()).filter((rule) => rule.length > 0))];
 }
 
+// 返信判定パターン配列から正規表現を組み立てる。
 function createReplyPattern(patterns: string[]): RegExp | null {
   if (patterns.length === 0) {
     return null;
@@ -82,6 +87,7 @@ export class CodexAppServerClient {
   private replySuffixes: string[];
   private replyPattern: RegExp | null;
 
+  // 通知処理と返信判定に必要な状態を初期化する。
   constructor(transport: JsonlTransport, options?: CodexAppServerClientOptions) {
     this.transport = transport;
     const verbose = options?.verbose === true;
@@ -116,6 +122,7 @@ export class CodexAppServerClient {
     this.transport.onServerRequest(this.handleServerRequest.bind(this));
   }
 
+  // app-server へ初期化リクエストを送り接続を確立する。
   async initialize(): Promise<void> {
     await this.transport.request("initialize", {
       clientInfo: {
@@ -132,6 +139,7 @@ export class CodexAppServerClient {
     this.transport.notify("initialized", {});
   }
 
+  // 新規スレッドを開始してアクティブスレッドIDを保持する。
   async startThread(params: {
     cwd?: string;
     approvalPolicy?: string;
@@ -149,6 +157,7 @@ export class CodexAppServerClient {
     return threadIdValue;
   }
 
+  // 既存スレッドを再開してアクティブスレッドIDを更新する。
   async resumeThread(threadId: string, params?: Record<string, unknown>): Promise<string> {
     const result = await this.transport.request("thread/resume", {
       threadId,
@@ -162,6 +171,7 @@ export class CodexAppServerClient {
     return resumedId;
   }
 
+  // 入力テキストで新しいturnを開始する。
   async startTurn(inputText: string, overrides?: Record<string, unknown>): Promise<string> {
     if (!this.activeThreadId) {
       throw new Error("No active thread. Call startThread() first.");
@@ -186,6 +196,7 @@ export class CodexAppServerClient {
     return turnIdValue;
   }
 
+  // 現在のturn完了通知を待機する。
   async waitForTurnCompletion(): Promise<void> {
     if (!this.activeTurnDonePromise) {
       throw new Error("No active turn completion promise.");
@@ -193,6 +204,7 @@ export class CodexAppServerClient {
     await this.activeTurnDonePromise;
   }
 
+  // 実行中turnへ追加指示を送る。
   async steer(text: string): Promise<void> {
     if (!this.activeThreadId || !this.activeTurnId) {
       throw new Error("No active thread/turn to steer.");
@@ -205,6 +217,7 @@ export class CodexAppServerClient {
     });
   }
 
+  // 実行中turnへ割り込み要求を送る。
   async interrupt(): Promise<void> {
     if (!this.activeThreadId || !this.activeTurnId) return;
     await this.transport.request("turn/interrupt", {
@@ -213,11 +226,13 @@ export class CodexAppServerClient {
     });
   }
 
+  // 入出力ハンドラを閉じて接続を終了する。
   close(): void {
     this.rl.close();
     this.transport.close();
   }
 
+  // サーバー要求をrequestハンドラへ委譲する。
   private async handleServerRequest(msg: JsonRpcRequest): Promise<void> {
     await handleServerRequestMessage(msg, {
       askApproval: (args) => this.askApproval(args),
@@ -231,6 +246,7 @@ export class CodexAppServerClient {
     });
   }
 
+  // 利用可能な承認選択肢を安全に正規化する。
   private normalizeAvailableDecisions(available: unknown, fallback: string[]): string[] {
     if (Array.isArray(available) && available.every((x) => typeof x === "string")) {
       return [...available];
@@ -238,6 +254,7 @@ export class CodexAppServerClient {
     return fallback;
   }
 
+  // 承認リクエストを対話入力で処理する。
   private async askApproval(args: {
     title: string;
     summary: string;
@@ -279,6 +296,7 @@ export class CodexAppServerClient {
     }
   }
 
+  // requestUserInput要求に対して対話入力で回答を作る。
   private async askToolUserInput(params: unknown): Promise<unknown> {
     console.log("\n=== Tool requested user input ===");
     console.log(JSON.stringify(params, null, 2));
@@ -384,6 +402,7 @@ export class CodexAppServerClient {
     return JSON.parse(raw) as unknown;
   }
 
+  // 最終メッセージが返信要求かどうかを判定する。
   private looksLikeReplyWanted(text: string): boolean {
     const t = text.trim();
     if (!t) return false;
@@ -395,6 +414,7 @@ export class CodexAppServerClient {
     return this.replyPattern?.test(t) ?? false;
   }
 
+  // 返信要求が続く間は追加入力turnを繰り返す。
   async continueConversationIfNeeded(): Promise<void> {
     while (true) {
       const text = this.lastAgentMessageText;
