@@ -1,13 +1,23 @@
 task:
-  - id: '118'
-    url: '-'
-    title: '-'
-    action: |-
-      src/watcher のconfigをconfig.ymlとかで設定できるようにしたい
   - id: '119'
     url: '-'
     title: '-'
-    action: |
+    action: |-
       Windowsでfrontendを使っているときにエディタでの改行がおかしくなる
 
       具体的には１行改行なのに2行になる
+  - id: '120'
+    url: '-'
+    title: '-'
+    action: |
+      src/app
+      ├── codex-app-server-client.ts
+      ├── notification-handlers.ts
+      └── server-request-handlers.ts
+
+      これを以下にリネームしたい
+
+      src/app
+      ├── client.ts
+      ├── notification.ts
+      └── request.ts

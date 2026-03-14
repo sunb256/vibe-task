@@ -1,0 +1,12 @@
+task_file: tasks.yml
+
+codex:
+  command: codex
+  args:
+    - app-server
+    - --listen
+    - stdio://
+
+thread:
+  personality: pragmatic
+  service_name: task-yml-runner

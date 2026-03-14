@@ -1,16 +1,22 @@
 import * as path from "node:path";
 import { spawn } from "node:child_process";
 import { CodexAppServerClient } from "./app/codex-app-server-client.js";
+import { loadWatcherConfig } from "./config/config-loader.js";
 import { JsonlTransport } from "./transport/jsonl-transport.js";
 import { loadTasks } from "./task/task-loader.js";
 import { sleep } from "./shared/utils.js";
 
 async function main(): Promise<void> {
-  const taskFilePath = process.argv[2] ?? "task.yml";
+  const configPath = path.resolve("config.yml");
+  const config = await loadWatcherConfig(configPath);
+
+  const taskFilePath = process.argv[2] ?? config.task_file ?? "task.yml";
   const absTaskFilePath = path.resolve(taskFilePath);
   const { tasks, defaults } = await loadTasks(absTaskFilePath);
 
-  const proc = spawn("codex", ["app-server", "--listen", "stdio://"], {
+  const codexCommand = config.codex?.command ?? "codex";
+  const codexArgs = config.codex?.args ?? ["app-server", "--listen", "stdio://"];
+  const proc = spawn(codexCommand, codexArgs, {
     stdio: ["pipe", "pipe", "pipe"],
     env: process.env,
   });
@@ -29,8 +35,8 @@ async function main(): Promise<void> {
       approvalPolicy: tasks[0]?.approval_policy ?? defaults.approval_policy ?? "on-request",
       sandbox: tasks[0]?.sandbox ?? defaults.sandbox ?? "workspace-write",
       model: tasks[0]?.model ?? defaults.model,
-      personality: "pragmatic",
-      serviceName: "task-yml-runner",
+      personality: config.thread?.personality ?? "pragmatic",
+      serviceName: config.thread?.service_name ?? "task-yml-runner",
     });
 
     console.log(`\nStarted thread: ${threadId}`);
