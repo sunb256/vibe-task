@@ -1031,3 +1031,9 @@ task:
       watcher
 
       All tasks completed. の時に終了日付を出力したい [yyyy-mm-dd HH:mm:dd] みたいな感じ
+  - id: '127'
+    url: https://github.com/sunb256/vibe-task/pull/140
+    title: watcherに10MBx5世代のrotateログ機能を追加
+    action: |
+      watcher で ログ機能をつけたい
+      rotateログで10MB*5ぐらいは保持したい
