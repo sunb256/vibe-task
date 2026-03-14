@@ -43,6 +43,7 @@ function extractAgentText(item: unknown): string {
 }
 
 export type NotificationHandlerContext = {
+  isVerbose: boolean;
   setActiveTurnId: (turnId: string | null) => void;
   resolveAndClearActiveTurn: () => void;
   setLastAgentMessageText: (text: string) => void;
@@ -56,13 +57,24 @@ type NotificationHandler = (
   context: NotificationHandlerContext
 ) => Promise<void> | void;
 
+function logVerbose(context: NotificationHandlerContext, message: string): void {
+  if (!context.isVerbose) return;
+  console.log(message);
+}
+
 const notificationHandlers: Record<string, NotificationHandler> = {
-  "thread/started": (params) => {
-    console.log(`[thread.started] ${display(getPath(params, "thread", "id"), "(unknown)")}`);
+  "thread/started": (params, context) => {
+    logVerbose(
+      context,
+      `[thread.started] ${display(getPath(params, "thread", "id"), "(unknown)")}`
+    );
   },
 
   "turn/started": (params, context) => {
-    console.log(`[turn.started] ${display(getPath(params, "turn", "id"), "(unknown)")}`);
+    logVerbose(
+      context,
+      `[turn.started] ${display(getPath(params, "turn", "id"), "(unknown)")}`
+    );
     const maybeTurnId = getPath(params, "turn", "id");
     if (typeof maybeTurnId === "string") {
       context.setActiveTurnId(maybeTurnId);
@@ -72,7 +84,7 @@ const notificationHandlers: Record<string, NotificationHandler> = {
   "item/started": (params, context) => {
     const item = getRecord(getPath(params, "item"));
     const type = display(item?.type, "unknown");
-    console.log(`\n[item.started] type=${type} id=${display(item?.id, "?")}`);
+    logVerbose(context, `[item.started] type=${type} id=${display(item?.id, "?")}`);
 
     if (type === "agentMessage" && typeof item?.id === "string") {
       context.setStreamingAgentText(item.id, "");
@@ -83,8 +95,8 @@ const notificationHandlers: Record<string, NotificationHandler> = {
       const command = Array.isArray(commandValue)
         ? commandValue.map((part) => String(part)).join(" ")
         : display(commandValue, "");
-      if (command) console.log(`  command: ${command}`);
-      if (item?.cwd) console.log(`  cwd: ${item.cwd}`);
+      if (command) logVerbose(context, `  command: ${command}`);
+      if (item?.cwd) logVerbose(context, `  cwd: ${item.cwd}`);
     }
   },
 
@@ -115,7 +127,7 @@ const notificationHandlers: Record<string, NotificationHandler> = {
   "item/completed": (params, context) => {
     const item = getRecord(getPath(params, "item"));
     const type = display(item?.type, "unknown");
-    console.log(`\n[item.completed] type=${type} status=${display(item?.status, "?")}`);
+    logVerbose(context, `[item.completed] type=${type} status=${display(item?.status, "?")}`);
 
     if (type === "agentMessage") {
       const itemId = item?.id;
@@ -131,19 +143,21 @@ const notificationHandlers: Record<string, NotificationHandler> = {
     }
 
     if (type === "fileChange" && Array.isArray(item?.changes)) {
-      console.log(`[fileChange] ${item.changes.length} change(s)`);
+      logVerbose(context, `[fileChange] ${item.changes.length} change(s)`);
     }
   },
 
-  "serverRequest/resolved": (params) => {
-    console.log(
-      `\n[serverRequest.resolved] requestId=${display(getPath(params, "requestId"), "?")} threadId=${display(getPath(params, "threadId"), "?")}`
+  "serverRequest/resolved": (params, context) => {
+    logVerbose(
+      context,
+      `[serverRequest.resolved] requestId=${display(getPath(params, "requestId"), "?")} threadId=${display(getPath(params, "threadId"), "?")}`
     );
   },
 
   "turn/completed": (params, context) => {
     const turn = getPath(params, "turn");
-    console.log(
+    logVerbose(
+      context,
       `[turn.completed] id=${display(getPath(turn, "id"), "?")} status=${display(getPath(turn, "status"), "?")}`
     );
     if (getPath(turn, "error")) {

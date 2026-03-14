@@ -1,4 +1,5 @@
 task_file: tasks.yml
+verbose: false
 
 codex:
   command: codex
@@ -10,3 +11,19 @@ codex:
 thread:
   personality: pragmatic
   service_name: task-yml-runner
+
+reply_wanted:
+  suffixes:
+    - "?"
+    - "？"
+  patterns:
+    - 答えて
+    - 回答は
+    - 入力して
+    - 選んで
+    - 番号で答えて
+    - 指定して
+    - 教えて
+    - A/B/C
+    - 1/2/3
+    - どうぞ

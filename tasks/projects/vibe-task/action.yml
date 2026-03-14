@@ -1,40 +1,20 @@
 task:
-  - id: '121'
-    url: '-'
-    title: '-'
-    action: |2-
-        watcher部の以下をconfig.ymlで追加できるようにしていきたい
-
-        private looksLikeReplyWanted(text: string): boolean {
-          const t = text.trim();
-          if (!t) return false;
-
-          return (
-            t.endsWith("?") ||
-            t.endsWith("？") ||
-            /答えて|回答は|入力して|選んで|番号で答えて|指定して|教えて|A\/B\/C|1\/2\/3|どうぞ/.test(
-              t
-            )
-          );
-        }
-  - id: '122'
-    url: '-'
-    title: '-'
-    action: |-
-      watcher
-
-      [item.completed], [thread.started] とかのconsoleは--verbose にしたとき出力されるようにしたい
-      通常は非表示のほうが使用体験がいい気がする
-      config.ymlでも設定をつけておきたい
-  - id: '123'
-    url: '-'
-    title: '-'
-    action: |-
-      watcherについてtestコードを作って堅牢にしたい
   - id: '124'
     url: '-'
     title: '-'
-    action: |
+    action: |-
       src/frontend でタスク一覧画面の自動更新を入れたい。60秒とかの時間でいい(リアルタイムでなくていい)
 
       ただし、モーダル表示で編集中には更新はしないでほしい(編集中のものが消えてしまうため)
+  - id: '125'
+    url: '-'
+    title: '-'
+    action: |-
+      src/watcher tsファイルのコメントが全くないので各メソッドに１行コメントをつけてほしい
+  - id: '126'
+    url: '-'
+    title: '-'
+    action: |
+      watcher
+
+      All tasks completed. の時に終了日付を出力したい [yyyy-mm-dd HH:mm:dd] みたいな感じ
