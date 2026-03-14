@@ -1,10 +1,10 @@
 {
-  "name": "watcher",
+  "name": "runner",
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "start": "tsx src/run.ts tasks.yml",
-    "answer": "tsx src/run.ts tasks.yml --answer",
+    "start": "tsx src/run.ts tasks_test.yml",
+    "answer": "tsx src/run.ts tasks_test.yml --answer",
     "test": "tsx --test \"src/**/*.test.ts\""
   },
   "dependencies": {
