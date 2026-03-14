@@ -1012,3 +1012,10 @@ task:
     title: watcherの返信判定・verbose設定を追加しテストコードを整備
     action: |-
       watcherについてtestコードを作って堅牢にしたい
+  - id: '124'
+    url: https://github.com/sunb256/vibe-task/pull/136
+    title: タスク一覧画面に60秒自動更新を追加
+    action: |-
+      src/frontend でタスク一覧画面の自動更新を入れたい。60秒とかの時間でいい(リアルタイムでなくていい)
+
+      ただし、モーダル表示で編集中には更新はしないでほしい(編集中のものが消えてしまうため)
