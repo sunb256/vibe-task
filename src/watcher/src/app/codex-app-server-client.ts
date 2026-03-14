@@ -343,7 +343,7 @@ export class CodexAppServerClient {
     return (
       t.endsWith("?") ||
       t.endsWith("？") ||
-      /答えて|回答は|入力して|選んで|番号で答えて|指定して|A\/B\/C|1\/2\/3|どうぞ/.test(
+      /答えて|回答は|入力して|選んで|番号で答えて|指定して|教えて|A\/B\/C|1\/2\/3|どうぞ/.test(
         t
       )
     );

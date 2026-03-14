@@ -35,9 +35,14 @@ task:
   - id: '122'
     url: '-'
     title: '-'
-    action: |
+    action: |-
       watcher
 
       [item.completed], [thread.started] とかのconsoleは--verbose にしたとき出力されるようにしたい
       通常は非表示のほうが使用体験がいい気がする
       config.ymlでも設定をつけておきたい
+  - id: '123'
+    url: '-'
+    title: '-'
+    action: |
+      watcherについてtestコードを作って堅牢にしたい
