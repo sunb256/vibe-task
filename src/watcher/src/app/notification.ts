@@ -72,7 +72,7 @@ const notificationHandlers: Record<string, NotificationHandler> = {
   "item/started": (params, context) => {
     const item = getRecord(getPath(params, "item"));
     const type = display(item?.type, "unknown");
-    console.log(`\n[item.started] type=${type} id=${display(item?.id, "?")}`);
+    console.log(`[item.started] type=${type} id=${display(item?.id, "?")}`);
 
     if (type === "agentMessage" && typeof item?.id === "string") {
       context.setStreamingAgentText(item.id, "");
@@ -115,7 +115,7 @@ const notificationHandlers: Record<string, NotificationHandler> = {
   "item/completed": (params, context) => {
     const item = getRecord(getPath(params, "item"));
     const type = display(item?.type, "unknown");
-    console.log(`\n[item.completed] type=${type} status=${display(item?.status, "?")}`);
+    console.log(`[item.completed] type=${type} status=${display(item?.status, "?")}`);
 
     if (type === "agentMessage") {
       const itemId = item?.id;
@@ -137,7 +137,7 @@ const notificationHandlers: Record<string, NotificationHandler> = {
 
   "serverRequest/resolved": (params) => {
     console.log(
-      `\n[serverRequest.resolved] requestId=${display(getPath(params, "requestId"), "?")} threadId=${display(getPath(params, "threadId"), "?")}`
+      `[serverRequest.resolved] requestId=${display(getPath(params, "requestId"), "?")} threadId=${display(getPath(params, "threadId"), "?")}`
     );
   },
 

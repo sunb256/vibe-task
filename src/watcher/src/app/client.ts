@@ -399,7 +399,7 @@ export class CodexAppServerClient {
         return;
       }
 
-      console.log("\n[reply requested] Enterで終了、入力すると次の turn を開始します");
+      console.log("\n3[reply requested] Enterで終了、入力すると次の turn を開始します");
       const answer = (await this.rl.question("> ")).trim();
 
       if (!answer) {
