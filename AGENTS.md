@@ -2,8 +2,10 @@
 
 ## 概要
 
-このリポジトリは、Vite + React + TypeScript + React Router + ESLint + Prettier + Tailwind CSS で構成のフロントエンドと、
-Python + Flask + uv で構成されたバックエンドアプリ
+リポジトリ構成
+- Frontend: Vite + React + TypeScript + React Router + ESLint + Prettier + Tailwind CSS 
+- Backend: Python + Flask + uv
+- Watcher: TypeScript + codex sdk
 
 ## 基本方針
 
@@ -27,6 +29,13 @@ Python + Flask + uv で構成されたバックエンドアプリ
 - Flask の既存構成（app factory / blueprint / service / model / repository など）を崩さない
 - 例外処理は既存のエラーハンドリング方針に合わせる
 - logging では秘密情報や過剰な内部情報を出力しない
+
+
+### Watcher
+
+ - 可読性重視
+ - コンポーネント化
+
 
 ### Python / uv
 
@@ -53,10 +62,16 @@ uv run pytest
 
 - lint / format / type check が導入されている場合は、repo の既存コマンドに従う
 
+### Watcher
+
+今はなし
+
+
 ## レビュー方法
 
 - frontend の変更レビューでは `frontend-review` skill を使うこと
 - backend の変更レビューでは、`backend-review` skill を使うこと
+- watcher の変更レビューでは、`ts-cli-review` skill を使うこと
 
 
 ## 注意事項
