@@ -1024,3 +1024,10 @@ task:
     title: watcherの各メソッドに1行コメントを追加
     action: |-
       src/watcher tsファイルのコメントが全くないので各メソッドに１行コメントをつけてほしい
+  - id: '126'
+    url: https://github.com/sunb256/vibe-task/pull/137
+    title: watcherのコメント整備と完了日時表示を追加
+    action: |
+      watcher
+
+      All tasks completed. の時に終了日付を出力したい [yyyy-mm-dd HH:mm:dd] みたいな感じ

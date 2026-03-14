@@ -1,8 +1,1 @@
-task:
-  - id: '126'
-    url: '-'
-    title: '-'
-    action: |
-      watcher
-
-      All tasks completed. の時に終了日付を出力したい [yyyy-mm-dd HH:mm:dd] みたいな感じ
+task: []
