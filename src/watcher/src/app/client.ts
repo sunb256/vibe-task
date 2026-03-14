@@ -402,12 +402,14 @@ export class CodexAppServerClient {
         return;
       }
 
-      console.log("\n3[reply requested] Enterで終了、入力すると次の turn を開始します");
+      // console.log("\n\n[reply requested] Enterで終了、入力すると次の turn を開始します\n");
+      console.log("\n\n* Enterで終了、入力すると次の turn を開始します\n");
       const answer = (await this.rl.question("> ")).trim();
 
       if (!answer) {
         return;
       }
+      console.log("\n-----");
 
       this.lastAgentMessageText = "";
       await this.startTurn(answer);

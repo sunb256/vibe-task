@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "start": "tsx src/run.ts tasks.yml",
-    "answer": "tsx src/run.ts tasks.yml --answer"
+    "answer": "tsx src/run.ts tasks.yml --answer",
+    "test": "tsx --test \"src/**/*.test.ts\""
   },
   "dependencies": {
     "@openai/codex-sdk": "^0.114.0",

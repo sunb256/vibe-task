@@ -91,7 +91,7 @@ async function main(): Promise<void> {
       await sleep(100);
     }
 
-    console.log("\nAll tasks completed.");
+    console.log("\n\nAll tasks completed.");
   } finally {
     client.close();
   }

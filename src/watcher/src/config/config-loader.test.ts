@@ -1,0 +1,103 @@
+import * as assert from "node:assert/strict";
+import * as fs from "node:fs/promises";
+import * as os from "node:os";
+import * as path from "node:path";
+import test from "node:test";
+import { loadWatcherConfig } from "./config-loader.js";
+
+async function withTempDir(run: (dir: string) => Promise<void>): Promise<void> {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "watcher-config-test-"));
+  try {
+    await run(dir);
+  } finally {
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+}
+
+test("loadWatcherConfig returns empty config when file does not exist", async () => {
+  await withTempDir(async (dir) => {
+    const config = await loadWatcherConfig(path.join(dir, "missing.yml"));
+    assert.deepEqual(config, {});
+  });
+});
+
+test("loadWatcherConfig parses supported fields", async () => {
+  await withTempDir(async (dir) => {
+    const filePath = path.join(dir, "config.yml");
+    const yaml = `
+task_file: tasks.local.yml
+verbose: true
+codex:
+  command: codex
+  args:
+    - app-server
+thread:
+  personality: pragmatic
+  service_name: task-yml-runner
+reply_wanted:
+  suffixes:
+    - "!"
+  patterns:
+    - 回答して
+`;
+
+    await fs.writeFile(filePath, yaml);
+    const config = await loadWatcherConfig(filePath);
+
+    assert.deepEqual(config, {
+      task_file: "tasks.local.yml",
+      verbose: true,
+      codex: {
+        command: "codex",
+        args: ["app-server"],
+      },
+      thread: {
+        personality: "pragmatic",
+        service_name: "task-yml-runner",
+      },
+      reply_wanted: {
+        suffixes: ["!"],
+        patterns: ["回答して"],
+      },
+    });
+  });
+});
+
+test("loadWatcherConfig ignores invalid field types", async () => {
+  await withTempDir(async (dir) => {
+    const filePath = path.join(dir, "config.yml");
+    const yaml = `
+task_file: ""
+verbose: "yes"
+codex:
+  command: 1
+  args: [1, 2]
+thread:
+  personality: false
+  service_name: {}
+reply_wanted:
+  suffixes: [1]
+  patterns: null
+`;
+
+    await fs.writeFile(filePath, yaml);
+    const config = await loadWatcherConfig(filePath);
+
+    assert.deepEqual(config, {
+      task_file: undefined,
+      verbose: undefined,
+      codex: {
+        command: undefined,
+        args: undefined,
+      },
+      thread: {
+        personality: undefined,
+        service_name: undefined,
+      },
+      reply_wanted: {
+        suffixes: undefined,
+        patterns: undefined,
+      },
+    });
+  });
+});
