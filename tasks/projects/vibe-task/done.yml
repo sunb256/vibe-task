@@ -1109,3 +1109,18 @@ task:
     title: src/watcherをsrc/runnerへリネーム
     action: |
       src/watcherをsrc/runnerにしたい
+  - id: '134'
+    url: https://github.com/sunb256/vibe-task/pull/148
+    title: runner: task_file を実行スクリプト基準で解決する
+    action: |
+      runner config/config.ymlについて
+
+      codex を実行するフォルダを指定したい
+
+      現在はdefaults.cwdだと思うが、codexの実行フォルダはそのフォルダだが、
+      task_fileはそこからの相対ではなく、実行スクリプトからの相対にしたい
+
+      prompts:
+        task_file: ../../tasks/projects/vibe-task/action.yml
+        defaults:
+          cwd: .

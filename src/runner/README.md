@@ -34,15 +34,15 @@ npx tsx src/run.ts --config config/config.yml
 - `--config=<PATH>`
 
 `prompts` では task 入力文の共通化と既定オプションを設定できます。
-- `task_file`: 読み込む tasks ファイルパス（例: `tasks.yml`）
+- `task_file`: 読み込む tasks ファイルパス
+  - 相対パスは `run.ts` / `run.js` の実行スクリプト位置基準で解決
+  - 例: `../../tasks/projects/vibe-task/action.yml`
 - `common`: 各 `task.action` の前に自動で付与する共通指示文
-- `defaults`: task 共通の既定値
-  - `cwd`
-  - `approval_policy`
-  - `sandbox`
-  - `model`
+- `target_dir`: Codex 実行ディレクトリの既定値（相対指定は実行スクリプト位置基準で絶対化）
+- `approval_policy`: 承認ポリシーの既定値
+- `sandbox`: sandbox の既定値
 
-既定値の優先順位は `taskごとの指定 > config/config.yml の prompts.defaults > tasks.yml の defaults(後方互換)` です。
+既定値の優先順位は `taskごとの指定 > config/config.yml の prompts.* > tasks.yml の defaults(後方互換)` です。
 
 `verbose` を `true` にすると、`[thread.started]` / `[item.completed]` などのイベントログを表示します。
 CLI の `--verbose` 指定がある場合は config より優先して有効になります。

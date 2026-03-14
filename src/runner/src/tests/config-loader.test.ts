@@ -45,11 +45,9 @@ prompts:
   task_file: tasks.local.yml
   common: |
     共通の指示
-  defaults:
-    cwd: /repo
-    approval_policy: never
-    sandbox: danger-full-access
-    model: gpt-5
+  target_dir: /repo
+  approval_policy: never
+  sandbox: danger-full-access
 `;
 
     await fs.writeFile(filePath, yaml);
@@ -75,12 +73,9 @@ prompts:
       prompts: {
         task_file: "tasks.local.yml",
         common: "共通の指示\n",
-        defaults: {
-          cwd: "/repo",
-          approval_policy: "never",
-          sandbox: "danger-full-access",
-          model: "gpt-5",
-        },
+        target_dir: "/repo",
+        approval_policy: "never",
+        sandbox: "danger-full-access",
       },
     });
   });
@@ -106,7 +101,9 @@ reply_wanted:
 prompts:
   task_file: []
   common: false
-  defaults: hello
+  target_dir: []
+  approval_policy: {}
+  sandbox: 123
 `;
 
     await fs.writeFile(filePath, yaml);
@@ -132,7 +129,9 @@ prompts:
       prompts: {
         task_file: undefined,
         common: undefined,
-        defaults: undefined,
+        target_dir: undefined,
+        approval_policy: undefined,
+        sandbox: undefined,
       },
     });
   });

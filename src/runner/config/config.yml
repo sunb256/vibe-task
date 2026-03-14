@@ -12,12 +12,11 @@ thread:
   service_name: task-yml-runner
 
 prompts:
-  # task_file: tasks.yml
+  approval_policy: on-request
+  sandbox: workspace-write
+  target_dir: .
   task_file: ../../tasks/projects/vibe-task/action.yml
-  defaults:
-    cwd: .
-    approval_policy: on-request
-    sandbox: workspace-write
+  # task_file: tasks.yml
   common: |
     1. 最初にカントフォルダのフォルダ名を取得して下さい (@PWDとする)
        また、ベースフォルダは ~/ghq/github.com/sunb256/vibe-task です(@BASE_DIRとする)

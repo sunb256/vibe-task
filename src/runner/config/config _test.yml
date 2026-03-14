@@ -12,11 +12,10 @@ thread:
   service_name: task-yml-runner
 
 prompts:
+  approval_policy: on-request
+  sandbox: workspace-write
+  target_dir: .
   task_file: tasks_test.yml
-  defaults:
-    cwd: .
-    approval_policy: on-request
-    sandbox: workspace-write
   common: |
     
 

@@ -47,6 +47,31 @@ function getConfigValue(value: string | undefined): string | undefined {
   return value;
 }
 
+// runner実行スクリプトの場所からrunnerルートを解決する。
+export function resolveRunnerRoot(argvPath: string | undefined): string {
+  if (!argvPath) {
+    return process.cwd();
+  }
+  return path.resolve(path.dirname(path.resolve(argvPath)), "..");
+}
+
+// 絶対パスはそのまま使い、相対パスはrunnerルート基準で解決する。
+export function resolveRunnerPath(baseDir: string, targetPath: string): string {
+  if (path.isAbsolute(targetPath)) {
+    return targetPath;
+  }
+  return path.resolve(baseDir, targetPath);
+}
+
+// defaults.cwd が相対指定ならrunnerルート基準の絶対パスへ変換する。
+export function resolveDefaultsCwd(defaults: TaskDefaults, baseDir: string): TaskDefaults {
+  const cwd = defaults.cwd;
+  if (!cwd || path.isAbsolute(cwd)) {
+    return defaults;
+  }
+  return { ...defaults, cwd: path.resolve(baseDir, cwd) };
+}
+
 // CLI引数から設定ファイルパスを抽出する。
 export function parseConfigPathOption(args: string[]): string {
   for (let i = 0; i < args.length; i += 1) {
@@ -149,6 +174,15 @@ export function mergeTaskDefaults(
   return { ...taskDefaults, ...(promptDefaults ?? {}) };
 }
 
+// configのprompts設定をtask既定値形式へ変換する。
+export function promptConfigToDefaults(config: RunnerConfig): TaskDefaults {
+  return {
+    cwd: config.prompts?.target_dir,
+    approval_policy: config.prompts?.approval_policy,
+    sandbox: config.prompts?.sandbox,
+  };
+}
+
 // 現在モジュールがCLIエントリポイントとして実行されたかを判定する。
 function isEntryPoint(): boolean {
   const argvPath = process.argv[1];
@@ -160,7 +194,8 @@ function isEntryPoint(): boolean {
 // タスクファイルを順に処理してCodexとの対話実行を進める。
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
-  const configPath = path.resolve(parseConfigPathOption(args));
+  const runnerRoot = resolveRunnerRoot(process.argv[1]);
+  const configPath = resolveRunnerPath(runnerRoot, parseConfigPathOption(args));
   const config = await loadRunnerConfig(configPath);
   setupRotatingLog({
     filePath: LOG_FILE_PATH,
@@ -169,10 +204,12 @@ async function main(): Promise<void> {
   });
 
   const runtime = parseRuntimeOptions(args, config);
-  const taskFilePath = runtime.taskFilePath;
-  const absTaskFilePath = path.resolve(taskFilePath);
+  const absTaskFilePath = resolveRunnerPath(runnerRoot, runtime.taskFilePath);
   const { tasks, defaults } = await loadTasks(absTaskFilePath);
-  const mergedDefaults = mergeTaskDefaults(defaults, config.prompts?.defaults);
+  const mergedDefaults = resolveDefaultsCwd(
+    mergeTaskDefaults(defaults, promptConfigToDefaults(config)),
+    runnerRoot
+  );
 
   const codexCommand = config.codex?.command ?? "codex";
   const codexArgs = config.codex?.args ?? ["app-server", "--listen", "stdio://"];
