@@ -1,7 +1,12 @@
 import * as readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 import { JsonlTransport } from "./jsonl-transport.js";
-import type { JsonRpcNotification, JsonRpcRequest } from "./types.js";
+import {
+  handleNotificationMessage,
+  type NotificationHandlerContext,
+} from "./notification-handlers.js";
+import { handleServerRequestMessage } from "./server-request-handlers.js";
+import type { JsonRpcRequest } from "./types.js";
 import { isRecord } from "./types.js";
 
 function getRecord(value: unknown): Record<string, unknown> | null {
@@ -33,10 +38,33 @@ export class CodexAppServerClient {
 
   private lastAgentMessageText = "";
   private streamingAgentTextByItemId = new Map<string, string>();
+  private notificationContext: NotificationHandlerContext;
 
   constructor(transport: JsonlTransport) {
     this.transport = transport;
-    this.transport.onNotification(this.handleNotification.bind(this));
+    this.notificationContext = {
+      setActiveTurnId: (turnId) => {
+        this.activeTurnId = turnId;
+      },
+      resolveAndClearActiveTurn: () => {
+        this.activeTurnDoneResolver?.();
+        this.activeTurnDoneResolver = null;
+        this.activeTurnDonePromise = null;
+      },
+      setLastAgentMessageText: (text) => {
+        this.lastAgentMessageText = text;
+      },
+      getStreamingAgentText: (itemId) => this.streamingAgentTextByItemId.get(itemId) ?? "",
+      setStreamingAgentText: (itemId, text) => {
+        this.streamingAgentTextByItemId.set(itemId, text);
+      },
+      deleteStreamingAgentText: (itemId) => {
+        this.streamingAgentTextByItemId.delete(itemId);
+      },
+    };
+    this.transport.onNotification((msg) =>
+      handleNotificationMessage(msg, this.notificationContext)
+    );
     this.transport.onServerRequest(this.handleServerRequest.bind(this));
   }
 
@@ -142,237 +170,17 @@ export class CodexAppServerClient {
     this.transport.close();
   }
 
-  private async handleNotification(msg: JsonRpcNotification): Promise<void> {
-    const { method, params } = msg;
-
-    switch (method) {
-      case "thread/started":
-        console.log(`[thread.started] ${display(getPath(params, "thread", "id"), "(unknown)")}`);
-        return;
-
-      case "turn/started": {
-        console.log(`[turn.started] ${display(getPath(params, "turn", "id"), "(unknown)")}`);
-        const maybeTurnId = getPath(params, "turn", "id");
-        if (typeof maybeTurnId === "string") {
-          this.activeTurnId = maybeTurnId;
-        }
-        return;
-      }
-
-      case "item/started": {
-        const item = getRecord(getPath(params, "item"));
-        const type = display(item?.type, "unknown");
-        console.log(`\n[item.started] type=${type} id=${display(item?.id, "?")}`);
-
-        if (type === "agentMessage" && typeof item?.id === "string") {
-          this.streamingAgentTextByItemId.set(item.id, "");
-        }
-
-        if (type === "commandExecution") {
-          const commandValue = item?.command;
-          const command = Array.isArray(commandValue)
-            ? commandValue.map((part) => String(part)).join(" ")
-            : display(commandValue, "");
-          if (command) console.log(`  command: ${command}`);
-          if (item?.cwd) console.log(`  cwd: ${item.cwd}`);
-        }
-        return;
-      }
-
-      case "item/agentMessage/delta": {
-        const itemId = getPath(params, "itemId");
-        const delta = getPath(params, "delta") ?? getPath(params, "text") ?? "";
-        if (delta) {
-          const deltaText = String(delta);
-          process.stdout.write(deltaText);
-          if (typeof itemId === "string") {
-            const prev = this.streamingAgentTextByItemId.get(itemId) ?? "";
-            this.streamingAgentTextByItemId.set(itemId, prev + deltaText);
-          }
-        }
-        return;
-      }
-
-      case "item/reasoning/textDelta":
-        // raw reasoning は好みが分かれるのでデフォルトでは黙らせる
-        return;
-
-      case "item/commandExecution/outputDelta": {
-        const chunk = getPath(params, "delta") ?? "";
-        if (chunk) process.stdout.write(String(chunk));
-        return;
-      }
-
-      case "item/fileChange/outputDelta":
-        return;
-
-      case "item/completed": {
-        const item = getRecord(getPath(params, "item"));
-        const type = display(item?.type, "unknown");
-        console.log(`\n[item.completed] type=${type} status=${display(item?.status, "?")}`);
-
-        if (type === "agentMessage") {
-          const itemId = item?.id;
-          const streamed =
-            typeof itemId === "string" ? this.streamingAgentTextByItemId.get(itemId) ?? "" : "";
-          const finalText = streamed || this.extractAgentText(item);
-
-          this.lastAgentMessageText = finalText.trim();
-
-          if (typeof itemId === "string") {
-            this.streamingAgentTextByItemId.delete(itemId);
-          }
-        }
-
-        if (type === "fileChange" && Array.isArray(item?.changes)) {
-          console.log(`[fileChange] ${item.changes.length} change(s)`);
-        }
-
-        return;
-      }
-
-      case "serverRequest/resolved":
-        console.log(
-          `\n[serverRequest.resolved] requestId=${display(getPath(params, "requestId"), "?")} threadId=${display(getPath(params, "threadId"), "?")}`
-        );
-        return;
-
-      case "turn/completed": {
-        const turn = getPath(params, "turn");
-        console.log(
-          `[turn.completed] id=${display(getPath(turn, "id"), "?")} status=${display(getPath(turn, "status"), "?")}`
-        );
-        if (getPath(turn, "error")) {
-          console.error("[turn.error]", JSON.stringify(getPath(turn, "error"), null, 2));
-        }
-
-        this.activeTurnId = null;
-        this.activeTurnDoneResolver?.();
-        this.activeTurnDoneResolver = null;
-        this.activeTurnDonePromise = null;
-        return;
-      }
-
-      case "error":
-        console.error("[app-server error event]", JSON.stringify(params, null, 2));
-        return;
-
-      default:
-        // 必要ならここを verbose にする
-        // console.log("[notify]", method, JSON.stringify(params, null, 2));
-        return;
-    }
-  }
-
   private async handleServerRequest(msg: JsonRpcRequest): Promise<void> {
-    const { id, method, params } = msg;
-
-    try {
-      switch (method) {
-        case "item/commandExecution/requestApproval": {
-          const networkApprovalContext = getPath(params, "networkApprovalContext");
-          const command = getPath(params, "command");
-          const decision = await this.askApproval({
-            title: "Command execution approval",
-            reason: getPath(params, "reason"),
-            summary: networkApprovalContext
-              ? `network access to ${display(getPath(params, "networkApprovalContext", "host"), "unknown host")}`
-              : Array.isArray(command)
-                ? command.map((part) => String(part)).join(" ")
-                : display(command, "(command unavailable)"),
-            choices: this.normalizeAvailableDecisions(getPath(params, "availableDecisions"), [
-              "accept",
-              "acceptForSession",
-              "decline",
-              "cancel",
-            ]),
-          });
-
-          this.transport.respond(id, decision);
-          return;
-        }
-
-        case "item/fileChange/requestApproval": {
-          const grantRoot = getPath(params, "grantRoot");
-          const decision = await this.askApproval({
-            title: "File change approval",
-            reason: getPath(params, "reason"),
-            summary: `itemId=${display(getPath(params, "itemId"), "?")}${grantRoot ? ` grantRoot=${String(grantRoot)}` : ""}`,
-            choices: this.normalizeAvailableDecisions(getPath(params, "availableDecisions"), [
-              "accept",
-              "acceptForSession",
-              "decline",
-              "cancel",
-            ]),
-          });
-
-          this.transport.respond(id, decision);
-          return;
-        }
-
-        case "item/tool/requestUserInput": {
-          const result = await this.askToolUserInput(params);
-          this.transport.respond(id, result);
-          return;
-        }
-
-        case "item/tool/call": {
-          console.log("[item/tool/call] Dynamic tool call received.");
-          console.log(JSON.stringify(params, null, 2));
-
-          const raw = await this.rl.question(
-            "Return tool result JSON (empty = decline with error): "
-          );
-
-          if (!raw.trim()) {
-            this.transport.respondError(id, -32000, "User declined dynamic tool call");
-            return;
-          }
-
-          let parsed: unknown;
-          try {
-            parsed = JSON.parse(raw) as unknown;
-          } catch {
-            this.transport.respondError(id, -32602, "Invalid JSON for dynamic tool result");
-            return;
-          }
-
-          this.transport.respond(id, parsed);
-          return;
-        }
-
-        default: {
-          console.log(`[server request] ${method}`);
-          console.log(JSON.stringify(params, null, 2));
-
-          const raw = await this.rl.question(
-            "Unknown server request. Paste JSON result to send back, or empty for {}: "
-          );
-
-          if (!raw.trim()) {
-            this.transport.respond(id, {});
-            return;
-          }
-
-          let parsed: unknown;
-          try {
-            parsed = JSON.parse(raw) as unknown;
-          } catch {
-            this.transport.respondError(id, -32602, "Invalid JSON");
-            return;
-          }
-
-          this.transport.respond(id, parsed);
-          return;
-        }
-      }
-    } catch (err) {
-      this.transport.respondError(
-        id,
-        -32000,
-        err instanceof Error ? err.message : String(err)
-      );
-    }
+    await handleServerRequestMessage(msg, {
+      askApproval: (args) => this.askApproval(args),
+      normalizeAvailableDecisions: (available, fallback) =>
+        this.normalizeAvailableDecisions(available, fallback),
+      askToolUserInput: (params) => this.askToolUserInput(params),
+      question: (query) => this.rl.question(query),
+      respond: (id, result) => this.transport.respond(id, result),
+      respondError: (id, code, message, data) =>
+        this.transport.respondError(id, code, message, data),
+    });
   }
 
   private normalizeAvailableDecisions(available: unknown, fallback: string[]): string[] {
@@ -526,29 +334,6 @@ export class CodexAppServerClient {
     }
 
     return JSON.parse(raw) as unknown;
-  }
-
-  private extractAgentText(item: unknown): string {
-    if (!item) return "";
-
-    const itemRecord = getRecord(item);
-    if (!itemRecord) return "";
-
-    if (typeof itemRecord.text === "string") return itemRecord.text;
-    if (typeof itemRecord.message === "string") return itemRecord.message;
-
-    if (Array.isArray(itemRecord.content)) {
-      return itemRecord.content
-        .map((part) => {
-          if (typeof part === "string") return part;
-          const partRecord = getRecord(part);
-          if (typeof partRecord?.text === "string") return partRecord.text;
-          return "";
-        })
-        .join("");
-    }
-
-    return "";
   }
 
   private looksLikeReplyWanted(text: string): boolean {
