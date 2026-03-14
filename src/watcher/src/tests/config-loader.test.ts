@@ -25,7 +25,6 @@ test("loadWatcherConfig parses supported fields", async () => {
   await withTempDir(async (dir) => {
     const filePath = path.join(dir, "config.yml");
     const yaml = `
-task_file: tasks.local.yml
 verbose: true
 codex:
   command: codex
@@ -42,13 +41,21 @@ reply_wanted:
     - "!"
   patterns:
     - 回答して
+prompts:
+  task_file: tasks.local.yml
+  common: |
+    共通の指示
+  defaults:
+    cwd: /repo
+    approval_policy: never
+    sandbox: danger-full-access
+    model: gpt-5
 `;
 
     await fs.writeFile(filePath, yaml);
     const config = await loadWatcherConfig(filePath);
 
     assert.deepEqual(config, {
-      task_file: "tasks.local.yml",
       verbose: true,
       codex: {
         command: "codex",
@@ -65,6 +72,16 @@ reply_wanted:
         suffixes: ["!"],
         patterns: ["回答して"],
       },
+      prompts: {
+        task_file: "tasks.local.yml",
+        common: "共通の指示\n",
+        defaults: {
+          cwd: "/repo",
+          approval_policy: "never",
+          sandbox: "danger-full-access",
+          model: "gpt-5",
+        },
+      },
     });
   });
 });
@@ -73,7 +90,6 @@ test("loadWatcherConfig ignores invalid field types", async () => {
   await withTempDir(async (dir) => {
     const filePath = path.join(dir, "config.yml");
     const yaml = `
-task_file: ""
 verbose: "yes"
 codex:
   command: 1
@@ -87,13 +103,16 @@ reply_wanted:
   max_auto_reply_count: -1
   suffixes: [1]
   patterns: null
+prompts:
+  task_file: []
+  common: false
+  defaults: hello
 `;
 
     await fs.writeFile(filePath, yaml);
     const config = await loadWatcherConfig(filePath);
 
     assert.deepEqual(config, {
-      task_file: undefined,
       verbose: undefined,
       codex: {
         command: undefined,
@@ -109,6 +128,11 @@ reply_wanted:
         max_auto_reply_count: undefined,
         suffixes: undefined,
         patterns: undefined,
+      },
+      prompts: {
+        task_file: undefined,
+        common: undefined,
+        defaults: undefined,
       },
     });
   });

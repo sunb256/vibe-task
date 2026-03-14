@@ -1052,3 +1052,32 @@ task:
 
 
       みたいな感じです
+  - id: '129'
+    url: https://github.com/sunb256/vibe-task/pull/141
+    title: watcherに共通プロンプトとconfig既定値を追加
+    action: |
+      watcher に tasks.action で指示する文に共通で使用する指示文を入れられるようにしたい
+      この設定はconfig.yml側に置きたい
+
+      prompts:
+        common: |
+           共通の指示文です
+
+      みたいな感じです
+
+      また、今はtasks.ymlで以下のものがあるがこれもconfig.yml側にしたい
+
+      現行
+      defaults:
+        cwd: .
+        approval_policy: on-request
+        sandbox: workspace-write
+        
+
+      変更後
+
+      prompts:
+        defaults:
+          cwd: .
+          approval_policy: on-request
+          sandbox: workspace-write

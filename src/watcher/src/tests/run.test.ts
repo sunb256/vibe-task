@@ -1,6 +1,12 @@
 import * as assert from "node:assert/strict";
 import test from "node:test";
-import { formatCompletedAt, formatPromptText, parseRuntimeOptions } from "../run.js";
+import {
+  buildTaskPrompt,
+  formatCompletedAt,
+  formatPromptText,
+  mergeTaskDefaults,
+  parseRuntimeOptions,
+} from "../run.js";
 
 test("formatCompletedAt formats datetime", () => {
   const value = formatCompletedAt(new Date(2026, 2, 14, 9, 5, 7));
@@ -10,6 +16,24 @@ test("formatCompletedAt formats datetime", () => {
 test("formatPromptText prefixes each line with input marker", () => {
   const value = formatPromptText("\n入力文です\nテストです、質問に回答して\n");
   assert.equal(value, "> 入力文です\n> テストです、質問に回答して");
+});
+
+test("buildTaskPrompt prepends common prompt", () => {
+  const value = buildTaskPrompt("個別タスク", "共通指示");
+  assert.equal(value, "共通指示\n\n個別タスク");
+});
+
+test("mergeTaskDefaults prefers config defaults", () => {
+  const value = mergeTaskDefaults(
+    { cwd: ".", approval_policy: "on-request", sandbox: "workspace-write" },
+    { cwd: "/repo", model: "gpt-5" }
+  );
+  assert.deepEqual(value, {
+    cwd: "/repo",
+    approval_policy: "on-request",
+    sandbox: "workspace-write",
+    model: "gpt-5",
+  });
 });
 
 test("parseRuntimeOptions uses harfauto by default", () => {
@@ -97,4 +121,11 @@ test("parseRuntimeOptions sets max auto reply count from short option", () => {
     reply_wanted: { max_auto_reply_count: 3 },
   });
   assert.equal(runtime.maxAutoReplyCount, 9);
+});
+
+test("parseRuntimeOptions uses prompts.task_file from config", () => {
+  const runtime = parseRuntimeOptions([], {
+    prompts: { task_file: "tasks.local.yml" },
+  });
+  assert.equal(runtime.taskFilePath, "tasks.local.yml");
 });

@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
 import YAML from "yaml";
-import type { WatcherConfig } from "../shared/types.js";
+import type { TaskDefaults, WatcherConfig } from "../shared/types.js";
 import { isRecord } from "../shared/types.js";
 
 // 空文字を除外して文字列設定値を取り出す。
@@ -37,6 +37,17 @@ function getNonNegativeInteger(value: unknown): number | undefined {
   return Number.isInteger(value) && (value as number) >= 0 ? (value as number) : undefined;
 }
 
+// task既定値の設定オブジェクトを安全に正規化する。
+function getTaskDefaults(value: unknown): TaskDefaults | undefined {
+  if (!isRecord(value)) return undefined;
+  return {
+    cwd: getString(value.cwd),
+    approval_policy: getString(value.approval_policy),
+    sandbox: getString(value.sandbox),
+    model: getString(value.model),
+  };
+}
+
 // YAML解析結果をWatcherConfigへ正規化する。
 function parseConfig(value: unknown): WatcherConfig {
   if (!isRecord(value)) return {};
@@ -65,12 +76,20 @@ function parseConfig(value: unknown): WatcherConfig {
       }
     : undefined;
 
+  const prompts = isRecord(value.prompts)
+    ? {
+        task_file: getString(value.prompts.task_file),
+        common: getString(value.prompts.common),
+        defaults: getTaskDefaults(value.prompts.defaults),
+      }
+    : undefined;
+
   return {
-    task_file: getString(value.task_file),
     verbose: getBoolean(value.verbose),
     codex,
     thread,
     reply_wanted: replyWanted,
+    prompts,
   };
 }
 

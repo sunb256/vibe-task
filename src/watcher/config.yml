@@ -1,4 +1,3 @@
-task_file: tasks.yml
 verbose: false
 
 codex:
@@ -12,9 +11,18 @@ thread:
   personality: pragmatic
   service_name: task-yml-runner
 
+prompts:
+  task_file: tasks.yml
+  defaults:
+    cwd: .
+    approval_policy: on-request
+    sandbox: workspace-write
+  common: |
+    
+
 reply_wanted:
   mode: harfauto
-  max_auto_reply_count: 3
+  max_auto_reply_count: 4
   suffixes:
     - "?"
     - "？"
@@ -29,3 +37,4 @@ reply_wanted:
     - A/B/C
     - 1/2/3
     - どうぞ
+    - 確認させて
