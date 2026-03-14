@@ -1,6 +1,6 @@
 import * as path from "node:path";
 import { spawn } from "node:child_process";
-import { CodexAppServerClient } from "./app/codex-app-server-client.js";
+import { CodexAppServerClient } from "./app/client.js";
 import { loadWatcherConfig } from "./config/config-loader.js";
 import { JsonlTransport } from "./transport/jsonl-transport.js";
 import { loadTasks } from "./task/task-loader.js";

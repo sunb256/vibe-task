@@ -4,8 +4,8 @@ import { JsonlTransport } from "../transport/jsonl-transport.js";
 import {
   handleNotificationMessage,
   type NotificationHandlerContext,
-} from "./notification-handlers.js";
-import { handleServerRequestMessage } from "./server-request-handlers.js";
+} from "./notification.js";
+import { handleServerRequestMessage } from "./request.js";
 import type { JsonRpcRequest } from "../shared/types.js";
 import { isRecord } from "../shared/types.js";
 
