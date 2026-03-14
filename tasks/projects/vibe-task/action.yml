@@ -1,19 +1,4 @@
 task:
-  - id: '120'
-    url: '-'
-    title: '-'
-    action: |-
-      src/app
-      ├── codex-app-server-client.ts
-      ├── notification-handlers.ts
-      └── server-request-handlers.ts
-
-      これを以下にリネームしたい
-
-      src/app
-      ├── client.ts
-      ├── notification.ts
-      └── request.ts
   - id: '121'
     url: '-'
     title: '-'
@@ -44,5 +29,12 @@ task:
   - id: '123'
     url: '-'
     title: '-'
-    action: |
+    action: |-
       watcherについてtestコードを作って堅牢にしたい
+  - id: '124'
+    url: '-'
+    title: '-'
+    action: |
+      src/frontend でタスク一覧画面の自動更新を入れたい。60秒とかの時間でいい(リアルタイムでなくていい)
+
+      ただし、モーダル表示で編集中には更新はしないでほしい(編集中のものが消えてしまうため)
