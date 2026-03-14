@@ -1,13 +1,13 @@
 import * as readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
-import { JsonlTransport } from "./jsonl-transport.js";
+import { JsonlTransport } from "../transport/jsonl-transport.js";
 import {
   handleNotificationMessage,
   type NotificationHandlerContext,
 } from "./notification-handlers.js";
 import { handleServerRequestMessage } from "./server-request-handlers.js";
-import type { JsonRpcRequest } from "./types.js";
-import { isRecord } from "./types.js";
+import type { JsonRpcRequest } from "../shared/types.js";
+import { isRecord } from "../shared/types.js";
 
 function getRecord(value: unknown): Record<string, unknown> | null {
   return isRecord(value) ? value : null;
@@ -343,7 +343,7 @@ export class CodexAppServerClient {
     return (
       t.endsWith("?") ||
       t.endsWith("？") ||
-      /答えてください|回答は|入力してください|選んでください|番号で答えて|A\/B\/C|1\/2\/3|どうぞ/.test(
+      /答えて|回答は|入力して|選んで|番号で答えて|指定して|A\/B\/C|1\/2\/3|どうぞ/.test(
         t
       )
     );

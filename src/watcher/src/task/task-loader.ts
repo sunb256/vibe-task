@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
 import YAML from "yaml";
-import type { TaskDefaults, TaskFile, TaskSpec } from "./types.js";
+import type { TaskDefaults, TaskFile, TaskSpec } from "../shared/types.js";
 
 export async function loadTasks(taskFilePath: string): Promise<{
   tasks: TaskSpec[];
