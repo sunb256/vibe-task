@@ -1,5 +1,6 @@
 import * as path from "node:path";
 import { spawn } from "node:child_process";
+import { pathToFileURL } from "node:url";
 import { CodexAppServerClient } from "./app/client.js";
 import { loadWatcherConfig } from "./config/config-loader.js";
 import { JsonlTransport } from "./transport/jsonl-transport.js";
@@ -17,6 +18,25 @@ function parseRuntimeOptions(args: string[], config: WatcherConfig): {
     taskFilePath: taskFileArg ?? config.task_file ?? "task.yml",
     verbose: args.includes("--verbose") || config.verbose === true,
   };
+}
+
+// 完了日時を yyyy-mm-dd HH:mm:ss 形式の文字列へ整形する。
+export function formatCompletedAt(date: Date): string {
+  const yyyy = String(date.getFullYear());
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  const hh = String(date.getHours()).padStart(2, "0");
+  const min = String(date.getMinutes()).padStart(2, "0");
+  const sec = String(date.getSeconds()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd} ${hh}:${min}:${sec}`;
+}
+
+// 現在モジュールがCLIエントリポイントとして実行されたかを判定する。
+function isEntryPoint(): boolean {
+  const argvPath = process.argv[1];
+  if (!argvPath) return false;
+  const fileUrl = pathToFileURL(path.resolve(argvPath)).href;
+  return import.meta.url === fileUrl;
 }
 
 // タスクファイルを順に処理してCodexとの対話実行を進める。
@@ -93,13 +113,16 @@ async function main(): Promise<void> {
       await sleep(100);
     }
 
-    console.log("\n\nAll tasks completed.");
+    const completedAt = formatCompletedAt(new Date());
+    console.log(`\n\nAll tasks completed. [${completedAt}]`);
   } finally {
     client.close();
   }
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+if (isEntryPoint()) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}
