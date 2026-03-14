@@ -1,9 +1,4 @@
 task:
-  - id: '125'
-    url: '-'
-    title: '-'
-    action: |-
-      src/watcher tsファイルのコメントが全くないので各メソッドに１行コメントをつけてほしい
   - id: '126'
     url: '-'
     title: '-'
