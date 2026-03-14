@@ -12,7 +12,7 @@ thread:
   service_name: task-yml-runner
 
 prompts:
-  task_file: tasks.yml
+  task_file: tasks_test.yml
   defaults:
     cwd: .
     approval_policy: on-request
