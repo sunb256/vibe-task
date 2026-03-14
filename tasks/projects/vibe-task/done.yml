@@ -1007,3 +1007,8 @@ task:
       [item.completed], [thread.started] とかのconsoleは--verbose にしたとき出力されるようにしたい
       通常は非表示のほうが使用体験がいい気がする
       config.ymlでも設定をつけておきたい
+  - id: '123'
+    url: https://github.com/sunb256/vibe-task/pull/135
+    title: watcherの返信判定・verbose設定を追加しテストコードを整備
+    action: |-
+      watcherについてtestコードを作って堅牢にしたい

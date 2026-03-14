@@ -1,9 +1,4 @@
 task:
-  - id: '123'
-    url: '-'
-    title: '-'
-    action: |-
-      watcherについてtestコードを作って堅牢にしたい
   - id: '124'
     url: '-'
     title: '-'
@@ -14,5 +9,12 @@ task:
   - id: '125'
     url: '-'
     title: '-'
-    action: |
+    action: |-
       src/watcher tsファイルのコメントが全くないので各メソッドに１行コメントをつけてほしい
+  - id: '126'
+    url: '-'
+    title: '-'
+    action: |
+      watcher
+
+      All tasks completed. の時に終了日付を出力したい [yyyy-mm-dd HH:mm:dd] みたいな感じ
