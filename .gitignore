@@ -10,10 +10,10 @@ src/frontend/coverage/
 __pycache__/
 *.pyc
 
-src/watcher/node_modules/
-src/watcher/dist/
-src/watcher/coverage/
-src/watcher/logs/
+src/runner/node_modules/
+src/runner/dist/
+src/runner/coverage/
+src/runner/logs/
 
 
 .env
