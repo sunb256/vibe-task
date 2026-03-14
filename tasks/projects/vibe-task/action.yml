@@ -9,5 +9,5 @@ task:
     title: '-'
     action: |
       Windowsでfrontendを使っているときにエディタでの改行がおかしくなる
-      
+
       具体的には１行改行なのに2行になる
