@@ -1088,3 +1088,10 @@ task:
       watcher
 
       config-loder とtask-loader はloaderフォルダにまとめて
+  - id: '131'
+    url: https://github.com/sunb256/vibe-task/pull/143
+    title: watcherの設定ファイルをconfig/config.ymlへ移動
+    action: |
+      watcher
+
+      config.ymlにconfig/config.yml　を置くようにしたい

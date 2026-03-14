@@ -108,7 +108,7 @@ export function buildTaskPrompt(action: string, commonPrompt?: string): string {
   return `${common}\n\n${action}`;
 }
 
-// task.ymlとconfig.yml由来のdefaultsを統合しconfig側を優先する。
+// task.ymlと設定ファイル由来のdefaultsを統合し設定側を優先する。
 export function mergeTaskDefaults(
   taskDefaults: TaskDefaults,
   promptDefaults?: TaskDefaults
@@ -126,7 +126,7 @@ function isEntryPoint(): boolean {
 
 // タスクファイルを順に処理してCodexとの対話実行を進める。
 async function main(): Promise<void> {
-  const configPath = path.resolve("config.yml");
+  const configPath = path.resolve("config/config.yml");
   const config = await loadWatcherConfig(configPath);
   setupRotatingLog({
     filePath: LOG_FILE_PATH,
