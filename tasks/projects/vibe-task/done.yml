@@ -1031,3 +1031,24 @@ task:
       watcher
 
       All tasks completed. の時に終了日付を出力したい [yyyy-mm-dd HH:mm:dd] みたいな感じ
+  - id: '127'
+    url: https://github.com/sunb256/vibe-task/pull/140
+    title: watcherに10MBx5世代のrotateログ機能を追加
+    action: |
+      watcher で ログ機能をつけたい
+      rotateログで10MB*5ぐらいは保持したい
+  - id: '128'
+    url: https://github.com/sunb256/vibe-task/pull/140
+    title: watcherに10MBx5世代のrotateログ機能を追加
+    action: |
+      watcher で入力分とAI応答の見分けがつくようにしたい
+
+      入力文は "> " をつけて対応したい
+
+      例
+
+      > 入力文です
+      > テストです、質問に回答して
+
+
+      みたいな感じです

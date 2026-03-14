@@ -1,10 +1,15 @@
 import * as assert from "node:assert/strict";
 import test from "node:test";
-import { formatCompletedAt, parseRuntimeOptions } from "../run.js";
+import { formatCompletedAt, formatPromptText, parseRuntimeOptions } from "../run.js";
 
 test("formatCompletedAt formats datetime", () => {
   const value = formatCompletedAt(new Date(2026, 2, 14, 9, 5, 7));
   assert.equal(value, "2026-03-14 09:05:07");
+});
+
+test("formatPromptText prefixes each line with input marker", () => {
+  const value = formatPromptText("\n入力文です\nテストです、質問に回答して\n");
+  assert.equal(value, "> 入力文です\n> テストです、質問に回答して");
 });
 
 test("parseRuntimeOptions uses harfauto by default", () => {

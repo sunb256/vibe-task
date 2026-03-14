@@ -40,3 +40,7 @@ CLI の `--verbose` 指定がある場合は config より優先して有効に�
 - `-h` / `--harfauto`: ハーフオート
 - `-f` / `--fullauto`: フルオート
 - `-r <N>` / `--max-auto-reply-count <N>`: `fullauto` 時の連続自動返信回数上限
+
+ログ出力は自動で `logs/log.log` に保存されます（各行に日時を付与）。
+- ローテート: `10MB` を超えたら世代を切り替え
+- 保持世代: `log.log.1` 〜 `log.log.5`

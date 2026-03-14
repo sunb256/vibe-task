@@ -6,6 +6,7 @@ import { loadWatcherConfig } from "./config/config-loader.js";
 import { JsonlTransport } from "./transport/jsonl-transport.js";
 import { loadTasks } from "./task/task-loader.js";
 import type { WatcherConfig } from "./shared/types.js";
+import { setupRotatingLog } from "./shared/rotating-log.js";
 import { sleep } from "./shared/utils.js";
 
 type ReplyMode = "harfauto" | "fullauto";
@@ -16,6 +17,10 @@ type RuntimeOptions = {
   replyMode: ReplyMode;
   maxAutoReplyCount?: number;
 };
+
+const LOG_FILE_PATH = path.resolve("logs/log.log");
+const LOG_MAX_BYTES = 10 * 1024 * 1024;
+const LOG_MAX_FILES = 5;
 
 // 設定値から返信モードを決定し、旧設定も後方互換で解釈する。
 function resolveReplyMode(config: WatcherConfig): ReplyMode {
@@ -82,6 +87,15 @@ export function formatCompletedAt(date: Date): string {
   return `${yyyy}-${mm}-${dd} ${hh}:${min}:${sec}`;
 }
 
+// 入力文表示を各行 `> ` プレフィックス付きへ整形する。
+export function formatPromptText(text: string): string {
+  return text
+    .trim()
+    .split("\n")
+    .map((line) => `> ${line}`)
+    .join("\n");
+}
+
 // 現在モジュールがCLIエントリポイントとして実行されたかを判定する。
 function isEntryPoint(): boolean {
   const argvPath = process.argv[1];
@@ -94,6 +108,11 @@ function isEntryPoint(): boolean {
 async function main(): Promise<void> {
   const configPath = path.resolve("config.yml");
   const config = await loadWatcherConfig(configPath);
+  setupRotatingLog({
+    filePath: LOG_FILE_PATH,
+    maxBytes: LOG_MAX_BYTES,
+    maxFiles: LOG_MAX_FILES,
+  });
 
   const runtime = parseRuntimeOptions(process.argv.slice(2), config);
   const taskFilePath = runtime.taskFilePath;
@@ -138,7 +157,7 @@ async function main(): Promise<void> {
       }
       const taskHeader = `\n========== TASK ${task.id} ==========\n`;
       console.log(taskHeader);
-      console.log(task.action.trim());
+      console.log(formatPromptText(task.action));
       console.log("");
 
       const overrides: Record<string, unknown> = {};
