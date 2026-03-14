@@ -53,6 +53,9 @@ export type WatcherConfig = {
   reply_wanted?: {
     suffixes?: string[];
     patterns?: string[];
+    mode?: "harfauto" | "fullauto";
+    auto_reply?: boolean;
+    max_auto_reply_count?: number;
   };
 };
 

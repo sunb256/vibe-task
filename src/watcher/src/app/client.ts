@@ -38,9 +38,13 @@ type ReplyWantedConfig = {
 type CodexAppServerClientOptions = {
   verbose?: boolean;
   replyWanted?: ReplyWantedConfig;
+  replyMode?: "harfauto" | "fullauto";
+  maxAutoReplyCount?: number;
 };
 
 const DEFAULT_REPLY_SUFFIXES = ["?", "？"];
+const AUTO_REPLY_TEXT = "続けてください";
+const MAX_AUTO_REPLY_COUNT = 3;
 const DEFAULT_REPLY_PATTERNS = [
   "答えて",
   "回答は",
@@ -86,6 +90,8 @@ export class CodexAppServerClient {
   private notificationContext: NotificationHandlerContext;
   private replySuffixes: string[];
   private replyPattern: RegExp | null;
+  private replyMode: "harfauto" | "fullauto";
+  private maxAutoReplyCount: number;
 
   // 通知処理と返信判定に必要な状態を初期化する。
   constructor(transport: JsonlTransport, options?: CodexAppServerClientOptions) {
@@ -95,6 +101,8 @@ export class CodexAppServerClient {
     this.replyPattern = createReplyPattern(
       mergeRules(options?.replyWanted?.patterns, DEFAULT_REPLY_PATTERNS)
     );
+    this.replyMode = options?.replyMode ?? "harfauto";
+    this.maxAutoReplyCount = options?.maxAutoReplyCount ?? MAX_AUTO_REPLY_COUNT;
     this.notificationContext = {
       isVerbose: verbose,
       setActiveTurnId: (turnId) => {
@@ -416,16 +424,40 @@ export class CodexAppServerClient {
 
   // 返信要求が続く間は追加入力turnを繰り返す。
   async continueConversationIfNeeded(): Promise<void> {
+    let autoReplyCount = 0;
     while (true) {
       const text = this.lastAgentMessageText;
       if (!this.looksLikeReplyWanted(text)) {
         return;
       }
 
-      console.log("\n\n* Enterで終了、入力すると次の turn を開始します\n");
+      if (this.replyMode === "fullauto") {
+        if (autoReplyCount >= this.maxAutoReplyCount) {
+          console.log(
+            `\n\n* 自動返信が ${this.maxAutoReplyCount} 回に達したため、次の task へ進みます\n`
+          );
+          return;
+        }
+        autoReplyCount += 1;
+        console.log("\n\n* 自動返信で次の turn を開始します\n");
+        console.log(`> ${AUTO_REPLY_TEXT}`);
+        console.log("\n-----\n");
+        this.lastAgentMessageText = "";
+        await this.startTurn(AUTO_REPLY_TEXT);
+        await this.waitForTurnCompletion();
+        continue;
+      }
+
+      console.log(
+        "\n\n* [質問] Enter or /skip で次タスクへ\n"
+      );
       const answer = (await this.rl.question("> ")).trim();
 
       if (!answer) {
+        return;
+      }
+
+      if (answer === "/skip") {
         return;
       }
       console.log("\n-----\n");

@@ -35,6 +35,9 @@ thread:
   personality: pragmatic
   service_name: task-yml-runner
 reply_wanted:
+  mode: fullauto
+  auto_reply: true
+  max_auto_reply_count: 7
   suffixes:
     - "!"
   patterns:
@@ -56,6 +59,9 @@ reply_wanted:
         service_name: "task-yml-runner",
       },
       reply_wanted: {
+        mode: "fullauto",
+        auto_reply: true,
+        max_auto_reply_count: 7,
         suffixes: ["!"],
         patterns: ["回答して"],
       },
@@ -76,6 +82,9 @@ thread:
   personality: false
   service_name: {}
 reply_wanted:
+  mode: unknown
+  auto_reply: 1
+  max_auto_reply_count: -1
   suffixes: [1]
   patterns: null
 `;
@@ -95,9 +104,40 @@ reply_wanted:
         service_name: undefined,
       },
       reply_wanted: {
+        mode: undefined,
+        auto_reply: undefined,
+        max_auto_reply_count: undefined,
         suffixes: undefined,
         patterns: undefined,
       },
     });
+  });
+});
+
+test("loadWatcherConfig normalizes halfauto mode", async () => {
+  await withTempDir(async (dir) => {
+    const filePath = path.join(dir, "config.yml");
+    const yaml = `
+reply_wanted:
+  mode: halfauto
+`;
+
+    await fs.writeFile(filePath, yaml);
+    const config = await loadWatcherConfig(filePath);
+    assert.equal(config.reply_wanted?.mode, "harfauto");
+  });
+});
+
+test("loadWatcherConfig parses max auto reply count", async () => {
+  await withTempDir(async (dir) => {
+    const filePath = path.join(dir, "config.yml");
+    const yaml = `
+reply_wanted:
+  max_auto_reply_count: 12
+`;
+
+    await fs.writeFile(filePath, yaml);
+    const config = await loadWatcherConfig(filePath);
+    assert.equal(config.reply_wanted?.max_auto_reply_count, 12);
   });
 });
