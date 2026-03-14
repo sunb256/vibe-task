@@ -79,8 +79,11 @@ async function main(): Promise<void> {
 
     console.log(`\nStarted thread: ${threadId}`);
 
-    for (const task of tasks) {
-      const taskHeader = `\n========== TASK ${task.id} ==========\n`;
+    for (const [index, task] of tasks.entries()) {
+      if (index > 0) {
+        console.log("");
+      }
+      const taskHeader = `========== TASK ${task.id} ==========\n`;
       console.log(taskHeader);
       console.log(task.action.trim());
       console.log("");
