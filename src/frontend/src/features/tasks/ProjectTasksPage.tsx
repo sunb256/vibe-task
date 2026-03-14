@@ -24,6 +24,7 @@ import {
 import type { TaskRecord, TaskSource } from "./types";
 
 const defaultTaskAction = "";
+const AUTO_REFRESH_MS = 60_000;
 const defaultVisibleSources: Record<TaskSource, boolean> = {
   action: true,
   pending: true,
@@ -89,6 +90,22 @@ export function ProjectTasksPage() {
       cancelled = true;
     };
   }, [projectId]);
+
+  useEffect(() => {
+    if (!projectId || isLoading || isCreateOpen || isEditOpen || isCreating || isEditing) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      void refreshTasks(projectId, setTasks).catch((loadError) => {
+        setError(readErrorMessage(loadError, "タスク一覧の取得に失敗しました。"));
+      });
+    }, AUTO_REFRESH_MS);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [projectId, isCreateOpen, isEditOpen, isCreating, isEditing, isLoading]);
 
   async function handleDelete(task: TaskRecord) {
     const ok = window.confirm(`task ${task.id} を削除しますか？`);

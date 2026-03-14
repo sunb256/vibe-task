@@ -657,3 +657,133 @@ test("shows empty-state message when no task exists", async () => {
   });
   expect(screen.queryByText("task は見つかりませんでした。")).not.toBeInTheDocument();
 });
+
+test("refreshes tasks every 60 seconds", async () => {
+  const intervalHandlers: Array<() => void> = [];
+  vi.spyOn(window, "setInterval").mockImplementation(
+    (handler: Parameters<typeof setInterval>[0]) => {
+      intervalHandlers.push(handler as () => void);
+      return 1 as unknown as ReturnType<typeof setInterval>;
+    },
+  );
+
+  vi.mocked(fetchProjects).mockResolvedValue({
+    projects: [
+      {
+        id: "project-1",
+        name: "impl",
+        repositoryPath: "/tmp/impl",
+      },
+    ],
+  });
+  vi.mocked(fetchTasks).mockResolvedValue({
+    tasks: [
+      {
+        projectId: "project-1",
+        source: "action",
+        id: "1",
+        title: "-",
+        url: "-",
+        action: "refreshed task",
+      },
+    ],
+  });
+  vi.mocked(fetchTasks).mockResolvedValueOnce({
+    tasks: [
+      {
+        projectId: "project-1",
+        source: "action",
+        id: "1",
+        title: "-",
+        url: "-",
+        action: "initial task",
+      },
+    ],
+  });
+
+  render(
+    <MemoryRouter initialEntries={["/projects/project-1"]}>
+      <Routes>
+        <Route path="/projects/:projectId" element={<ProjectTasksPage />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("initial task")).toBeInTheDocument();
+  });
+  expect(intervalHandlers.length).toBeGreaterThan(0);
+
+  const latestHandler = intervalHandlers[intervalHandlers.length - 1];
+  latestHandler?.();
+
+  await waitFor(() => {
+    expect(vi.mocked(fetchTasks).mock.calls.length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText("refreshed task")).toBeInTheDocument();
+  });
+});
+
+test("does not refresh tasks while edit modal is open", async () => {
+  const setIntervalSpy = vi
+    .spyOn(window, "setInterval")
+    .mockImplementation(() => 1 as unknown as ReturnType<typeof setInterval>);
+  const clearIntervalSpy = vi.spyOn(window, "clearInterval");
+
+  vi.mocked(fetchProjects).mockResolvedValue({
+    projects: [
+      {
+        id: "project-1",
+        name: "impl",
+        repositoryPath: "/tmp/impl",
+      },
+    ],
+  });
+  vi.mocked(fetchTasks)
+    .mockResolvedValueOnce({
+      tasks: [
+        {
+          projectId: "project-1",
+          source: "action",
+          id: "1",
+          title: "-",
+          url: "-",
+          action: "initial task",
+        },
+      ],
+    })
+    .mockResolvedValueOnce({
+      tasks: [
+        {
+          projectId: "project-1",
+          source: "action",
+          id: "1",
+          title: "-",
+          url: "-",
+          action: "refreshed task",
+        },
+      ],
+    });
+
+  render(
+    <MemoryRouter initialEntries={["/projects/project-1"]}>
+      <Routes>
+        <Route path="/projects/:projectId" element={<ProjectTasksPage />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("initial task")).toBeInTheDocument();
+  });
+  const intervalCountBeforeOpen = setIntervalSpy.mock.calls.length;
+  expect(intervalCountBeforeOpen).toBeGreaterThan(0);
+
+  fireEvent.click(screen.getByRole("button", { name: "編集" }));
+  expect(screen.getByRole("dialog", { name: "編集 - #1" })).toBeInTheDocument();
+  expect(clearIntervalSpy).toHaveBeenCalled();
+  expect(setIntervalSpy.mock.calls.length).toBe(intervalCountBeforeOpen);
+  expect(fetchTasks).toHaveBeenCalledTimes(1);
+
+  fireEvent.keyDown(window, { key: "Escape" });
+  expect(screen.queryByRole("dialog", { name: "編集 - #1" })).not.toBeInTheDocument();
+});
