@@ -1104,3 +1104,8 @@ task:
       -c config.yml or --config config.yml 
 
       引数ナシはデフォルトのconfig.ymlを読む
+  - id: '133'
+    url: https://github.com/sunb256/vibe-task/pull/146
+    title: src/watcherをsrc/runnerへリネーム
+    action: |
+      src/watcherをsrc/runnerにしたい
