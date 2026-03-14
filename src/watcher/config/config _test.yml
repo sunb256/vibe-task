@@ -1,0 +1,40 @@
+verbose: false
+
+codex:
+  command: codex
+  args:
+    - app-server
+    - --listen
+    - stdio://
+
+thread:
+  personality: pragmatic
+  service_name: task-yml-runner
+
+prompts:
+  task_file: tasks.yml
+  defaults:
+    cwd: .
+    approval_policy: on-request
+    sandbox: workspace-write
+  common: |
+    
+
+reply_wanted:
+  mode: harfauto
+  max_auto_reply_count: 4
+  suffixes:
+    - "?"
+    - "？"
+  patterns:
+    - 答えて
+    - 回答は
+    - 入力して
+    - 選んで
+    - 番号で答えて
+    - 指定して
+    - 教えて
+    - A/B/C
+    - 1/2/3
+    - どうぞ
+    - 確認させて
