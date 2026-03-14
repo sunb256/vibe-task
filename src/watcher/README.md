@@ -1,8 +1,12 @@
 
+# watcher(仮)
 
+自動実行
 
 ```bash
 cd src/watcher
+npx tsx src/run.ts
+ # or
 npx tsx src/run.ts tasks.yml
 ```
 

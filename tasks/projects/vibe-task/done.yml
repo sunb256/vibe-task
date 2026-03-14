@@ -958,3 +958,10 @@ task:
     title: watcherの設定をconfig.ymlで管理できるようにする
     action: |-
       src/watcher のconfigをconfig.ymlとかで設定できるようにしたい
+  - id: '119'
+    url: https://github.com/sunb256/vibe-task/pull/133
+    title: Windows環境のtask改行問題を修正しwatcherの返答判定を改善
+    action: |-
+      Windowsでfrontendを使っているときにエディタでの改行がおかしくなる
+
+      具体的には１行改行なのに2行になる
