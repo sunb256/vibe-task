@@ -87,6 +87,15 @@ export function formatCompletedAt(date: Date): string {
   return `${yyyy}-${mm}-${dd} ${hh}:${min}:${sec}`;
 }
 
+// 入力文表示を各行 `> ` プレフィックス付きへ整形する。
+export function formatPromptText(text: string): string {
+  return text
+    .trim()
+    .split("\n")
+    .map((line) => `> ${line}`)
+    .join("\n");
+}
+
 // 現在モジュールがCLIエントリポイントとして実行されたかを判定する。
 function isEntryPoint(): boolean {
   const argvPath = process.argv[1];
@@ -148,7 +157,7 @@ async function main(): Promise<void> {
       }
       const taskHeader = `\n========== TASK ${task.id} ==========\n`;
       console.log(taskHeader);
-      console.log(task.action.trim());
+      console.log(formatPromptText(task.action));
       console.log("");
 
       const overrides: Record<string, unknown> = {};
