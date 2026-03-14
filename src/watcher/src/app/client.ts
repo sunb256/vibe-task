@@ -409,7 +409,7 @@ export class CodexAppServerClient {
       if (!answer) {
         return;
       }
-      console.log("\n-----");
+      console.log("\n-----\n");
 
       this.lastAgentMessageText = "";
       await this.startTurn(answer);
