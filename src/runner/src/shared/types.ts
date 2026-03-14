@@ -39,7 +39,7 @@ export type TaskFile = {
   defaults?: TaskDefaults;
 };
 
-export type WatcherConfig = {
+export type RunnerConfig = {
   verbose?: boolean;
   codex?: {
     command?: string;

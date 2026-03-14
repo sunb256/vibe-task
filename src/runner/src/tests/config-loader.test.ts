@@ -3,10 +3,10 @@ import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
 import test from "node:test";
-import { loadWatcherConfig } from "../loader/config-loader.js";
+import { loadRunnerConfig } from "../loader/config-loader.js";
 
 async function withTempDir(run: (dir: string) => Promise<void>): Promise<void> {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "watcher-config-test-"));
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "runner-config-test-"));
   try {
     await run(dir);
   } finally {
@@ -14,14 +14,14 @@ async function withTempDir(run: (dir: string) => Promise<void>): Promise<void> {
   }
 }
 
-test("loadWatcherConfig returns empty config when file does not exist", async () => {
+test("loadRunnerConfig returns empty config when file does not exist", async () => {
   await withTempDir(async (dir) => {
-    const config = await loadWatcherConfig(path.join(dir, "missing.yml"));
+    const config = await loadRunnerConfig(path.join(dir, "missing.yml"));
     assert.deepEqual(config, {});
   });
 });
 
-test("loadWatcherConfig parses supported fields", async () => {
+test("loadRunnerConfig parses supported fields", async () => {
   await withTempDir(async (dir) => {
     const filePath = path.join(dir, "config.yml");
     const yaml = `
@@ -53,7 +53,7 @@ prompts:
 `;
 
     await fs.writeFile(filePath, yaml);
-    const config = await loadWatcherConfig(filePath);
+    const config = await loadRunnerConfig(filePath);
 
     assert.deepEqual(config, {
       verbose: true,
@@ -86,7 +86,7 @@ prompts:
   });
 });
 
-test("loadWatcherConfig ignores invalid field types", async () => {
+test("loadRunnerConfig ignores invalid field types", async () => {
   await withTempDir(async (dir) => {
     const filePath = path.join(dir, "config.yml");
     const yaml = `
@@ -110,7 +110,7 @@ prompts:
 `;
 
     await fs.writeFile(filePath, yaml);
-    const config = await loadWatcherConfig(filePath);
+    const config = await loadRunnerConfig(filePath);
 
     assert.deepEqual(config, {
       verbose: undefined,
@@ -138,7 +138,7 @@ prompts:
   });
 });
 
-test("loadWatcherConfig normalizes halfauto mode", async () => {
+test("loadRunnerConfig normalizes halfauto mode", async () => {
   await withTempDir(async (dir) => {
     const filePath = path.join(dir, "config.yml");
     const yaml = `
@@ -147,12 +147,12 @@ reply_wanted:
 `;
 
     await fs.writeFile(filePath, yaml);
-    const config = await loadWatcherConfig(filePath);
+    const config = await loadRunnerConfig(filePath);
     assert.equal(config.reply_wanted?.mode, "harfauto");
   });
 });
 
-test("loadWatcherConfig parses max auto reply count", async () => {
+test("loadRunnerConfig parses max auto reply count", async () => {
   await withTempDir(async (dir) => {
     const filePath = path.join(dir, "config.yml");
     const yaml = `
@@ -161,7 +161,7 @@ reply_wanted:
 `;
 
     await fs.writeFile(filePath, yaml);
-    const config = await loadWatcherConfig(filePath);
+    const config = await loadRunnerConfig(filePath);
     assert.equal(config.reply_wanted?.max_auto_reply_count, 12);
   });
 });

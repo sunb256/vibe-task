@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
 import YAML from "yaml";
-import type { TaskDefaults, WatcherConfig } from "../shared/types.js";
+import type { RunnerConfig, TaskDefaults } from "../shared/types.js";
 import { isRecord } from "../shared/types.js";
 
 // 空文字を除外して文字列設定値を取り出す。
@@ -48,8 +48,8 @@ function getTaskDefaults(value: unknown): TaskDefaults | undefined {
   };
 }
 
-// YAML解析結果をWatcherConfigへ正規化する。
-function parseConfig(value: unknown): WatcherConfig {
+// YAML解析結果をRunnerConfigへ正規化する。
+function parseConfig(value: unknown): RunnerConfig {
   if (!isRecord(value)) return {};
 
   const codex = isRecord(value.codex)
@@ -98,8 +98,8 @@ function isFileMissing(err: unknown): boolean {
   return isRecord(err) && err.code === "ENOENT";
 }
 
-// 設定ファイルを読み込んでWatcherConfigを返す。
-export async function loadWatcherConfig(configPath: string): Promise<WatcherConfig> {
+// 設定ファイルを読み込んでRunnerConfigを返す。
+export async function loadRunnerConfig(configPath: string): Promise<RunnerConfig> {
   try {
     const raw = await fs.readFile(configPath, "utf8");
     const parsed = YAML.parse(raw) as unknown;
