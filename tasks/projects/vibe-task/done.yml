@@ -949,7 +949,7 @@ task:
     action: |-
       backendをmermaidして。名称はbackend.mdにして
   - id: '117'
-    url: https://github.com/sunb256/vibe-task/pull/130
+    url: https://github.com/sunb256/vibe-task/pull/131
     title: watcherのsrcを機能別フォルダへ分割して構成を整理
     action: |-
       src/watcher/src内のファイルが多くなってきたのでフォルダ分けしたい
