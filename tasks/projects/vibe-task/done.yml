@@ -965,3 +965,18 @@ task:
       Windowsでfrontendを使っているときにエディタでの改行がおかしくなる
 
       具体的には１行改行なのに2行になる
+  - id: '120'
+    url: https://github.com/sunb256/vibe-task/pull/134
+    title: watcherのappモジュールをclient/notification/requestへリネーム
+    action: |-
+      src/app
+      ├── codex-app-server-client.ts
+      ├── notification-handlers.ts
+      └── server-request-handlers.ts
+
+      これを以下にリネームしたい
+
+      src/app
+      ├── client.ts
+      ├── notification.ts
+      └── request.ts
