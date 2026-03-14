@@ -998,3 +998,12 @@ task:
             )
           );
         }
+  - id: '122'
+    url: https://github.com/sunb256/vibe-task/pull/135
+    title: watcherの返信判定とverboseイベントログをconfig.ymlで設定できるようにする
+    action: |-
+      watcher
+
+      [item.completed], [thread.started] とかのconsoleは--verbose にしたとき出力されるようにしたい
+      通常は非表示のほうが使用体験がいい気がする
+      config.ymlでも設定をつけておきたい
