@@ -5,7 +5,7 @@
 リポジトリ構成
 - Frontend: Vite + React + TypeScript + React Router + ESLint + Prettier + Tailwind CSS 
 - Backend: Python + Flask + uv
-- Watcher: TypeScript + codex sdk
+- Runner: TypeScript + codex sdk
 
 ## 基本方針
 
@@ -32,7 +32,7 @@
 - logging では秘密情報や過剰な内部情報を出力しない
 
 
-### Watcher
+### Runner
 
  - 可読性重視
  - コンポーネント化
@@ -63,7 +63,7 @@ uv run pytest
 
 - lint / format / type check が導入されている場合は、repo の既存コマンドに従う
 
-### Watcher
+### Runner
 
 今はなし
 
@@ -72,7 +72,7 @@ uv run pytest
 
 - frontend の変更レビューでは `frontend-review` skill を使うこと
 - backend の変更レビューでは、`backend-review` skill を使うこと
-- watcher の変更レビューでは、`ts-cli-review` skill を使うこと
+- runner の変更レビューでは、`ts-cli-review` skill を使うこと
 
 
 ## 注意事項
