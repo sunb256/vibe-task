@@ -980,3 +980,21 @@ task:
       ├── client.ts
       ├── notification.ts
       └── request.ts
+  - id: '121'
+    url: https://github.com/sunb256/vibe-task/pull/135
+    title: watcherの返信待ち判定ルールをconfig.ymlで追加できるようにする
+    action: |2-
+        watcher部の以下をconfig.ymlで追加できるようにしていきたい
+
+        private looksLikeReplyWanted(text: string): boolean {
+          const t = text.trim();
+          if (!t) return false;
+
+          return (
+            t.endsWith("?") ||
+            t.endsWith("？") ||
+            /答えて|回答は|入力して|選んで|番号で答えて|指定して|教えて|A\/B\/C|1\/2\/3|どうぞ/.test(
+              t
+            )
+          );
+        }
