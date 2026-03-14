@@ -7,6 +7,9 @@ import {
   mergeTaskDefaults,
   parseConfigPathOption,
   parseRuntimeOptions,
+  resolveDefaultsCwd,
+  resolveRunnerPath,
+  resolveRunnerRoot,
 } from "../run.js";
 
 test("formatCompletedAt formats datetime", () => {
@@ -35,6 +38,37 @@ test("mergeTaskDefaults prefers config defaults", () => {
     sandbox: "workspace-write",
     model: "gpt-5",
   });
+});
+
+test("resolveRunnerRoot resolves one level up from script directory", () => {
+  const root = resolveRunnerRoot("/tmp/work/runner/src/run.ts");
+  assert.equal(root, "/tmp/work/runner");
+});
+
+test("resolveRunnerRoot falls back to current directory", () => {
+  const root = resolveRunnerRoot(undefined);
+  assert.equal(root, process.cwd());
+});
+
+test("resolveRunnerPath resolves relative path from runner root", () => {
+  const value = resolveRunnerPath("/tmp/work/runner", "config/config.yml");
+  assert.equal(value, "/tmp/work/runner/config/config.yml");
+});
+
+test("resolveRunnerPath keeps absolute path as-is", () => {
+  const value = resolveRunnerPath("/tmp/work/runner", "/etc/app/config.yml");
+  assert.equal(value, "/etc/app/config.yml");
+});
+
+test("resolveDefaultsCwd resolves relative cwd from runner root", () => {
+  const value = resolveDefaultsCwd({ cwd: "." }, "/tmp/work/runner");
+  assert.deepEqual(value, { cwd: "/tmp/work/runner" });
+});
+
+test("resolveDefaultsCwd keeps absolute cwd", () => {
+  const defaults = { cwd: "/tmp/work/runner", model: "gpt-5" } as const;
+  const value = resolveDefaultsCwd(defaults, "/base");
+  assert.equal(value, defaults);
 });
 
 test("parseRuntimeOptions uses harfauto by default", () => {

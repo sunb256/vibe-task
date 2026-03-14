@@ -34,10 +34,12 @@ npx tsx src/run.ts --config config/config.yml
 - `--config=<PATH>`
 
 `prompts` では task 入力文の共通化と既定オプションを設定できます。
-- `task_file`: 読み込む tasks ファイルパス（例: `tasks.yml`）
+- `task_file`: 読み込む tasks ファイルパス
+  - 相対パスは `run.ts` / `run.js` の実行スクリプト位置基準で解決
+  - 例: `../../tasks/projects/vibe-task/action.yml`
 - `common`: 各 `task.action` の前に自動で付与する共通指示文
 - `defaults`: task 共通の既定値
-  - `cwd`
+  - `cwd`（相対指定は実行スクリプト位置基準で絶対化して Codex 実行時に利用）
   - `approval_policy`
   - `sandbox`
   - `model`
