@@ -22,8 +22,18 @@ npx tsx src/run.ts tasks.yml -f
 npx tsx src/run.ts tasks.yml -f --max-auto-reply-count 5
 ```
 
-`config.yml` に `task_file` / `verbose` / `codex` / `thread` / `reply_wanted` を設定すると、
+`config.yml` に `task_file` / `verbose` / `codex` / `thread` / `prompts` / `reply_wanted` を設定すると、
 引数なし実行時の既定値を変更できます。
+
+`prompts` では task 入力文の共通化と既定オプションを設定できます。
+- `common`: 各 `task.action` の前に自動で付与する共通指示文
+- `defaults`: task 共通の既定値
+  - `cwd`
+  - `approval_policy`
+  - `sandbox`
+  - `model`
+
+既定値の優先順位は `taskごとの指定 > config.yml の prompts.defaults > tasks.yml の defaults(後方互換)` です。
 
 `verbose` を `true` にすると、`[thread.started]` / `[item.completed]` などのイベントログを表示します。
 CLI の `--verbose` 指定がある場合は config より優先して有効になります。

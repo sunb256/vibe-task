@@ -57,6 +57,10 @@ export type WatcherConfig = {
     auto_reply?: boolean;
     max_auto_reply_count?: number;
   };
+  prompts?: {
+    common?: string;
+    defaults?: TaskDefaults;
+  };
 };
 
 // unknown値がRecordかどうかを判定する。

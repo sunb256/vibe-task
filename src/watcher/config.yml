@@ -12,6 +12,14 @@ thread:
   personality: pragmatic
   service_name: task-yml-runner
 
+prompts:
+  common: |
+    必要なら不足情報を確認してから作業してください。
+  defaults:
+    cwd: .
+    approval_policy: on-request
+    sandbox: workspace-write
+
 reply_wanted:
   mode: harfauto
   max_auto_reply_count: 3

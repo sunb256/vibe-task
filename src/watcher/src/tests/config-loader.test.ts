@@ -42,6 +42,14 @@ reply_wanted:
     - "!"
   patterns:
     - 回答して
+prompts:
+  common: |
+    共通の指示
+  defaults:
+    cwd: /repo
+    approval_policy: never
+    sandbox: danger-full-access
+    model: gpt-5
 `;
 
     await fs.writeFile(filePath, yaml);
@@ -65,6 +73,15 @@ reply_wanted:
         suffixes: ["!"],
         patterns: ["回答して"],
       },
+      prompts: {
+        common: "共通の指示\n",
+        defaults: {
+          cwd: "/repo",
+          approval_policy: "never",
+          sandbox: "danger-full-access",
+          model: "gpt-5",
+        },
+      },
     });
   });
 });
@@ -87,6 +104,9 @@ reply_wanted:
   max_auto_reply_count: -1
   suffixes: [1]
   patterns: null
+prompts:
+  common: false
+  defaults: hello
 `;
 
     await fs.writeFile(filePath, yaml);
@@ -109,6 +129,10 @@ reply_wanted:
         max_auto_reply_count: undefined,
         suffixes: undefined,
         patterns: undefined,
+      },
+      prompts: {
+        common: undefined,
+        defaults: undefined,
       },
     });
   });
