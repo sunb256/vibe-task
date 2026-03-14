@@ -97,7 +97,7 @@ export function setupRotatingLog(options: RotatingLogOptions): void {
       .catch((err: unknown) => {
         if (warned) return;
         warned = true;
-        originalStderr(`[watcher log] failed to write log: ${String(err)}\n`);
+        originalStderr(`[runner log] failed to write log: ${String(err)}\n`);
       });
   };
 

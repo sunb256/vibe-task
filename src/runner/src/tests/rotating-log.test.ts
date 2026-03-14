@@ -6,7 +6,7 @@ import test from "node:test";
 import { appendWithRotateForTest } from "../shared/rotating-log.js";
 
 async function withTempDir(run: (dir: string) => Promise<void>): Promise<void> {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "watcher-log-test-"));
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "runner-log-test-"));
   try {
     await run(dir);
   } finally {

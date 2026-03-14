@@ -2,10 +2,10 @@ import * as path from "node:path";
 import { spawn } from "node:child_process";
 import { pathToFileURL } from "node:url";
 import { CodexAppServerClient } from "./app/client.js";
-import { loadWatcherConfig } from "./loader/config-loader.js";
+import { loadRunnerConfig } from "./loader/config-loader.js";
 import { loadTasks } from "./loader/task-loader.js";
 import { JsonlTransport } from "./transport/jsonl-transport.js";
-import type { TaskDefaults, WatcherConfig } from "./shared/types.js";
+import type { RunnerConfig, TaskDefaults } from "./shared/types.js";
 import { setupRotatingLog } from "./shared/rotating-log.js";
 import { sleep } from "./shared/utils.js";
 
@@ -24,7 +24,7 @@ const LOG_MAX_FILES = 5;
 const DEFAULT_CONFIG_PATH = "config/config.yml";
 
 // 設定値から返信モードを決定し、旧設定も後方互換で解釈する。
-function resolveReplyMode(config: WatcherConfig): ReplyMode {
+function resolveReplyMode(config: RunnerConfig): ReplyMode {
   if (config.reply_wanted?.mode) {
     return config.reply_wanted.mode;
   }
@@ -65,7 +65,7 @@ export function parseConfigPathOption(args: string[]): string {
 }
 
 // CLI引数と設定を統合して実行時オプションを決める。
-export function parseRuntimeOptions(args: string[], config: WatcherConfig): RuntimeOptions {
+export function parseRuntimeOptions(args: string[], config: RunnerConfig): RuntimeOptions {
   let taskFileArg: string | undefined;
   let maxAutoReplyCountArg: number | undefined;
 
@@ -161,7 +161,7 @@ function isEntryPoint(): boolean {
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const configPath = path.resolve(parseConfigPathOption(args));
-  const config = await loadWatcherConfig(configPath);
+  const config = await loadRunnerConfig(configPath);
   setupRotatingLog({
     filePath: LOG_FILE_PATH,
     maxBytes: LOG_MAX_BYTES,

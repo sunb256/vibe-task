@@ -6,7 +6,7 @@ import test from "node:test";
 import { loadTasks } from "../loader/task-loader.js";
 
 async function withTempDir(run: (dir: string) => Promise<void>): Promise<void> {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "watcher-task-test-"));
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "runner-task-test-"));
   try {
     await run(dir);
   } finally {

@@ -52,7 +52,7 @@ services:
 #   watcher:
 #     build:
 #       context: .
-#       dockerfile: src/watcher/Dockerfile
+#       dockerfile: src/runner/Dockerfile
 #     # container_name: watcher
 #     ports:
 #       - "${WATCHER_PORT}:5173"
