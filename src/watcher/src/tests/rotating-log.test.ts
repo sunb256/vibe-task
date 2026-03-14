@@ -16,7 +16,7 @@ async function withTempDir(run: (dir: string) => Promise<void>): Promise<void> {
 
 test("appendWithRotateForTest rotates and keeps max files", async () => {
   await withTempDir(async (dir) => {
-    const filePath = path.join(dir, "watcher.log");
+    const filePath = path.join(dir, "log.log");
     const options = { filePath, maxBytes: 10, maxFiles: 2 };
 
     await appendWithRotateForTest(options, "first\n");

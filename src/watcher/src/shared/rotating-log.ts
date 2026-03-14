@@ -14,6 +14,17 @@ function toText(chunk: unknown): string {
   return String(chunk);
 }
 
+// ログ出力時刻を yyyy-mm-dd HH:mm:ss 形式へ整形する。
+function formatDateTime(date: Date): string {
+  const yyyy = String(date.getFullYear());
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  const hh = String(date.getHours()).padStart(2, "0");
+  const min = String(date.getMinutes()).padStart(2, "0");
+  const sec = String(date.getSeconds()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd} ${hh}:${min}:${sec}`;
+}
+
 // 存在する場合のみファイルサイズを返す。
 async function getFileSize(filePath: string): Promise<number> {
   try {
@@ -60,9 +71,25 @@ export function setupRotatingLog(options: RotatingLogOptions): void {
   const originalStderr = process.stderr.write.bind(process.stderr);
   let writeQueue = Promise.resolve();
   let warned = false;
+  let isLineStart = true;
+
+  const addTimestamp = (text: string): string => {
+    let out = "";
+    for (const ch of text) {
+      if (isLineStart) {
+        out += `[${formatDateTime(new Date())}] `;
+        isLineStart = false;
+      }
+      out += ch;
+      if (ch === "\n") {
+        isLineStart = true;
+      }
+    }
+    return out;
+  };
 
   const enqueue = (chunk: unknown): void => {
-    const text = toText(chunk);
+    const text = addTimestamp(toText(chunk));
     writeQueue = writeQueue
       .then(async () => {
         await appendWithRotate(options, text);

@@ -18,7 +18,7 @@ type RuntimeOptions = {
   maxAutoReplyCount?: number;
 };
 
-const LOG_FILE_PATH = path.resolve("logs/watcher.log");
+const LOG_FILE_PATH = path.resolve("logs/log.log");
 const LOG_MAX_BYTES = 10 * 1024 * 1024;
 const LOG_MAX_FILES = 5;
 
