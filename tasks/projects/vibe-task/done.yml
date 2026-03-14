@@ -953,3 +953,8 @@ task:
     title: watcherのsrcを機能別フォルダへ分割して構成を整理
     action: |-
       src/watcher/src内のファイルが多くなってきたのでフォルダ分けしたい
+  - id: '118'
+    url: https://github.com/sunb256/vibe-task/pull/132
+    title: watcherの設定をconfig.ymlで管理できるようにする
+    action: |-
+      src/watcher のconfigをconfig.ymlとかで設定できるようにしたい
