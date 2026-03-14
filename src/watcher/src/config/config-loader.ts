@@ -78,13 +78,13 @@ function parseConfig(value: unknown): WatcherConfig {
 
   const prompts = isRecord(value.prompts)
     ? {
+        task_file: getString(value.prompts.task_file),
         common: getString(value.prompts.common),
         defaults: getTaskDefaults(value.prompts.defaults),
       }
     : undefined;
 
   return {
-    task_file: getString(value.task_file),
     verbose: getBoolean(value.verbose),
     codex,
     thread,

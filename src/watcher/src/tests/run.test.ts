@@ -122,3 +122,10 @@ test("parseRuntimeOptions sets max auto reply count from short option", () => {
   });
   assert.equal(runtime.maxAutoReplyCount, 9);
 });
+
+test("parseRuntimeOptions uses prompts.task_file from config", () => {
+  const runtime = parseRuntimeOptions([], {
+    prompts: { task_file: "tasks.local.yml" },
+  });
+  assert.equal(runtime.taskFilePath, "tasks.local.yml");
+});

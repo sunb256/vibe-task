@@ -40,7 +40,6 @@ export type TaskFile = {
 };
 
 export type WatcherConfig = {
-  task_file?: string;
   verbose?: boolean;
   codex?: {
     command?: string;
@@ -58,6 +57,7 @@ export type WatcherConfig = {
     max_auto_reply_count?: number;
   };
   prompts?: {
+    task_file?: string;
     common?: string;
     defaults?: TaskDefaults;
   };

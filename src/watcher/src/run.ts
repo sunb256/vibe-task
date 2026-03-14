@@ -69,7 +69,7 @@ export function parseRuntimeOptions(args: string[], config: WatcherConfig): Runt
   const hasFullAuto = args.includes("-f") || args.includes("--fullauto");
   const replyMode = hasHarfAuto ? "harfauto" : hasFullAuto ? "fullauto" : resolveReplyMode(config);
   return {
-    taskFilePath: taskFileArg ?? config.task_file ?? "task.yml",
+    taskFilePath: taskFileArg ?? config.prompts?.task_file ?? "task.yml",
     verbose: args.includes("--verbose") || config.verbose === true,
     replyMode,
     maxAutoReplyCount: maxAutoReplyCountArg ?? config.reply_wanted?.max_auto_reply_count,

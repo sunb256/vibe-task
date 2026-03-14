@@ -25,7 +25,6 @@ test("loadWatcherConfig parses supported fields", async () => {
   await withTempDir(async (dir) => {
     const filePath = path.join(dir, "config.yml");
     const yaml = `
-task_file: tasks.local.yml
 verbose: true
 codex:
   command: codex
@@ -43,6 +42,7 @@ reply_wanted:
   patterns:
     - 回答して
 prompts:
+  task_file: tasks.local.yml
   common: |
     共通の指示
   defaults:
@@ -56,7 +56,6 @@ prompts:
     const config = await loadWatcherConfig(filePath);
 
     assert.deepEqual(config, {
-      task_file: "tasks.local.yml",
       verbose: true,
       codex: {
         command: "codex",
@@ -74,6 +73,7 @@ prompts:
         patterns: ["回答して"],
       },
       prompts: {
+        task_file: "tasks.local.yml",
         common: "共通の指示\n",
         defaults: {
           cwd: "/repo",
@@ -90,7 +90,6 @@ test("loadWatcherConfig ignores invalid field types", async () => {
   await withTempDir(async (dir) => {
     const filePath = path.join(dir, "config.yml");
     const yaml = `
-task_file: ""
 verbose: "yes"
 codex:
   command: 1
@@ -105,6 +104,7 @@ reply_wanted:
   suffixes: [1]
   patterns: null
 prompts:
+  task_file: []
   common: false
   defaults: hello
 `;
@@ -113,7 +113,6 @@ prompts:
     const config = await loadWatcherConfig(filePath);
 
     assert.deepEqual(config, {
-      task_file: undefined,
       verbose: undefined,
       codex: {
         command: undefined,
@@ -131,6 +130,7 @@ prompts:
         patterns: undefined,
       },
       prompts: {
+        task_file: undefined,
         common: undefined,
         defaults: undefined,
       },
