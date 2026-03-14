@@ -1,0 +1,13 @@
+defaults:
+  cwd: .
+  approval_policy: on-request
+  sandbox: workspace-write
+  
+tasks:
+  - id: 1
+    action: |
+      クイズを出してください
+      不明点があれば質問してください。
+  - id: 2
+    action: |
+      最後に正解を教えて

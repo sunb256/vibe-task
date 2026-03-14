@@ -1,12 +1,18 @@
 src/backend/.venv/
-src/frontend/node_modules/
-src/frontend/dist/
-src/frontend/coverage/
 src/backend/.pytest_cache/
 src/backend/.ruff_cache/
 src/backend/*.egg-info/
+
+src/frontend/node_modules/
+src/frontend/dist/
+src/frontend/coverage/
+
 __pycache__/
 *.pyc
+
+src/watcher/node_modules/
+src/watcher/dist/
+src/watcher/coverage/
 
 
 .env

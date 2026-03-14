@@ -3,3 +3,10 @@
 **/.venv
 **/.pytest_cache
 **/dist
+
+node_modules
+dist
+.gitignore
+Dockerfile
+docker-compose.yml
+npm-debug.log

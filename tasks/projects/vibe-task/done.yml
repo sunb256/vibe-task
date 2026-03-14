@@ -943,3 +943,8 @@ task:
     title: frontendをMermaid化してfrontend.mdを追加
     action: |-
       frontendをmermaidして。名称はfrontend.mdにして
+  - id: '116'
+    url: https://github.com/sunb256/vibe-task/pull/128
+    title: backendをMermaid化してbackend.mdを追加
+    action: |-
+      backendをmermaidして。名称はbackend.mdにして
