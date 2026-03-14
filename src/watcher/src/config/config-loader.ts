@@ -31,10 +31,18 @@ function parseConfig(value: unknown): WatcherConfig {
       }
     : undefined;
 
+  const replyWanted = isRecord(value.reply_wanted)
+    ? {
+        suffixes: getStringArray(value.reply_wanted.suffixes),
+        patterns: getStringArray(value.reply_wanted.patterns),
+      }
+    : undefined;
+
   return {
     task_file: getString(value.task_file),
     codex,
     thread,
+    reply_wanted: replyWanted,
   };
 }
 

@@ -22,7 +22,9 @@ async function main(): Promise<void> {
   });
 
   const transport = new JsonlTransport(proc);
-  const client = new CodexAppServerClient(transport);
+  const client = new CodexAppServerClient(transport, {
+    replyWanted: config.reply_wanted,
+  });
 
   try {
     await client.initialize();

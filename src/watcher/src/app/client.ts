@@ -27,6 +27,45 @@ function display(value: unknown, fallback: string): string {
   return value === undefined || value === null ? fallback : String(value);
 }
 
+type ReplyWantedConfig = {
+  suffixes?: string[];
+  patterns?: string[];
+};
+
+type CodexAppServerClientOptions = {
+  replyWanted?: ReplyWantedConfig;
+};
+
+const DEFAULT_REPLY_SUFFIXES = ["?", "？"];
+const DEFAULT_REPLY_PATTERNS = [
+  "答えて",
+  "回答は",
+  "入力して",
+  "選んで",
+  "番号で答えて",
+  "指定して",
+  "教えて",
+  "A/B/C",
+  "1/2/3",
+  "どうぞ",
+];
+
+function mergeRules(value: string[] | undefined, fallback: string[]): string[] {
+  const merged = [...fallback, ...(value ?? [])];
+  return [...new Set(merged.map((rule) => rule.trim()).filter((rule) => rule.length > 0))];
+}
+
+function createReplyPattern(patterns: string[]): RegExp | null {
+  if (patterns.length === 0) {
+    return null;
+  }
+  try {
+    return new RegExp(patterns.join("|"));
+  } catch {
+    return null;
+  }
+}
+
 export class CodexAppServerClient {
   private transport: JsonlTransport;
   private rl = readline.createInterface({ input, output });
@@ -39,9 +78,15 @@ export class CodexAppServerClient {
   private lastAgentMessageText = "";
   private streamingAgentTextByItemId = new Map<string, string>();
   private notificationContext: NotificationHandlerContext;
+  private replySuffixes: string[];
+  private replyPattern: RegExp | null;
 
-  constructor(transport: JsonlTransport) {
+  constructor(transport: JsonlTransport, options?: CodexAppServerClientOptions) {
     this.transport = transport;
+    this.replySuffixes = mergeRules(options?.replyWanted?.suffixes, DEFAULT_REPLY_SUFFIXES);
+    this.replyPattern = createReplyPattern(
+      mergeRules(options?.replyWanted?.patterns, DEFAULT_REPLY_PATTERNS)
+    );
     this.notificationContext = {
       setActiveTurnId: (turnId) => {
         this.activeTurnId = turnId;
@@ -340,13 +385,11 @@ export class CodexAppServerClient {
     const t = text.trim();
     if (!t) return false;
 
-    return (
-      t.endsWith("?") ||
-      t.endsWith("？") ||
-      /答えて|回答は|入力して|選んで|番号で答えて|指定して|教えて|A\/B\/C|1\/2\/3|どうぞ/.test(
-        t
-      )
-    );
+    if (this.replySuffixes.some((suffix) => t.endsWith(suffix))) {
+      return true;
+    }
+
+    return this.replyPattern?.test(t) ?? false;
   }
 
   async continueConversationIfNeeded(): Promise<void> {

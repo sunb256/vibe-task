@@ -49,6 +49,10 @@ export type WatcherConfig = {
     personality?: string;
     service_name?: string;
   };
+  reply_wanted?: {
+    suffixes?: string[];
+    patterns?: string[];
+  };
 };
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
