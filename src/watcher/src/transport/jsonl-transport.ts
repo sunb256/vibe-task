@@ -4,8 +4,8 @@ import type {
   JsonRpcNotification,
   JsonRpcRequest,
   JsonRpcResponse,
-} from "./types.js";
-import { isRecord } from "./types.js";
+} from "../shared/types.js";
+import { isRecord } from "../shared/types.js";
 
 type PendingRequest = {
   resolve: (value: unknown) => void;

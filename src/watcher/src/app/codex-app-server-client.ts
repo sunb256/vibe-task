@@ -1,13 +1,13 @@
 import * as readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
-import { JsonlTransport } from "./jsonl-transport.js";
+import { JsonlTransport } from "../transport/jsonl-transport.js";
 import {
   handleNotificationMessage,
   type NotificationHandlerContext,
 } from "./notification-handlers.js";
 import { handleServerRequestMessage } from "./server-request-handlers.js";
-import type { JsonRpcRequest } from "./types.js";
-import { isRecord } from "./types.js";
+import type { JsonRpcRequest } from "../shared/types.js";
+import { isRecord } from "../shared/types.js";
 
 function getRecord(value: unknown): Record<string, unknown> | null {
   return isRecord(value) ? value : null;

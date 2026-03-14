@@ -1,9 +1,9 @@
 import * as path from "node:path";
 import { spawn } from "node:child_process";
-import { CodexAppServerClient } from "./codex-app-server-client.js";
-import { JsonlTransport } from "./jsonl-transport.js";
-import { loadTasks } from "./task-loader.js";
-import { sleep } from "./utils.js";
+import { CodexAppServerClient } from "./app/codex-app-server-client.js";
+import { JsonlTransport } from "./transport/jsonl-transport.js";
+import { loadTasks } from "./task/task-loader.js";
+import { sleep } from "./shared/utils.js";
 
 async function main(): Promise<void> {
   const taskFilePath = process.argv[2] ?? "task.yml";

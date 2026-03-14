@@ -1,5 +1,5 @@
-import type { JsonRpcNotification } from "./types.js";
-import { isRecord } from "./types.js";
+import type { JsonRpcNotification } from "../shared/types.js";
+import { isRecord } from "../shared/types.js";
 
 function getRecord(value: unknown): Record<string, unknown> | null {
   return isRecord(value) ? value : null;
