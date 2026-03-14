@@ -1,1 +1,16 @@
-task: []
+task:
+  - id: '134'
+    url: '-'
+    title: '-'
+    action: |
+      runner config/config.ymlについて
+
+      codex を実行するフォルダを指定したい
+
+      現在はdefaults.cwdだと思うが、codexの実行フォルダはそのフォルダだが、
+      task_fileはそこからの相対ではなく、実行スクリプトからの相対にしたい
+
+      prompts:
+        task_file: ../../tasks/projects/vibe-task/action.yml
+        defaults:
+          cwd: .

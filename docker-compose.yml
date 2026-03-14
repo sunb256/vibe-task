@@ -49,13 +49,13 @@ services:
     depends_on:
       - backend
 
-#   watcher:
+#   runner:
 #     build:
 #       context: .
 #       dockerfile: src/runner/Dockerfile
-#     # container_name: watcher
+#     # container_name: runner
 #     ports:
-#       - "${WATCHER_PORT}:5173"
+#       - "${RUNNER_PORT}:5173"
 #     volumes:
 #       - .:/app
 #       - react_node_modules:/app/node_modules
