@@ -40,3 +40,7 @@ CLI の `--verbose` 指定がある場合は config より優先して有効に�
 - `-h` / `--harfauto`: ハーフオート
 - `-f` / `--fullauto`: フルオート
 - `-r <N>` / `--max-auto-reply-count <N>`: `fullauto` 時の連続自動返信回数上限
+
+ログ出力は自動で `logs/watcher.log` に保存されます。
+- ローテート: `10MB` を超えたら世代を切り替え
+- 保持世代: `watcher.log.1` 〜 `watcher.log.5`

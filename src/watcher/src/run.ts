@@ -6,6 +6,7 @@ import { loadWatcherConfig } from "./config/config-loader.js";
 import { JsonlTransport } from "./transport/jsonl-transport.js";
 import { loadTasks } from "./task/task-loader.js";
 import type { WatcherConfig } from "./shared/types.js";
+import { setupRotatingLog } from "./shared/rotating-log.js";
 import { sleep } from "./shared/utils.js";
 
 type ReplyMode = "harfauto" | "fullauto";
@@ -16,6 +17,10 @@ type RuntimeOptions = {
   replyMode: ReplyMode;
   maxAutoReplyCount?: number;
 };
+
+const LOG_FILE_PATH = path.resolve("logs/watcher.log");
+const LOG_MAX_BYTES = 10 * 1024 * 1024;
+const LOG_MAX_FILES = 5;
 
 // 設定値から返信モードを決定し、旧設定も後方互換で解釈する。
 function resolveReplyMode(config: WatcherConfig): ReplyMode {
@@ -94,6 +99,11 @@ function isEntryPoint(): boolean {
 async function main(): Promise<void> {
   const configPath = path.resolve("config.yml");
   const config = await loadWatcherConfig(configPath);
+  setupRotatingLog({
+    filePath: LOG_FILE_PATH,
+    maxBytes: LOG_MAX_BYTES,
+    maxFiles: LOG_MAX_FILES,
+  });
 
   const runtime = parseRuntimeOptions(process.argv.slice(2), config);
   const taskFilePath = runtime.taskFilePath;
