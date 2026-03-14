@@ -7,6 +7,7 @@ import { loadTasks } from "./task/task-loader.js";
 import type { WatcherConfig } from "./shared/types.js";
 import { sleep } from "./shared/utils.js";
 
+// CLI引数と設定を統合して実行時オプションを決める。
 function parseRuntimeOptions(args: string[], config: WatcherConfig): {
   taskFilePath: string;
   verbose: boolean;
@@ -18,6 +19,7 @@ function parseRuntimeOptions(args: string[], config: WatcherConfig): {
   };
 }
 
+// タスクファイルを順に処理してCodexとの対話実行を進める。
 async function main(): Promise<void> {
   const configPath = path.resolve("config.yml");
   const config = await loadWatcherConfig(configPath);

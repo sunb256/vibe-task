@@ -3,14 +3,17 @@ import YAML from "yaml";
 import type { WatcherConfig } from "../shared/types.js";
 import { isRecord } from "../shared/types.js";
 
+// 空文字を除外して文字列設定値を取り出す。
 function getString(value: unknown): string | undefined {
   return typeof value === "string" && value.trim() ? value : undefined;
 }
 
+// 真偽値設定を安全に取り出す。
 function getBoolean(value: unknown): boolean | undefined {
   return typeof value === "boolean" ? value : undefined;
 }
 
+// 文字列配列設定を検証して複製を返す。
 function getStringArray(value: unknown): string[] | undefined {
   if (!Array.isArray(value) || value.some((x) => typeof x !== "string")) {
     return undefined;
@@ -18,6 +21,7 @@ function getStringArray(value: unknown): string[] | undefined {
   return [...value];
 }
 
+// YAML解析結果をWatcherConfigへ正規化する。
 function parseConfig(value: unknown): WatcherConfig {
   if (!isRecord(value)) return {};
 
@@ -51,10 +55,12 @@ function parseConfig(value: unknown): WatcherConfig {
   };
 }
 
+// ENOENTかどうかを判定して欠損設定を許容する。
 function isFileMissing(err: unknown): boolean {
   return isRecord(err) && err.code === "ENOENT";
 }
 
+// config.ymlを読み込んでWatcherConfigを返す。
 export async function loadWatcherConfig(configPath: string): Promise<WatcherConfig> {
   try {
     const raw = await fs.readFile(configPath, "utf8");
