@@ -98,7 +98,7 @@ function isFileMissing(err: unknown): boolean {
   return isRecord(err) && err.code === "ENOENT";
 }
 
-// config.ymlを読み込んでWatcherConfigを返す。
+// 設定ファイルを読み込んでWatcherConfigを返す。
 export async function loadWatcherConfig(configPath: string): Promise<WatcherConfig> {
   try {
     const raw = await fs.readFile(configPath, "utf8");
