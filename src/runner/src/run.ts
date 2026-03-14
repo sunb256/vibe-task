@@ -174,6 +174,15 @@ export function mergeTaskDefaults(
   return { ...taskDefaults, ...(promptDefaults ?? {}) };
 }
 
+// configのprompts設定をtask既定値形式へ変換する。
+export function promptConfigToDefaults(config: RunnerConfig): TaskDefaults {
+  return {
+    cwd: config.prompts?.target_dir,
+    approval_policy: config.prompts?.approval_policy,
+    sandbox: config.prompts?.sandbox,
+  };
+}
+
 // 現在モジュールがCLIエントリポイントとして実行されたかを判定する。
 function isEntryPoint(): boolean {
   const argvPath = process.argv[1];
@@ -198,7 +207,7 @@ async function main(): Promise<void> {
   const absTaskFilePath = resolveRunnerPath(runnerRoot, runtime.taskFilePath);
   const { tasks, defaults } = await loadTasks(absTaskFilePath);
   const mergedDefaults = resolveDefaultsCwd(
-    mergeTaskDefaults(defaults, config.prompts?.defaults),
+    mergeTaskDefaults(defaults, promptConfigToDefaults(config)),
     runnerRoot
   );
 

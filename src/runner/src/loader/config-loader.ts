@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
 import YAML from "yaml";
-import type { RunnerConfig, TaskDefaults } from "../shared/types.js";
+import type { RunnerConfig } from "../shared/types.js";
 import { isRecord } from "../shared/types.js";
 
 // 空文字を除外して文字列設定値を取り出す。
@@ -37,17 +37,6 @@ function getNonNegativeInteger(value: unknown): number | undefined {
   return Number.isInteger(value) && (value as number) >= 0 ? (value as number) : undefined;
 }
 
-// task既定値の設定オブジェクトを安全に正規化する。
-function getTaskDefaults(value: unknown): TaskDefaults | undefined {
-  if (!isRecord(value)) return undefined;
-  return {
-    cwd: getString(value.cwd),
-    approval_policy: getString(value.approval_policy),
-    sandbox: getString(value.sandbox),
-    model: getString(value.model),
-  };
-}
-
 // YAML解析結果をRunnerConfigへ正規化する。
 function parseConfig(value: unknown): RunnerConfig {
   if (!isRecord(value)) return {};
@@ -80,7 +69,9 @@ function parseConfig(value: unknown): RunnerConfig {
     ? {
         task_file: getString(value.prompts.task_file),
         common: getString(value.prompts.common),
-        defaults: getTaskDefaults(value.prompts.defaults),
+        target_dir: getString(value.prompts.target_dir),
+        approval_policy: getString(value.prompts.approval_policy),
+        sandbox: getString(value.prompts.sandbox),
       }
     : undefined;
 

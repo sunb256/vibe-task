@@ -7,6 +7,7 @@ import {
   mergeTaskDefaults,
   parseConfigPathOption,
   parseRuntimeOptions,
+  promptConfigToDefaults,
   resolveDefaultsCwd,
   resolveRunnerPath,
   resolveRunnerRoot,
@@ -37,6 +38,21 @@ test("mergeTaskDefaults prefers config defaults", () => {
     approval_policy: "on-request",
     sandbox: "workspace-write",
     model: "gpt-5",
+  });
+});
+
+test("promptConfigToDefaults maps prompts defaults fields", () => {
+  const value = promptConfigToDefaults({
+    prompts: {
+      target_dir: "/repo",
+      approval_policy: "on-request",
+      sandbox: "workspace-write",
+    },
+  });
+  assert.deepEqual(value, {
+    cwd: "/repo",
+    approval_policy: "on-request",
+    sandbox: "workspace-write",
   });
 });
 

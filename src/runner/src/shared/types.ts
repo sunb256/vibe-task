@@ -59,7 +59,9 @@ export type RunnerConfig = {
   prompts?: {
     task_file?: string;
     common?: string;
-    defaults?: TaskDefaults;
+    target_dir?: string;
+    approval_policy?: string;
+    sandbox?: string;
   };
 };
 
