@@ -63,6 +63,16 @@ export function resolveRunnerPath(baseDir: string, targetPath: string): string {
   return path.resolve(baseDir, targetPath);
 }
 
+// repository_dir の末尾フォルダ名から tasks/projects 配下の task_file を組み立てる。
+function resolveTaskFileFromRepositoryDir(repositoryDir: string | undefined): string | undefined {
+  if (!repositoryDir) return undefined;
+  const projectDir = path.basename(path.normalize(repositoryDir));
+  if (!projectDir || projectDir === "." || projectDir === path.sep) {
+    return undefined;
+  }
+  return `../../tasks/projects/${projectDir}/action.yml`;
+}
+
 // defaults.cwd が相対指定ならrunnerルート基準の絶対パスへ変換する。
 export function resolveDefaultsCwd(defaults: TaskDefaults, baseDir: string): TaskDefaults {
   const cwd = defaults.cwd;
@@ -126,8 +136,10 @@ export function parseRuntimeOptions(args: string[], config: RunnerConfig): Runti
   const hasHarfAuto = args.includes("-h") || args.includes("--harfauto") || args.includes("--halfauto");
   const hasFullAuto = args.includes("-f") || args.includes("--fullauto");
   const replyMode = hasHarfAuto ? "harfauto" : hasFullAuto ? "fullauto" : resolveReplyMode(config);
+  const configTaskFile =
+    config.prompts?.task_file ?? resolveTaskFileFromRepositoryDir(config.prompts?.repository_dir);
   return {
-    taskFilePath: taskFileArg ?? config.prompts?.task_file ?? "task.yml",
+    taskFilePath: taskFileArg ?? configTaskFile ?? "task.yml",
     verbose: args.includes("--verbose") || config.verbose === true,
     replyMode,
     maxAutoReplyCount: maxAutoReplyCountArg ?? config.reply_wanted?.max_auto_reply_count,

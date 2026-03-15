@@ -181,6 +181,13 @@ test("parseRuntimeOptions uses prompts.task_file from config", () => {
   assert.equal(runtime.taskFilePath, "tasks.local.yml");
 });
 
+test("parseRuntimeOptions derives task file from prompts.repository_dir", () => {
+  const runtime = parseRuntimeOptions([], {
+    prompts: { repository_dir: "/home/yyy/ghq/github.com/xxx/tmux-codex-status" },
+  });
+  assert.equal(runtime.taskFilePath, "../../tasks/projects/tmux-codex-status/action.yml");
+});
+
 test("parseConfigPathOption uses default path without args", () => {
   const value = parseConfigPathOption([]);
   assert.equal(value, "config/config.yml");
