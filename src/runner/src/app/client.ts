@@ -449,7 +449,7 @@ export class CodexAppServerClient {
       }
 
       console.log(
-        "\n\n* [質問] Enter or /skip で次タスクへ\n"
+        "\n\n* [質問] Enter or /skip で次へ\n"
       );
       const answer = (await this.rl.question("> ")).trim();
 
