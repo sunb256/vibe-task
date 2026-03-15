@@ -1172,3 +1172,8 @@ task:
     title: "frontend プロジェクト画面ヘッダにプロジェクトパス表示を追加"
     action: |
       frontend プロジェクト画面でhead部にプロジェクト名の横にプロジェクトのパスも表示したい。(薄い文字で小さめがいい)
+  - id: '141'
+    url: "https://github.com/sunb256/vibe-task/pull/154"
+    title: "frontend タスク編集ダイアログの状態入力をラジオボタン化"
+    action: |
+      frontend で タスクの編集画面で状態をコンボボックスで変更するがこれをラジオボタンにして欲しい
