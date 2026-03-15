@@ -263,10 +263,13 @@ export function ProjectTasksPage() {
     <PageFrame
       eyebrow={null}
       title={(
-        <span className="inline-flex h-9 items-center gap-2 pl-1">
+        <span className="flex h-9 w-full items-end gap-2 pl-1">
           <span>{project ? project.name : "Project"}</span>
           {project?.repositoryPath ? (
-            <span aria-hidden="true" className="text-xs font-normal text-[var(--muted)]">
+            <span
+              aria-hidden="true"
+              className="ml-auto text-xs font-normal leading-none text-[var(--muted)]"
+            >
               {project.repositoryPath}
             </span>
           ) : null}
