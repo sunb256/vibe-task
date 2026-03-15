@@ -44,13 +44,28 @@ test("mergeTaskDefaults prefers config defaults", () => {
 test("promptConfigToDefaults maps prompts defaults fields", () => {
   const value = promptConfigToDefaults({
     prompts: {
-      target_dir: "/repo",
+      repository_dir: "/repo",
       approval_policy: "on-request",
       sandbox: "workspace-write",
     },
   });
   assert.deepEqual(value, {
     cwd: "/repo",
+    approval_policy: "on-request",
+    sandbox: "workspace-write",
+  });
+});
+
+test("promptConfigToDefaults keeps compatibility with prompts.target_dir", () => {
+  const value = promptConfigToDefaults({
+    prompts: {
+      target_dir: "/legacy-repo",
+      approval_policy: "on-request",
+      sandbox: "workspace-write",
+    },
+  });
+  assert.deepEqual(value, {
+    cwd: "/legacy-repo",
     approval_policy: "on-request",
     sandbox: "workspace-write",
   });

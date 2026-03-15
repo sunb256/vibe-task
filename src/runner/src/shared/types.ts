@@ -59,6 +59,8 @@ export type RunnerConfig = {
   prompts?: {
     task_file?: string;
     common?: string;
+    repository_dir?: string;
+    // Deprecated: use repository_dir.
     target_dir?: string;
     approval_policy?: string;
     sandbox?: string;

@@ -45,7 +45,7 @@ prompts:
   task_file: tasks.local.yml
   common: |
     共通の指示
-  target_dir: /repo
+  repository_dir: /repo
   approval_policy: never
   sandbox: danger-full-access
 `;
@@ -73,11 +73,42 @@ prompts:
       prompts: {
         task_file: "tasks.local.yml",
         common: "共通の指示\n",
-        target_dir: "/repo",
+        repository_dir: "/repo",
         approval_policy: "never",
         sandbox: "danger-full-access",
       },
     });
+  });
+});
+
+test("loadRunnerConfig maps legacy target_dir into repository_dir", async () => {
+  await withTempDir(async (dir) => {
+    const filePath = path.join(dir, "config.yml");
+    const yaml = `
+prompts:
+  target_dir: /legacy-repo
+`;
+
+    await fs.writeFile(filePath, yaml);
+    const config = await loadRunnerConfig(filePath);
+
+    assert.equal(config.prompts?.repository_dir, "/legacy-repo");
+  });
+});
+
+test("loadRunnerConfig prefers repository_dir over legacy target_dir", async () => {
+  await withTempDir(async (dir) => {
+    const filePath = path.join(dir, "config.yml");
+    const yaml = `
+prompts:
+  repository_dir: /new-repo
+  target_dir: /legacy-repo
+`;
+
+    await fs.writeFile(filePath, yaml);
+    const config = await loadRunnerConfig(filePath);
+
+    assert.equal(config.prompts?.repository_dir, "/new-repo");
   });
 });
 
@@ -101,7 +132,7 @@ reply_wanted:
 prompts:
   task_file: []
   common: false
-  target_dir: []
+  repository_dir: []
   approval_policy: {}
   sandbox: 123
 `;
@@ -129,7 +160,7 @@ prompts:
       prompts: {
         task_file: undefined,
         common: undefined,
-        target_dir: undefined,
+        repository_dir: undefined,
         approval_policy: undefined,
         sandbox: undefined,
       },
