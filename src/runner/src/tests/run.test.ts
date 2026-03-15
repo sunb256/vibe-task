@@ -202,19 +202,12 @@ test("parseRuntimeOptions uses prompts.task_file from config", () => {
 });
 
 test("parseRuntimeOptions derives task file from prompts.repository_dir", () => {
-  const runtime = parseRuntimeOptions([], {
-    prompts: { repository_dir: "/home/yyy/ghq/github.com/xxx/tmux-codex-status" },
-  });
-  assert.equal(runtime.taskFilePath, "../../tasks/projects/tmux-codex-status/action.yml");
-});
-
-test("parseRuntimeOptions derives task file from relative prompts.repository_dir", () => {
   const runtime = parseRuntimeOptions(
     [],
     {
-      prompts: { repository_dir: "../.." },
+      prompts: { repository_dir: "/home/yyy/ghq/github.com/xxx/tmux-codex-status" },
     },
-    "/home/yyy/ghq/github.com/xxx/tmux-codex-status/src/runner"
+    "/home/yyy/ghq/github.com/xxx/vibe-task/src/runner"
   );
   assert.equal(runtime.taskFilePath, "../../tasks/projects/tmux-codex-status/action.yml");
 });

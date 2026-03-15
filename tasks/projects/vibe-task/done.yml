@@ -1138,18 +1138,12 @@ task:
         task_file: ../../tasks/projects/vibe-task/action.yml
         defaults:
           cwd: .
-  - id: '135'
-    url: https://github.com/sunb256/vibe-task/pull/149
-    title: "runner: prompts.target_dir を repository_dir に変更"
-    action: |-
-      runner
-
-      config.yml prompts.target_dir はrepository_dir に変えてほしい
-  - id: '136'
-    url: "https://github.com/sunb256/vibe-task/pull/150"
-    title: "runner: prompts.task_file が空白時に repository_dir から補完する"
+  - id: '142'
+    url: "https://github.com/sunb256/vibe-task/pull/156"
+    title: "runner prompts.repository_dir 未指定時にプロジェクトを番号選択可能にする"
     action: |
       runner
+      config/config.yml prompts.repository_dir が指定されていないときは、
 
       prompts.task_file が空白の場合、タスクファイルは以下の値としてほしい
 
