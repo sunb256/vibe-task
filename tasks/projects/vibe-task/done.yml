@@ -1125,7 +1125,7 @@ task:
         defaults:
           cwd: .
   - id: '142'
-    url: "-"
+    url: "https://github.com/sunb256/vibe-task/pull/156"
     title: "runner prompts.repository_dir 未指定時にプロジェクトを番号選択可能にする"
     action: |
       runner
