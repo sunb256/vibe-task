@@ -675,4 +675,5 @@ const SOURCE_META: Record<
 const TASK_STATUS_OPTIONS = TASK_FILTER_ORDER.map((source) => ({
   value: source,
   label: SOURCE_META[source].label,
+  toneClass: SOURCE_META[source].filterClass,
 }));

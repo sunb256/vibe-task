@@ -6,6 +6,7 @@ import { Notice } from "../../components/Notice";
 type DialogStatusOption = {
   value: string;
   label: string;
+  toneClass?: string;
 };
 
 type NewTaskDialogProps = {
@@ -202,7 +203,7 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
                   return (
                     <label
                       key={option.value}
-                      className={`inline-flex h-9 items-center rounded-full border px-3 text-xs font-semibold transition focus-within:ring-2 focus-within:ring-[var(--accent)]/20 ${checked ? "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]" : "border-[var(--border)] bg-white text-[var(--ink)] hover:border-[var(--ink)]"} ${isSaving ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
+                      className={`${statusOptionClass(option, checked)} ${isSaving ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
                     >
                       <input
                         type="radio"
@@ -238,6 +239,18 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
       </div>
     </div>
   );
+}
+
+function statusOptionClass(option: DialogStatusOption, checked: boolean) {
+  const base =
+    "inline-flex h-9 items-center rounded-full border px-3 text-xs font-semibold transition focus-within:ring-2 focus-within:ring-[var(--accent)]/20";
+  if (!checked) {
+    return `${base} border-[var(--border)] bg-white text-[var(--ink)] hover:border-[var(--ink)]`;
+  }
+  if (!option.toneClass) {
+    return `${base} border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]`;
+  }
+  return `${base} ${option.toneClass}`;
 }
 
 function isSaveShortcut(event: KeyboardEvent) {

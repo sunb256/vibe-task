@@ -219,7 +219,9 @@ test("does not render the removed project subtitle", async () => {
     "min-w-[4.5rem]",
     "whitespace-nowrap",
   );
-  expect(screen.getByRole("radio", { name: "TODO" })).toBeChecked();
+  const todoRadio = screen.getByRole("radio", { name: "TODO" });
+  expect(todoRadio).toBeChecked();
+  expect(todoRadio.parentElement).toHaveClass("border-blue-200", "bg-blue-100", "text-blue-700");
   fireEvent.keyDown(window, { key: "Escape" });
   expect(screen.queryByRole("dialog", { name: "編集 - #1" })).not.toBeInTheDocument();
   const taskCellButton = screen.getByRole("button", { name: "task 1 を編集" });
@@ -611,6 +613,11 @@ test("edits a task in modal editor and supports keyboard shortcuts", async () =>
   expect(screen.getByRole("dialog", { name: "編集 - #1" })).toBeInTheDocument();
   expect(screen.getByLabelText("task-editor")).toHaveFocus();
   fireEvent.click(screen.getByRole("radio", { name: "PENDING" }));
+  expect(screen.getByRole("radio", { name: "PENDING" }).parentElement).toHaveClass(
+    "border-amber-200",
+    "bg-amber-100",
+    "text-amber-700",
+  );
   fireEvent.change(screen.getByLabelText("task-editor"), {
     target: { value: "edited task" },
   });
