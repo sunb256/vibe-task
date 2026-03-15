@@ -1131,3 +1131,18 @@ task:
       runner
 
       config.yml prompts.target_dir はrepository_dir に変えてほしい
+  - id: '136'
+    url: "https://github.com/sunb256/vibe-task/pull/150"
+    title: "runner: prompts.task_file が空白時に repository_dir から補完する"
+    action: |
+      runner
+
+      prompts.task_file が空白の場合、タスクファイルは以下の値としてほしい
+
+      task_fileの値: `../../tasks/projects/<repository_dirのフォルダ名>/action.yml`
+
+
+      例
+
+      repository_dirの値: /home/yyy/ghq/github.com/xxx/tmux-codex-status
+      repository_dirのフォルダ名: tmux-codex-status
