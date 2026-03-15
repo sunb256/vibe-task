@@ -6,6 +6,7 @@ import { Notice } from "../../components/Notice";
 type DialogStatusOption = {
   value: string;
   label: string;
+  toneClass?: string;
 };
 
 type NewTaskDialogProps = {
@@ -192,21 +193,32 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
           {error ? <Notice tone="error" message={error} /> : null}
           <div className="flex items-center justify-between gap-4">
             {statusOptions && statusValue !== undefined && onStatusChange ? (
-              <label className="flex items-center gap-2 text-sm font-semibold text-[var(--ink)]">
-                <span>{statusLabel ?? "状態"}</span>
-                <select
-                  value={statusValue}
-                  onChange={(event) => onStatusChange(event.target.value)}
-                  disabled={isSaving}
-                  className="h-10 rounded-md border border-[var(--border)] bg-white px-3 text-sm font-medium text-[var(--ink)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {statusOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <fieldset className="flex flex-wrap items-center gap-2 border-0 p-0">
+                <legend className="sr-only">{statusLabel ?? "状態"}</legend>
+                <span className="text-sm font-semibold text-[var(--ink)]">
+                  {statusLabel ?? "状態"}
+                </span>
+                {statusOptions.map((option) => {
+                  const checked = option.value === statusValue;
+                  return (
+                    <label
+                      key={option.value}
+                      className={`${statusOptionClass(option, checked)} ${isSaving ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
+                    >
+                      <input
+                        type="radio"
+                        name="task-status"
+                        value={option.value}
+                        checked={checked}
+                        onChange={() => onStatusChange(option.value)}
+                        disabled={isSaving}
+                        className="sr-only"
+                      />
+                      <span>{option.label}</span>
+                    </label>
+                  );
+                })}
+              </fieldset>
             ) : (
               <span />
             )}
@@ -227,6 +239,18 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
       </div>
     </div>
   );
+}
+
+function statusOptionClass(option: DialogStatusOption, checked: boolean) {
+  const base =
+    "inline-flex h-9 items-center rounded-full border px-3 text-xs font-semibold transition focus-within:ring-2 focus-within:ring-[var(--accent)]/20";
+  if (!checked) {
+    return `${base} border-[var(--border)] bg-white text-[var(--ink)] hover:border-[var(--ink)]`;
+  }
+  if (!option.toneClass) {
+    return `${base} border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]`;
+  }
+  return `${base} ${option.toneClass}`;
 }
 
 function isSaveShortcut(event: KeyboardEvent) {
