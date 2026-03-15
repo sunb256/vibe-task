@@ -44,7 +44,7 @@ test("mergeTaskDefaults prefers config defaults", () => {
 test("promptConfigToDefaults maps prompts defaults fields", () => {
   const value = promptConfigToDefaults({
     prompts: {
-      target_dir: "/repo",
+      repository_dir: "/repo",
       approval_policy: "on-request",
       sandbox: "workspace-write",
     },

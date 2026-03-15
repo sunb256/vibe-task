@@ -1124,3 +1124,10 @@ task:
         task_file: ../../tasks/projects/vibe-task/action.yml
         defaults:
           cwd: .
+  - id: '135'
+    url: https://github.com/sunb256/vibe-task/pull/149
+    title: runner: prompts.target_dir を repository_dir に変更
+    action: |-
+      runner
+
+      config.yml prompts.target_dir はrepository_dir に変えてほしい

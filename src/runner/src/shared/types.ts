@@ -59,7 +59,7 @@ export type RunnerConfig = {
   prompts?: {
     task_file?: string;
     common?: string;
-    target_dir?: string;
+    repository_dir?: string;
     approval_policy?: string;
     sandbox?: string;
   };

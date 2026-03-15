@@ -1,1 +1,12 @@
-task: []
+task:
+  - id: '136'
+    url: '-'
+    title: '-'
+    action: |
+      runner
+
+      prompts.task_file が空白の場合、実行時の最初にタスクファイルは以下としてほしい。
+
+      task_fileの値: `../../tasks/projects/<repository_dirのフォルダ名>/action.yml`
+
+      を選択させるUIを用意してほしい

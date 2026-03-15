@@ -69,7 +69,7 @@ function parseConfig(value: unknown): RunnerConfig {
     ? {
         task_file: getString(value.prompts.task_file),
         common: getString(value.prompts.common),
-        target_dir: getString(value.prompts.target_dir),
+        repository_dir: getString(value.prompts.repository_dir),
         approval_policy: getString(value.prompts.approval_policy),
         sandbox: getString(value.prompts.sandbox),
       }

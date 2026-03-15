@@ -177,7 +177,7 @@ export function mergeTaskDefaults(
 // configのprompts設定をtask既定値形式へ変換する。
 export function promptConfigToDefaults(config: RunnerConfig): TaskDefaults {
   return {
-    cwd: config.prompts?.target_dir,
+    cwd: config.prompts?.repository_dir,
     approval_policy: config.prompts?.approval_policy,
     sandbox: config.prompts?.sandbox,
   };
