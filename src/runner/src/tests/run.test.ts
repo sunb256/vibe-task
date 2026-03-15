@@ -59,12 +59,20 @@ test("promptConfigToDefaults maps prompts defaults fields", () => {
   });
 });
 
-test("promptConfigToDefaults uses fallback repository_dir when prompts are missing", () => {
-  const value = promptConfigToDefaults({}, "/repo/fallback");
+test("promptConfigToDefaults uses fallback repository_dir when prompts.repository_dir is missing", () => {
+  const value = promptConfigToDefaults(
+    {
+      prompts: {
+        approval_policy: "never",
+        sandbox: "workspace-write",
+      },
+    },
+    "/repo/fallback"
+  );
   assert.deepEqual(value, {
     cwd: "/repo/fallback",
-    approval_policy: undefined,
-    sandbox: undefined,
+    approval_policy: "never",
+    sandbox: "workspace-write",
   });
 });
 

@@ -1145,5 +1145,38 @@ task:
       runner
       config/config.yml prompts.repository_dir が指定されていないときは、
 
+      prompts.task_file が空白の場合、タスクファイルは以下の値としてほしい
+
+      task_fileの値: `../../tasks/projects/<repository_dirのフォルダ名>/action.yml`
+
+
+      例
+
+      repository_dirの値: /home/yyy/ghq/github.com/xxx/tmux-codex-status
+      repository_dirのフォルダ名: tmux-codex-status
+  - id: '139'
+    url: '-'
+    title: '-'
+    action: |
+      runnerのmermaidを書いて
+
+      docs/runner.mdとしてください
+  - id: '140'
+    url: "https://github.com/sunb256/vibe-task/pull/154"
+    title: "frontend プロジェクト画面ヘッダにプロジェクトパス表示を追加"
+    action: |
+      frontend プロジェクト画面でhead部にプロジェクト名の横にプロジェクトのパスも表示したい。(薄い文字で小さめがいい)
+  - id: '141'
+    url: "https://github.com/sunb256/vibe-task/pull/154"
+    title: "frontend タスク編集ダイアログの状態入力をラジオボタン化"
+    action: |
+      frontend で タスクの編集画面で状態をコンボボックスで変更するがこれをラジオボタンにして欲しい
+  - id: '142'
+    url: "https://github.com/sunb256/vibe-task/pull/154"
+    title: "runner prompts.repository_dir 未指定時にプロジェクトを番号選択可能にする"
+    action: |
+      runner
+      config/config.yml prompts.repository_dir が指定されていないときは、
+
       ../../tasks/projects 配下のフォルダ名からどれを対象にするかを選択するUI(番号を選択する)で、
       対象のリポジトリを決められるようにしたい
