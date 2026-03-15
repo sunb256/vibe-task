@@ -1,4 +1,18 @@
 task:
+  - id: '138'
+    url: https://github.com/sunb256/vibe-task/pull/151
+    title: frontend/backendのMermaid図をdocs配下に追加
+    action: |
+      backendのmermaidを書いて
+
+      docs/backend.mdとしてください
+  - id: '137'
+    url: https://github.com/sunb256/vibe-task/pull/151
+    title: frontendのMermaid図をdocs/frontend.mdに追記
+    action: |-
+      frotendのmermaidを書いて
+
+      docs/frontend.mdとしてください
   - id: 1
     url: https://github.com/sunb256/vibe-task/pull/1
     title: task YAML 管理アプリの一覧・編集機能を追加
@@ -1146,3 +1160,9 @@ task:
 
       repository_dirの値: /home/yyy/ghq/github.com/xxx/tmux-codex-status
       repository_dirのフォルダ名: tmux-codex-status
+  - id: 1
+    url: -
+    title: -
+    action: |
+      クイズを出してください
+      不明点があれば質問してください。
