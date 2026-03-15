@@ -1,1 +1,4 @@
-task: []
+tasks:
+  - id: 2
+    action: |
+      最後に正解を教えて

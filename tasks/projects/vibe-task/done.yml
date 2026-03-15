@@ -1146,3 +1146,9 @@ task:
 
       repository_dirの値: /home/yyy/ghq/github.com/xxx/tmux-codex-status
       repository_dirのフォルダ名: tmux-codex-status
+  - id: 1
+    url: -
+    title: -
+    action: |
+      クイズを出してください
+      不明点があれば質問してください。
