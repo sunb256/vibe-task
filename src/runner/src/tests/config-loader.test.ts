@@ -81,6 +81,21 @@ prompts:
   });
 });
 
+test("loadRunnerConfig ignores legacy target_dir", async () => {
+  await withTempDir(async (dir) => {
+    const filePath = path.join(dir, "config.yml");
+    const yaml = `
+prompts:
+  target_dir: /legacy-repo
+`;
+
+    await fs.writeFile(filePath, yaml);
+    const config = await loadRunnerConfig(filePath);
+
+    assert.equal(config.prompts?.repository_dir, undefined);
+  });
+});
+
 test("loadRunnerConfig ignores invalid field types", async () => {
   await withTempDir(async (dir) => {
     const filePath = path.join(dir, "config.yml");

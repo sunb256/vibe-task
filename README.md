@@ -36,6 +36,14 @@ npm run dev
   - Windows native: `$HOME\\ghq\\github.com\\...` or `C:\\Users\\<user>\\ghq\\github.com\\...`
 
 
+runner:
+
+```bash
+cd ./src/runner
+npm install
+npm run start
+```
+
 ## Docker / docker-compose
 
 ```bash

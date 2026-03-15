@@ -16,12 +16,15 @@ function getRecord(value: unknown): Record<string, unknown> | null {
 
 // ネストしたプロパティを順番に取り出す。
 function getPath(value: unknown, ...keys: string[]): unknown {
+
   let current: unknown = value;
+
   for (const key of keys) {
     const record = getRecord(current);
     if (!record) return undefined;
     current = record[key];
   }
+
   return current;
 }
 
@@ -34,6 +37,14 @@ type ReplyWantedConfig = {
   suffixes?: string[];
   patterns?: string[];
 };
+
+type ApprovalDecision =
+  | string
+  | {
+      acceptWithExecpolicyAmendment: {
+        execpolicy_amendment: string[];
+      };
+    };
 
 type CodexAppServerClientOptions = {
   verbose?: boolean;
@@ -66,9 +77,11 @@ function mergeRules(value: string[] | undefined, fallback: string[]): string[] {
 
 // 返信判定パターン配列から正規表現を組み立てる。
 function createReplyPattern(patterns: string[]): RegExp | null {
+
   if (patterns.length === 0) {
     return null;
   }
+
   try {
     return new RegExp(patterns.join("|"));
   } catch {
@@ -76,7 +89,40 @@ function createReplyPattern(patterns: string[]): RegExp | null {
   }
 }
 
+// 承認入力を choice 文字列または補助入力から決定値へ変換する。
+export function parseApprovalDecisionInput(
+  input: string,
+  choices: string[]
+): ApprovalDecision | undefined {
+
+  const answer = input.trim();
+  if (!answer) {
+    return undefined;
+  }
+
+  const index = Number(answer);
+  if (Number.isInteger(index) && index >= 1 && index <= choices.length) {
+    return choices[index - 1];
+  }
+
+  if (choices.includes(answer)) {
+    return answer;
+  }
+
+  if (answer.startsWith("acceptWithExecpolicyAmendment ")) {
+    const rest = answer.slice("acceptWithExecpolicyAmendment ".length).trim();
+    const amendment = rest ? rest.split(/\s+/) : [];
+    return {
+      acceptWithExecpolicyAmendment: {
+        execpolicy_amendment: amendment,
+      },
+    };
+  }
+  return undefined;
+}
+
 export class CodexAppServerClient {
+
   private transport: JsonlTransport;
   private rl = readline.createInterface({ input, output });
 
@@ -87,22 +133,35 @@ export class CodexAppServerClient {
 
   private lastAgentMessageText = "";
   private streamingAgentTextByItemId = new Map<string, string>();
+  private streamingDisplayEndsWithNewlineByItemId = new Map<string, boolean>();
+  private spinnerTimer: ReturnType<typeof setInterval> | null = null;
+  private spinnerMessage = "";
+  private spinnerFrameIndex = 0;
+  private spinnerVisible = false;
+  private readonly spinnerFrames = ["|", "/", "-", "\\"];
   private notificationContext: NotificationHandlerContext;
+
   private replySuffixes: string[];
   private replyPattern: RegExp | null;
   private replyMode: "harfauto" | "fullauto";
   private maxAutoReplyCount: number;
+  private isVerbose: boolean;
 
   // 通知処理と返信判定に必要な状態を初期化する。
   constructor(transport: JsonlTransport, options?: CodexAppServerClientOptions) {
+
     this.transport = transport;
     const verbose = options?.verbose === true;
+    this.isVerbose = verbose;
+
     this.replySuffixes = mergeRules(options?.replyWanted?.suffixes, DEFAULT_REPLY_SUFFIXES);
     this.replyPattern = createReplyPattern(
       mergeRules(options?.replyWanted?.patterns, DEFAULT_REPLY_PATTERNS)
     );
+
     this.replyMode = options?.replyMode ?? "harfauto";
     this.maxAutoReplyCount = options?.maxAutoReplyCount ?? MAX_AUTO_REPLY_COUNT;
+
     this.notificationContext = {
       isVerbose: verbose,
       setActiveTurnId: (turnId) => {
@@ -123,10 +182,26 @@ export class CodexAppServerClient {
       deleteStreamingAgentText: (itemId) => {
         this.streamingAgentTextByItemId.delete(itemId);
       },
+      getStreamingDisplayEndsWithNewline: (itemId) =>
+        this.streamingDisplayEndsWithNewlineByItemId.get(itemId) ?? false,
+      setStreamingDisplayEndsWithNewline: (itemId, value) => {
+        this.streamingDisplayEndsWithNewlineByItemId.set(itemId, value);
+      },
+      deleteStreamingDisplayEndsWithNewline: (itemId) => {
+        this.streamingDisplayEndsWithNewlineByItemId.delete(itemId);
+      },
+      setProgressMessage: (message) => {
+        this.setProgressMessage(message);
+      },
+      clearProgressMessage: () => {
+        this.clearProgressMessage();
+      },
     };
+
     this.transport.onNotification((msg) =>
       handleNotificationMessage(msg, this.notificationContext)
     );
+
     this.transport.onServerRequest(this.handleServerRequest.bind(this));
   }
 
@@ -156,31 +231,38 @@ export class CodexAppServerClient {
     personality?: string;
     serviceName?: string;
   }): Promise<string> {
+
     const result = await this.transport.request("thread/start", params);
     const threadIdValue = getPath(result, "thread", "id");
+
     if (typeof threadIdValue !== "string") {
       throw new Error("thread/start returned no thread.id");
     }
+
     this.activeThreadId = threadIdValue;
     return threadIdValue;
   }
 
   // 既存スレッドを再開してアクティブスレッドIDを更新する。
   async resumeThread(threadId: string, params?: Record<string, unknown>): Promise<string> {
+
     const result = await this.transport.request("thread/resume", {
       threadId,
       ...(params ?? {}),
     });
+
     const resumedId = getPath(result, "thread", "id");
     if (typeof resumedId !== "string") {
       throw new Error("thread/resume returned no thread.id");
     }
+
     this.activeThreadId = resumedId;
     return resumedId;
   }
 
   // 入力テキストで新しいturnを開始する。
   async startTurn(inputText: string, overrides?: Record<string, unknown>): Promise<string> {
+
     if (!this.activeThreadId) {
       throw new Error("No active thread. Call startThread() first.");
     }
@@ -199,6 +281,7 @@ export class CodexAppServerClient {
     if (typeof turnIdValue !== "string") {
       throw new Error("turn/start returned no turn.id");
     }
+    
     this.activeTurnId = turnIdValue;
 
     return turnIdValue;
@@ -236,8 +319,44 @@ export class CodexAppServerClient {
 
   // 入出力ハンドラを閉じて接続を終了する。
   close(): void {
+    this.clearProgressMessage();
     this.rl.close();
     this.transport.close();
+  }
+
+  // 非verbose時に進捗スピナーを表示する。
+  private setProgressMessage(message: string): void {
+    if (this.isVerbose || !process.stdout.isTTY) return;
+    this.spinnerMessage = message;
+    if (!this.spinnerTimer) {
+      this.spinnerTimer = setInterval(() => {
+        this.renderSpinner();
+      }, 120);
+    }
+    this.renderSpinner();
+  }
+
+  // 進捗スピナーをクリアする。
+  private clearProgressMessage(): void {
+    if (this.spinnerTimer) {
+      clearInterval(this.spinnerTimer);
+      this.spinnerTimer = null;
+    }
+    this.spinnerFrameIndex = 0;
+    this.spinnerMessage = "";
+    if (this.spinnerVisible && process.stdout.isTTY) {
+      process.stdout.write("\r\x1b[2K");
+    }
+    this.spinnerVisible = false;
+  }
+
+  // スピナーの1フレームを描画する。
+  private renderSpinner(): void {
+    if (!process.stdout.isTTY || !this.spinnerMessage) return;
+    const frame = this.spinnerFrames[this.spinnerFrameIndex % this.spinnerFrames.length] ?? "|";
+    this.spinnerFrameIndex += 1;
+    process.stdout.write(`\r${frame} ${this.spinnerMessage}`);
+    this.spinnerVisible = true;
   }
 
   // サーバー要求をrequestハンドラへ委譲する。
@@ -268,36 +387,37 @@ export class CodexAppServerClient {
     summary: string;
     reason?: unknown;
     choices: string[];
-  }): Promise<unknown> {
+  }): Promise<ApprovalDecision> {
+    this.clearProgressMessage();
+
     console.log(`\n=== ${args.title} ===`);
     console.log(`summary: ${args.summary}`);
 
     if (args.reason) {
       console.log(`reason: ${String(args.reason)}`);
     }
+
     console.log(`choices: ${args.choices.join(", ")}`);
+    args.choices.forEach((choice, idx) => {
+      console.log(`  ${idx + 1}. ${choice}`);
+    });
+
+    if (args.choices.includes("acceptForSession")) {
+      console.log("  tip: セッション中の確認を減らす場合は 2 (acceptForSession)");
+    }
 
     while (true) {
-      const answer = (
-        await this.rl.question(`decision [${args.choices.join("/")}] > `)
+
+      const input = (
+        await this.rl.question(
+          `decision [1-${args.choices.length} or ${args.choices.join("/")}] > `
+        )
       ).trim();
 
-      if (!answer) continue;
+      const decision = parseApprovalDecisionInput(input, args.choices);
 
-      if (args.choices.includes(answer)) {
-        return answer;
-      }
-
-      // execpolicy amendment を手入力できるようにする
-      if (answer.startsWith("acceptWithExecpolicyAmendment ")) {
-        const rest = answer.slice("acceptWithExecpolicyAmendment ".length).trim();
-        const amendment = rest ? rest.split(/\s+/) : [];
-
-        return {
-          acceptWithExecpolicyAmendment: {
-            execpolicy_amendment: amendment,
-          },
-        };
+      if (decision !== undefined) {
+        return decision;
       }
 
       console.log("invalid decision");
@@ -306,6 +426,7 @@ export class CodexAppServerClient {
 
   // requestUserInput要求に対して対話入力で回答を作る。
   private async askToolUserInput(params: unknown): Promise<unknown> {
+    this.clearProgressMessage();
     console.log("\n=== Tool requested user input ===");
     console.log(JSON.stringify(params, null, 2));
 
@@ -348,8 +469,11 @@ export class CodexAppServerClient {
 
         // 数字入力なら選択肢を返す
         const idx = Number(raw);
+
         if (raw && Number.isInteger(idx) && idx >= 1 && idx <= options.length) {
+        
           const chosen = options[idx - 1];
+        
           if (typeof chosen === "string") {
             answers.push(chosen);
           } else {
@@ -365,20 +489,19 @@ export class CodexAppServerClient {
 
         // "o" または自由入力を許す
         if (raw === "o" || raw === "other" || (!Number.isInteger(idx) && raw)) {
+
           // 相手が isOther を持っているなら素直に自由入力
           if (hasOther || options.length === 0) {
-            const free =
-              raw === "o" || raw === "other"
-                ? await this.rl.question("free text > ")
-                : raw;
+            const free = raw === "o" || raw === "other"
+                          ? await this.rl.question("free text > ")
+                          : raw;
             answers.push(free);
             continue;
           }
 
           // isOther が無いなら、無理に通すかどうかを選ぶ
-          console.log(
-            "This question may only accept listed options. Send raw free text anyway? [y/N]"
-          );
+          console.log("This question may only accept listed options. Send raw free text anyway? [y/N]");
+
           const confirm = (await this.rl.question("> ")).trim().toLowerCase();
           if (confirm === "y" || confirm === "yes") {
             answers.push(raw);
@@ -413,6 +536,7 @@ export class CodexAppServerClient {
   // 最終メッセージが返信要求かどうかを判定する。
   private looksLikeReplyWanted(text: string): boolean {
     const t = text.trim();
+
     if (!t) return false;
 
     if (this.replySuffixes.some((suffix) => t.endsWith(suffix))) {
@@ -425,32 +549,36 @@ export class CodexAppServerClient {
   // 返信要求が続く間は追加入力turnを繰り返す。
   async continueConversationIfNeeded(): Promise<void> {
     let autoReplyCount = 0;
+
     while (true) {
+
       const text = this.lastAgentMessageText;
       if (!this.looksLikeReplyWanted(text)) {
         return;
       }
 
       if (this.replyMode === "fullauto") {
+
         if (autoReplyCount >= this.maxAutoReplyCount) {
           console.log(
             `\n\n* 自動返信が ${this.maxAutoReplyCount} 回に達したため、次の task へ進みます\n`
           );
           return;
         }
+
         autoReplyCount += 1;
         console.log("\n\n* 自動返信で次の turn を開始します\n");
         console.log(`> ${AUTO_REPLY_TEXT}`);
         console.log("\n-----\n");
+
         this.lastAgentMessageText = "";
         await this.startTurn(AUTO_REPLY_TEXT);
         await this.waitForTurnCompletion();
         continue;
       }
 
-      console.log(
-        "\n\n* [質問] Enter or /skip で次タスクへ\n"
-      );
+      console.log("\n\n* [質問] Enter or /skip で次へ\n");
+
       const answer = (await this.rl.question("> ")).trim();
 
       if (!answer) {

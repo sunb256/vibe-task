@@ -38,7 +38,7 @@ npx tsx src/run.ts --config config/config.yml
   - 相対パスは `run.ts` / `run.js` の実行スクリプト位置基準で解決
   - 例: `../../tasks/projects/vibe-task/action.yml`
 - `common`: 各 `task.action` の前に自動で付与する共通指示文
-- `target_dir`: Codex 実行ディレクトリの既定値（相対指定は実行スクリプト位置基準で絶対化）
+- `repository_dir`: Codex 実行ディレクトリの既定値（相対指定は実行スクリプト位置基準で絶対化）
 - `approval_policy`: 承認ポリシーの既定値
 - `sandbox`: sandbox の既定値
 

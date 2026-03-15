@@ -14,7 +14,7 @@ thread:
 prompts:
   approval_policy: on-request
   sandbox: workspace-write
-  target_dir: .
+  repository_dir: .
   task_file: tasks_test.yml
   common: |
     

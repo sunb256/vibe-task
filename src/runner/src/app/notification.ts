@@ -9,6 +9,7 @@ function getRecord(value: unknown): Record<string, unknown> | null {
 // ネストした値をキー列でたどって取得する。
 function getPath(value: unknown, ...keys: string[]): unknown {
   let current: unknown = value;
+
   for (const key of keys) {
     const record = getRecord(current);
     if (!record) return undefined;
@@ -22,6 +23,11 @@ function display(value: unknown, fallback: string): string {
   return value === undefined || value === null ? fallback : String(value);
 }
 
+// 表示時のみ文末記号で改行して読みやすさを保つ。
+function formatAgentDeltaForDisplay(text: string): string {
+  return text.replace(/([。！？!?])(?!\n)/g, "$1\n");
+}
+
 // agentMessage由来の本文テキストを抽出する。
 function extractAgentText(item: unknown): string {
   if (!item) return "";
@@ -33,6 +39,7 @@ function extractAgentText(item: unknown): string {
   if (typeof itemRecord.message === "string") return itemRecord.message;
 
   if (Array.isArray(itemRecord.content)) {
+
     return itemRecord.content
       .map((part) => {
         if (typeof part === "string") return part;
@@ -54,6 +61,11 @@ export type NotificationHandlerContext = {
   getStreamingAgentText: (itemId: string) => string;
   setStreamingAgentText: (itemId: string, text: string) => void;
   deleteStreamingAgentText: (itemId: string) => void;
+  getStreamingDisplayEndsWithNewline: (itemId: string) => boolean;
+  setStreamingDisplayEndsWithNewline: (itemId: string, value: boolean) => void;
+  deleteStreamingDisplayEndsWithNewline: (itemId: string) => void;
+  setProgressMessage: (message: string) => void;
+  clearProgressMessage: () => void;
 };
 
 type NotificationHandler = (
@@ -65,6 +77,17 @@ type NotificationHandler = (
 function logVerbose(context: NotificationHandlerContext, message: string): void {
   if (!context.isVerbose) return;
   console.log(message);
+}
+
+// item type から進行状況ラベルを決定する。
+function getProgressMessage(type: string): string | undefined {
+  if (type === "reasoning") return "thinking...";
+  if (type === "agentMessage") return "streaming response...";
+  if (type === "commandExecution") return "running command...";
+  if (type === "fileChange") return "applying file changes...";
+  if (type === "mcpToolCall") return "calling tool...";
+  if (type === "webSearch") return "searching web...";
+  return undefined;
 }
 
 const notificationHandlers: Record<string, NotificationHandler> = {
@@ -82,6 +105,8 @@ const notificationHandlers: Record<string, NotificationHandler> = {
       context,
       `[turn.started] ${display(getPath(params, "turn", "id"), "(unknown)")}`
     );
+    context.setProgressMessage("processing task...");
+    
     const maybeTurnId = getPath(params, "turn", "id");
     if (typeof maybeTurnId === "string") {
       context.setActiveTurnId(maybeTurnId);
@@ -90,19 +115,27 @@ const notificationHandlers: Record<string, NotificationHandler> = {
 
   // item開始通知をログ出力し必要な初期化を行う。
   "item/started": (params, context) => {
+
     const item = getRecord(getPath(params, "item"));
     const type = display(item?.type, "unknown");
+    
     logVerbose(context, `[item.started] type=${type} id=${display(item?.id, "?")}`);
+    const progress = getProgressMessage(type);
+    if (progress) {
+      context.setProgressMessage(progress);
+    }
 
     if (type === "agentMessage" && typeof item?.id === "string") {
       context.setStreamingAgentText(item.id, "");
+      context.setStreamingDisplayEndsWithNewline(item.id, false);
     }
 
     if (type === "commandExecution") {
       const commandValue = item?.command;
       const command = Array.isArray(commandValue)
-        ? commandValue.map((part) => String(part)).join(" ")
-        : display(commandValue, "");
+                      ? commandValue.map((part) => String(part)).join(" ")
+                      : display(commandValue, "");
+
       if (command) logVerbose(context, `  command: ${command}`);
       if (item?.cwd) logVerbose(context, `  cwd: ${item.cwd}`);
     }
@@ -112,12 +145,19 @@ const notificationHandlers: Record<string, NotificationHandler> = {
   "item/agentMessage/delta": (params, context) => {
     const itemId = getPath(params, "itemId");
     const delta = getPath(params, "delta") ?? getPath(params, "text") ?? "";
+
     if (delta) {
       const deltaText = String(delta);
-      process.stdout.write(deltaText);
+      
+      // 読みやすさのため、適宜改行をする
+      const displayText = formatAgentDeltaForDisplay(deltaText);
+      context.clearProgressMessage();
+      process.stdout.write(displayText);
+      
       if (typeof itemId === "string") {
         const prev = context.getStreamingAgentText(itemId);
         context.setStreamingAgentText(itemId, prev + deltaText);
+        context.setStreamingDisplayEndsWithNewline(itemId, displayText.endsWith("\n"));
       }
     }
   },
@@ -128,9 +168,12 @@ const notificationHandlers: Record<string, NotificationHandler> = {
   },
 
   // コマンド出力差分をそのまま標準出力へ流す。
-  "item/commandExecution/outputDelta": (params) => {
+  "item/commandExecution/outputDelta": (params, context) => {
     const chunk = getPath(params, "delta") ?? "";
-    if (chunk) process.stdout.write(String(chunk));
+    if (chunk) {
+      context.clearProgressMessage();
+      process.stdout.write(String(chunk));
+    }
   },
 
   // fileChange差分は現状表示せず無視する。
@@ -138,20 +181,28 @@ const notificationHandlers: Record<string, NotificationHandler> = {
 
   // item完了通知を処理し最終メッセージを確定する。
   "item/completed": (params, context) => {
+
     const item = getRecord(getPath(params, "item"));
     const type = display(item?.type, "unknown");
+
     logVerbose(context, `[item.completed] type=${type} status=${display(item?.status, "?")}`);
 
     if (type === "agentMessage") {
+
       const itemId = item?.id;
-      const streamed =
-        typeof itemId === "string" ? context.getStreamingAgentText(itemId) : "";
+      const streamed = typeof itemId === "string" ? context.getStreamingAgentText(itemId) : "";
       const finalText = streamed || extractAgentText(item);
 
       context.setLastAgentMessageText(finalText.trim());
 
       if (typeof itemId === "string") {
+        if (streamed) {
+          const endsWithNewline = context.getStreamingDisplayEndsWithNewline(itemId);
+          context.clearProgressMessage();
+          process.stdout.write(endsWithNewline ? "\n" : "\n\n");
+        }
         context.deleteStreamingAgentText(itemId);
+        context.deleteStreamingDisplayEndsWithNewline(itemId);
       }
     }
 
@@ -175,6 +226,8 @@ const notificationHandlers: Record<string, NotificationHandler> = {
       context,
       `[turn.completed] id=${display(getPath(turn, "id"), "?")} status=${display(getPath(turn, "status"), "?")}`
     );
+    context.clearProgressMessage();
+
     if (getPath(turn, "error")) {
       console.error("[turn.error]", JSON.stringify(getPath(turn, "error"), null, 2));
     }

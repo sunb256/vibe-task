@@ -1,4 +1,18 @@
 task:
+  - id: '138'
+    url: https://github.com/sunb256/vibe-task/pull/151
+    title: frontend/backendのMermaid図をdocs配下に追加
+    action: |
+      backendのmermaidを書いて
+
+      docs/backend.mdとしてください
+  - id: '137'
+    url: https://github.com/sunb256/vibe-task/pull/151
+    title: frontendのMermaid図をdocs/frontend.mdに追記
+    action: |-
+      frotendのmermaidを書いて
+
+      docs/frontend.mdとしてください
   - id: 1
     url: https://github.com/sunb256/vibe-task/pull/1
     title: task YAML 管理アプリの一覧・編集機能を追加
@@ -19,7 +33,7 @@ task:
         - リポジトリフォルダ
         - action-listパス(ymlファイルパス。リポジトリフォルダから相対で指定する、デフォルトはtasks/action.yml)
         - done-listパス(ymlファイルパス。リポジトリフォルダから相対で指定する、デフォルトはtasks/done.yml)
-      
+
       プロジェクト画面:
       対象プロジェクトの画面ではタスクの一覧が表示されます。これは表構造で表示します。
 
@@ -66,7 +80,7 @@ task:
     title: UIの角丸を緩めて見た目を調整
     action: |
       角丸がきついのでもう少し緩めてください
-      
+
   - id: 3
     url: https://github.com/sunb256/vibe-task/pull/3
     title: TOP画面の不要な見出し文言を削除
@@ -74,7 +88,7 @@ task:
       Task YAML Manager
       TOP画面ローカルリポジトリと task YAML を紐づけて、一覧表示と action 編集を行います。
       の文字はいらない
-      
+
   - id: 4
     url: https://github.com/sunb256/vibe-task/pull/4
     title: プロジェクト画面の不要な説明文を削除
@@ -720,7 +734,7 @@ task:
     title: TOP画面とプロジェクト画面でアクティブロゴを表示
     action: |
       TOP画面とプロジェクト画面の時はロゴ画像をアクティブなものを使ってください
-      
+
       パスはこれ
       `src/frontend/assets/images/vibe_task_logo_active.png`
   - id: 91
@@ -728,18 +742,18 @@ task:
     title: 通常画面の検索入力へ自動フォーカスを適用
     action: |
       入力カーソルがちらつくのがとても気になる
-      
+
       改善できませんか
   - id: 92
     url: https://github.com/sunb256/vibe-task/pull/93
     title: task空表示メッセージを「task はありません。」へ変更
     action: |
       task は見つかりませんでした。
-      
+
       ではなく
-      
+
       task はありません。
-      
+
       に変更
   - id: 93
     url: https://github.com/sunb256/vibe-task/pull/94
@@ -747,26 +761,26 @@ task:
     action: |
       新規プロジェクト作成で
       repositoryPathが一番上にして
-      
+
       repositoryPathとnameが殻でrepositoryPathが入力された場合、
       ファイル名をnameに自動入力して
-      
+
       nameの横幅は今の半分でいいです
-      
+
 
   - id: '94'
     url: https://github.com/sunb256/vibe-task/pull/95
     title: projects.ymlのtaskパス設定を廃止しプロジェクト別taskファイルを自動生成
     action: |
       ファイル構成を大きく変更します。
-      
+
       今までprojects.yml内に
-      
+
           actionListPath: tasks/action.yml
           doneListPath: tasks/done.yml
-      
+
       という項目を各プロジェクトに持っていたがこれを止めて以下の仕様にします。
-      
+
       tasks/
         ├── projects
             ├── /xxx-project
@@ -776,9 +790,9 @@ task:
                    ├── action.yml
                    ├── done.yml
         └── projects.yml
-      
+
       つまり、各プロジェクトごとのデータ(action, done.yml)を本アプリ内で保持する仕様に変更する
-      
+
       プロジェクトの新規作成時にプロジェクトが登録されたらこれを自動で作成すること
 
   - id: '95'
@@ -786,7 +800,7 @@ task:
     title: Settingダイアログの不要なインポート説明文を削除
     action: |
       Setting
-      
+
       projects.yml を読み込んで置き換えます。 の表示は不要
 
   - id: '96'
@@ -796,9 +810,9 @@ task:
       タスクがない時、
       task は見つかりませんでした。
       でなく
-      
+
       task はありません
-      
+
       にして
 
   - id: '97'
@@ -1111,7 +1125,7 @@ task:
       src/watcherをsrc/runnerにしたい
   - id: '134'
     url: https://github.com/sunb256/vibe-task/pull/148
-    title: runner: task_file を実行スクリプト基準で解決する
+    title: "runner: task_file を実行スクリプト基準で解決する"
     action: |
       runner config/config.ymlについて
 
