@@ -1,4 +1,11 @@
 task:
+  - id: '137'
+    url: https://github.com/sunb256/vibe-task/pull/151
+    title: frontendのMermaid図をdocs/frontend.mdに追記
+    action: |-
+      frotendのmermaidを書いて
+
+      docs/frontend.mdとしてください
   - id: 1
     url: https://github.com/sunb256/vibe-task/pull/1
     title: task YAML 管理アプリの一覧・編集機能を追加
