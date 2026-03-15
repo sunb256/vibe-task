@@ -66,7 +66,7 @@ export async function handleServerRequestMessage(
           ]),
         });
 
-        context.respond(id, decision);
+        context.respond(id, { decision });
         return;
       }
 
@@ -84,7 +84,7 @@ export async function handleServerRequestMessage(
           ]),
         });
 
-        context.respond(id, decision);
+        context.respond(id, { decision });
         return;
       }
 
