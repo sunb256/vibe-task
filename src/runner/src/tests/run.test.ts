@@ -56,21 +56,6 @@ test("promptConfigToDefaults maps prompts defaults fields", () => {
   });
 });
 
-test("promptConfigToDefaults keeps compatibility with prompts.target_dir", () => {
-  const value = promptConfigToDefaults({
-    prompts: {
-      target_dir: "/legacy-repo",
-      approval_policy: "on-request",
-      sandbox: "workspace-write",
-    },
-  });
-  assert.deepEqual(value, {
-    cwd: "/legacy-repo",
-    approval_policy: "on-request",
-    sandbox: "workspace-write",
-  });
-});
-
 test("resolveRunnerRoot resolves one level up from script directory", () => {
   const root = resolveRunnerRoot("/tmp/work/runner/src/run.ts");
   assert.equal(root, "/tmp/work/runner");

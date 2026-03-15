@@ -81,7 +81,7 @@ prompts:
   });
 });
 
-test("loadRunnerConfig maps legacy target_dir into repository_dir", async () => {
+test("loadRunnerConfig ignores legacy target_dir", async () => {
   await withTempDir(async (dir) => {
     const filePath = path.join(dir, "config.yml");
     const yaml = `
@@ -92,23 +92,7 @@ prompts:
     await fs.writeFile(filePath, yaml);
     const config = await loadRunnerConfig(filePath);
 
-    assert.equal(config.prompts?.repository_dir, "/legacy-repo");
-  });
-});
-
-test("loadRunnerConfig prefers repository_dir over legacy target_dir", async () => {
-  await withTempDir(async (dir) => {
-    const filePath = path.join(dir, "config.yml");
-    const yaml = `
-prompts:
-  repository_dir: /new-repo
-  target_dir: /legacy-repo
-`;
-
-    await fs.writeFile(filePath, yaml);
-    const config = await loadRunnerConfig(filePath);
-
-    assert.equal(config.prompts?.repository_dir, "/new-repo");
+    assert.equal(config.prompts?.repository_dir, undefined);
   });
 });
 
