@@ -6,11 +6,14 @@ import {
   formatPromptText,
   mergeTaskDefaults,
   parseConfigPathOption,
+  parseProjectSelectionInput,
   parseRuntimeOptions,
   promptConfigToDefaults,
+  resolveRepositoryDirFromProjectName,
   resolveDefaultsCwd,
   resolveRunnerPath,
   resolveRunnerRoot,
+  shouldPromptProjectSelection,
 } from "../run.js";
 
 test("formatCompletedAt formats datetime", () => {
@@ -52,6 +55,23 @@ test("promptConfigToDefaults maps prompts defaults fields", () => {
   assert.deepEqual(value, {
     cwd: "/repo",
     approval_policy: "on-request",
+    sandbox: "workspace-write",
+  });
+});
+
+test("promptConfigToDefaults uses fallback repository_dir when prompts.repository_dir is missing", () => {
+  const value = promptConfigToDefaults(
+    {
+      prompts: {
+        approval_policy: "never",
+        sandbox: "workspace-write",
+      },
+    },
+    "/repo/fallback"
+  );
+  assert.deepEqual(value, {
+    cwd: "/repo/fallback",
+    approval_policy: "never",
     sandbox: "workspace-write",
   });
 });
@@ -197,6 +217,53 @@ test("parseRuntimeOptions derives task file from relative prompts.repository_dir
     "/home/yyy/ghq/github.com/xxx/tmux-codex-status/src/runner"
   );
   assert.equal(runtime.taskFilePath, "../../tasks/projects/tmux-codex-status/action.yml");
+});
+
+test("shouldPromptProjectSelection is true when prompts and positional task file are missing", () => {
+  const value = shouldPromptProjectSelection([], {});
+  assert.equal(value, true);
+});
+
+test("shouldPromptProjectSelection is false when repository_dir exists", () => {
+  const value = shouldPromptProjectSelection([], {
+    prompts: { repository_dir: "../.." },
+  });
+  assert.equal(value, false);
+});
+
+test("shouldPromptProjectSelection is false when task_file exists", () => {
+  const value = shouldPromptProjectSelection([], {
+    prompts: { task_file: "tasks.local.yml" },
+  });
+  assert.equal(value, false);
+});
+
+test("shouldPromptProjectSelection is false when positional task file exists", () => {
+  const value = shouldPromptProjectSelection(["tasks.local.yml"], {});
+  assert.equal(value, false);
+});
+
+test("parseProjectSelectionInput accepts numeric selection", () => {
+  const value = parseProjectSelectionInput("2", ["vibe-task", "tmux-codex-status"]);
+  assert.equal(value, "tmux-codex-status");
+});
+
+test("parseProjectSelectionInput accepts project name selection", () => {
+  const value = parseProjectSelectionInput("vibe-task", ["vibe-task", "tmux-codex-status"]);
+  assert.equal(value, "vibe-task");
+});
+
+test("parseProjectSelectionInput returns undefined on invalid input", () => {
+  const value = parseProjectSelectionInput("99", ["vibe-task", "tmux-codex-status"]);
+  assert.equal(value, undefined);
+});
+
+test("resolveRepositoryDirFromProjectName resolves sibling repository path", () => {
+  const value = resolveRepositoryDirFromProjectName(
+    "/home/sunb/ghq/github.com/sunb256/vibe-task/src/runner",
+    "tmux-codex-status"
+  );
+  assert.equal(value, "/home/sunb/ghq/github.com/sunb256/tmux-codex-status");
 });
 
 test("parseConfigPathOption uses default path without args", () => {

@@ -1177,3 +1177,12 @@ task:
     title: "frontend タスク編集ダイアログの状態入力をラジオボタン化"
     action: |
       frontend で タスクの編集画面で状態をコンボボックスで変更するがこれをラジオボタンにして欲しい
+  - id: '142'
+    url: "https://github.com/sunb256/vibe-task/pull/154"
+    title: "runner prompts.repository_dir 未指定時にプロジェクトを番号選択可能にする"
+    action: |
+      runner
+      config/config.yml prompts.repository_dir が指定されていないときは、
+
+      ../../tasks/projects 配下のフォルダ名からどれを対象にするかを選択するUI(番号を選択する)で、
+      対象のリポジトリを決められるようにしたい
