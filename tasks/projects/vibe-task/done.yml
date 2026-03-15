@@ -1111,7 +1111,7 @@ task:
       src/watcherをsrc/runnerにしたい
   - id: '134'
     url: https://github.com/sunb256/vibe-task/pull/148
-    title: runner: task_file を実行スクリプト基準で解決する
+    title: "runner: task_file を実行スクリプト基準で解決する"
     action: |
       runner config/config.ymlについて
 
@@ -1126,7 +1126,7 @@ task:
           cwd: .
   - id: '135'
     url: https://github.com/sunb256/vibe-task/pull/149
-    title: runner: prompts.target_dir を repository_dir に変更
+    title: "runner: prompts.target_dir を repository_dir に変更"
     action: |-
       runner
 
