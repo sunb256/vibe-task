@@ -1124,3 +1124,12 @@ task:
         task_file: ../../tasks/projects/vibe-task/action.yml
         defaults:
           cwd: .
+  - id: '142'
+    url: "-"
+    title: "runner prompts.repository_dir 未指定時にプロジェクトを番号選択可能にする"
+    action: |
+      runner
+      config/config.yml prompts.repository_dir が指定されていないときは、
+
+      ../../tasks/projects 配下のフォルダ名からどれを対象にするかを選択するUI(番号を選択する)で、
+      対象のリポジトリを決められるようにしたい

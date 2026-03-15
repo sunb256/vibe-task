@@ -45,7 +45,7 @@ prompts:
   task_file: tasks.local.yml
   common: |
     共通の指示
-  target_dir: /repo
+  repository_dir: /repo
   approval_policy: never
   sandbox: danger-full-access
 `;
@@ -73,7 +73,7 @@ prompts:
       prompts: {
         task_file: "tasks.local.yml",
         common: "共通の指示\n",
-        target_dir: "/repo",
+        repository_dir: "/repo",
         approval_policy: "never",
         sandbox: "danger-full-access",
       },
@@ -101,7 +101,7 @@ reply_wanted:
 prompts:
   task_file: []
   common: false
-  target_dir: []
+  repository_dir: []
   approval_policy: {}
   sandbox: 123
 `;
@@ -129,7 +129,7 @@ prompts:
       prompts: {
         task_file: undefined,
         common: undefined,
-        target_dir: undefined,
+        repository_dir: undefined,
         approval_policy: undefined,
         sandbox: undefined,
       },
