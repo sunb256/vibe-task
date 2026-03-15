@@ -64,10 +64,16 @@ export function resolveRunnerPath(baseDir: string, targetPath: string): string {
 }
 
 // repository_dir の末尾フォルダ名から tasks/projects 配下の task_file を組み立てる。
-function resolveTaskFileFromRepositoryDir(repositoryDir: string | undefined): string | undefined {
+function resolveTaskFileFromRepositoryDir(
+  repositoryDir: string | undefined,
+  baseDir: string
+): string | undefined {
   if (!repositoryDir) return undefined;
-  const projectDir = path.basename(path.normalize(repositoryDir));
-  if (!projectDir || projectDir === "." || projectDir === path.sep) {
+  const resolvedDir = path.isAbsolute(repositoryDir)
+    ? repositoryDir
+    : path.resolve(baseDir, repositoryDir);
+  const projectDir = path.basename(path.normalize(resolvedDir));
+  if (!projectDir || projectDir === "." || projectDir === ".." || projectDir === path.sep) {
     return undefined;
   }
   return `../../tasks/projects/${projectDir}/action.yml`;
@@ -100,7 +106,11 @@ export function parseConfigPathOption(args: string[]): string {
 }
 
 // CLI引数と設定を統合して実行時オプションを決める。
-export function parseRuntimeOptions(args: string[], config: RunnerConfig): RuntimeOptions {
+export function parseRuntimeOptions(
+  args: string[],
+  config: RunnerConfig,
+  runnerRoot = process.cwd()
+): RuntimeOptions {
   let taskFileArg: string | undefined;
   let maxAutoReplyCountArg: number | undefined;
 
@@ -137,7 +147,8 @@ export function parseRuntimeOptions(args: string[], config: RunnerConfig): Runti
   const hasFullAuto = args.includes("-f") || args.includes("--fullauto");
   const replyMode = hasHarfAuto ? "harfauto" : hasFullAuto ? "fullauto" : resolveReplyMode(config);
   const configTaskFile =
-    config.prompts?.task_file ?? resolveTaskFileFromRepositoryDir(config.prompts?.repository_dir);
+    config.prompts?.task_file ??
+    resolveTaskFileFromRepositoryDir(config.prompts?.repository_dir, runnerRoot);
   return {
     taskFilePath: taskFileArg ?? configTaskFile ?? "task.yml",
     verbose: args.includes("--verbose") || config.verbose === true,
@@ -215,7 +226,7 @@ async function main(): Promise<void> {
     maxFiles: LOG_MAX_FILES,
   });
 
-  const runtime = parseRuntimeOptions(args, config);
+  const runtime = parseRuntimeOptions(args, config, runnerRoot);
   const absTaskFilePath = resolveRunnerPath(runnerRoot, runtime.taskFilePath);
   const { tasks, defaults } = await loadTasks(absTaskFilePath);
   const mergedDefaults = resolveDefaultsCwd(

@@ -25,7 +25,7 @@ description: 日本語の仕様書・設計書向けに Mermaid の flowchart �
 出力は`docs/` 配下に出力する。
 特にしていなければ、以下のファイル名とする
 
-`docs/mameid.md` とする
+`docs/marmeid.md` とする
 
 ## 使う場面
 
@@ -51,6 +51,7 @@ description: 日本語の仕様書・設計書向けに Mermaid の flowchart �
 - 曖昧な点は推測を最小限にする
 - 既存 Mermaid の修正では不要な全面書き換えを避ける
 - 仕様書に必要な範囲へ絞る
+- 適切な改行をする(flowchartの改行は\n、sequenceDiagramの改行は<br/>)
 
 ## 図の選び方
 
