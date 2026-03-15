@@ -179,6 +179,9 @@ Conventional Commits 風の運用ならそれに合わせます。
 
 ### 8. `gh` で PR 作成
 
+dev で作業し、PRは新規作成すること（base: main, head: dev）
+既存PRの編集（gh pr edit）はしない。PR作成は gh pr create のみ
+
 通常 PR:
 
 ```bash
