@@ -143,6 +143,7 @@ test("renders project list", async () => {
     throw new Error("global header is missing");
   }
   expect(settingsDialog).toHaveClass("max-w-5xl");
+  expect(settingsDialog).toHaveClass("max-h-[calc(100vh-4rem)]", "overflow-y-auto");
   expect(globalHeader).toHaveStyle({ backgroundColor: "rgba(9, 9, 11, 0.94)" });
   expect(screen.getAllByRole("radio", { name: /Graphite|Navy|Copper|Forest|Plum|Charcoal|Custom/ })).toHaveLength(7);
   expect(screen.getByRole("radio", { name: /Graphite/ })).toBeChecked();
