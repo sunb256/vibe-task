@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "start": "tsx src/run.ts tasks_test.yml",
-    "answer": "tsx src/run.ts tasks_test.yml --answer",
+    "dev": "tsx src/run.ts -c config/config_test.yml",
+    "start": "tsx src/run.ts",
     "test": "tsx --test \"src/**/*.test.ts\""
   },
   "dependencies": {

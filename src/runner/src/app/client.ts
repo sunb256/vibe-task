@@ -134,18 +134,25 @@ export class CodexAppServerClient {
   private lastAgentMessageText = "";
   private streamingAgentTextByItemId = new Map<string, string>();
   private streamingDisplayEndsWithNewlineByItemId = new Map<string, boolean>();
+  private spinnerTimer: ReturnType<typeof setInterval> | null = null;
+  private spinnerMessage = "";
+  private spinnerFrameIndex = 0;
+  private spinnerVisible = false;
+  private readonly spinnerFrames = ["|", "/", "-", "\\"];
   private notificationContext: NotificationHandlerContext;
 
   private replySuffixes: string[];
   private replyPattern: RegExp | null;
   private replyMode: "harfauto" | "fullauto";
   private maxAutoReplyCount: number;
+  private isVerbose: boolean;
 
   // 通知処理と返信判定に必要な状態を初期化する。
   constructor(transport: JsonlTransport, options?: CodexAppServerClientOptions) {
 
     this.transport = transport;
     const verbose = options?.verbose === true;
+    this.isVerbose = verbose;
 
     this.replySuffixes = mergeRules(options?.replyWanted?.suffixes, DEFAULT_REPLY_SUFFIXES);
     this.replyPattern = createReplyPattern(
@@ -182,6 +189,12 @@ export class CodexAppServerClient {
       },
       deleteStreamingDisplayEndsWithNewline: (itemId) => {
         this.streamingDisplayEndsWithNewlineByItemId.delete(itemId);
+      },
+      setProgressMessage: (message) => {
+        this.setProgressMessage(message);
+      },
+      clearProgressMessage: () => {
+        this.clearProgressMessage();
       },
     };
 
@@ -306,8 +319,44 @@ export class CodexAppServerClient {
 
   // 入出力ハンドラを閉じて接続を終了する。
   close(): void {
+    this.clearProgressMessage();
     this.rl.close();
     this.transport.close();
+  }
+
+  // 非verbose時に進捗スピナーを表示する。
+  private setProgressMessage(message: string): void {
+    if (this.isVerbose || !process.stdout.isTTY) return;
+    this.spinnerMessage = message;
+    if (!this.spinnerTimer) {
+      this.spinnerTimer = setInterval(() => {
+        this.renderSpinner();
+      }, 120);
+    }
+    this.renderSpinner();
+  }
+
+  // 進捗スピナーをクリアする。
+  private clearProgressMessage(): void {
+    if (this.spinnerTimer) {
+      clearInterval(this.spinnerTimer);
+      this.spinnerTimer = null;
+    }
+    this.spinnerFrameIndex = 0;
+    this.spinnerMessage = "";
+    if (this.spinnerVisible && process.stdout.isTTY) {
+      process.stdout.write("\r\x1b[2K");
+    }
+    this.spinnerVisible = false;
+  }
+
+  // スピナーの1フレームを描画する。
+  private renderSpinner(): void {
+    if (!process.stdout.isTTY || !this.spinnerMessage) return;
+    const frame = this.spinnerFrames[this.spinnerFrameIndex % this.spinnerFrames.length] ?? "|";
+    this.spinnerFrameIndex += 1;
+    process.stdout.write(`\r${frame} ${this.spinnerMessage}`);
+    this.spinnerVisible = true;
   }
 
   // サーバー要求をrequestハンドラへ委譲する。
@@ -339,6 +388,7 @@ export class CodexAppServerClient {
     reason?: unknown;
     choices: string[];
   }): Promise<ApprovalDecision> {
+    this.clearProgressMessage();
 
     console.log(`\n=== ${args.title} ===`);
     console.log(`summary: ${args.summary}`);
@@ -376,6 +426,7 @@ export class CodexAppServerClient {
 
   // requestUserInput要求に対して対話入力で回答を作る。
   private async askToolUserInput(params: unknown): Promise<unknown> {
+    this.clearProgressMessage();
     console.log("\n=== Tool requested user input ===");
     console.log(JSON.stringify(params, null, 2));
 
