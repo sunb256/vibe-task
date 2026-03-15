@@ -1,4 +1,11 @@
 task:
+  - id: '138'
+    url: https://github.com/sunb256/vibe-task/pull/151
+    title: frontend/backendのMermaid図をdocs配下に追加
+    action: |
+      backendのmermaidを書いて
+
+      docs/backend.mdとしてください
   - id: '137'
     url: https://github.com/sunb256/vibe-task/pull/151
     title: frontendのMermaid図をdocs/frontend.mdに追記

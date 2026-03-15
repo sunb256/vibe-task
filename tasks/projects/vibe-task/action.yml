@@ -1,8 +1,1 @@
-task:
-  - id: '138'
-    url: '-'
-    title: '-'
-    action: |
-      backendのmermaidを書いて
-
-      docs/backend.mdとしてください
+task: []
