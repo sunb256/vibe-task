@@ -16,6 +16,7 @@ prompts:
   approval_policy: never
   sandbox: workspace-write
   repository_dir: ../..
+  # task_file が指定されてない場合はrepository_dir のフォルダ名からaction.ymlを決める
   # task_file: ../../tasks/projects/vibe-task/action.yml
   common: |
     1. 最初にカントフォルダのフォルダ名を取得して下さい (@PWDとする)

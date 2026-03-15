@@ -11,6 +11,8 @@ type ContextState = {
   lastAgentMessageText: string;
   streaming: Map<string, string>;
   streamingEndsWithNewline: Map<string, boolean>;
+  progressMessages: string[];
+  clearedProgressCount: number;
 };
 
 function createContext(isVerbose: boolean): {
@@ -23,6 +25,8 @@ function createContext(isVerbose: boolean): {
     lastAgentMessageText: "",
     streaming: new Map(),
     streamingEndsWithNewline: new Map(),
+    progressMessages: [],
+    clearedProgressCount: 0,
   };
 
   return {
@@ -52,6 +56,12 @@ function createContext(isVerbose: boolean): {
       },
       deleteStreamingDisplayEndsWithNewline: (itemId) => {
         state.streamingEndsWithNewline.delete(itemId);
+      },
+      setProgressMessage: (message) => {
+        state.progressMessages.push(message);
+      },
+      clearProgressMessage: () => {
+        state.clearedProgressCount += 1;
       },
     },
   };
@@ -112,6 +122,23 @@ test("handleNotificationMessage logs event only in verbose mode", async () => {
   });
   assert.equal(verboseLogs.length, 1);
   assert.match(verboseLogs[0] ?? "", /\[thread\.started\] thread-1/);
+});
+
+test("handleNotificationMessage records progress messages", async () => {
+  const { context, state } = createContext(false);
+  await handleNotificationMessage(
+    { method: "turn/started", params: { turn: { id: "turn-1" } } },
+    context
+  );
+  await handleNotificationMessage(
+    {
+      method: "item/started",
+      params: { item: { id: "item-1", type: "agentMessage" } },
+    },
+    context
+  );
+  assert.equal(state.progressMessages[0], "processing task...");
+  assert.equal(state.progressMessages[1], "streaming response...");
 });
 
 test("handleNotificationMessage updates state for turn completion", async () => {
