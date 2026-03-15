@@ -263,18 +263,19 @@ export function ProjectTasksPage() {
     <PageFrame
       eyebrow={null}
       title={(
-        <span className="flex h-9 w-full items-end gap-2 pl-1">
+        <span className="inline-flex h-9 items-end pl-1">
           <span>{project ? project.name : "Project"}</span>
-          {project?.repositoryPath ? (
-            <span
-              aria-hidden="true"
-              className="ml-auto text-xs font-normal leading-none text-[var(--muted)]"
-            >
-              {project.repositoryPath}
-            </span>
-          ) : null}
         </span>
       )}
+      actions={
+        project?.repositoryPath ? (
+          <div className="flex h-9 items-end justify-end pr-1">
+            <span aria-hidden="true" className="text-xs font-normal leading-none text-[var(--muted)]">
+              {project.repositoryPath}
+            </span>
+          </div>
+        ) : undefined
+      }
       onImported={handleImported}
     >
       <section className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
