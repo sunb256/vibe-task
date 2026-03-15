@@ -15,7 +15,8 @@ flowchart TD
   subgraph UI["共通 UI"]
     PageFrame["PageFrame"]
     Header["GlobalHeader / GlobalMenu"]
-    Dialog["NewTaskDialog / NewProjectDialog"]
+    TaskDialog["NewTaskDialog / NewProjectDialog"]
+    SettingsDialog["ProjectSettingsDialog"]
     Atoms["Notice / PrimaryButton / TextInput"]
   end
 
@@ -23,6 +24,9 @@ flowchart TD
   ProjectTasks --> UI
   PromptPage --> UI
   SkillsPage --> UI
+  ProjectList --> TaskDialog
+  ProjectTasks --> TaskDialog
+  Header --> SettingsDialog
 
   subgraph API["API クライアント層"]
     ApiFetch["lib/api.ts\napiFetch + ApiError"]
@@ -93,4 +97,33 @@ sequenceDiagram
   ProjectApi-->>Page: Project[]
   Page->>Cache: saveProjectCache
   Page-->>User: タスク一覧を表示
+```
+
+## Setting インポートのシーケンス
+
+```mermaid
+sequenceDiagram
+  actor User as ユーザー
+  participant Header as GlobalHeader
+  participant Dialog as ProjectSettingsDialog
+  participant SettingsApi as settingsApi
+  participant ProjectApi as projectApi
+  participant Api as apiFetch
+  participant Backend as Flask API
+
+  User->>Header: Setting ボタンを押す
+  Header->>Dialog: ダイアログを開く
+  User->>Dialog: projects.yml を選択してインポート
+  Dialog->>ProjectApi: importProjectsFile(content)
+  ProjectApi->>Api: POST /api/projects/import
+  Api->>Backend: HTTP request
+  Backend-->>Api: import result
+  Api-->>ProjectApi: success
+  Dialog->>SettingsApi: fetchSettings()
+  SettingsApi->>Api: GET /api/settings
+  Api->>Backend: HTTP request
+  Backend-->>Api: settings JSON
+  Api-->>SettingsApi: AppSettings
+  SettingsApi-->>Dialog: AppSettings
+  Dialog-->>Header: onSettingsChange/onImported
 ```
