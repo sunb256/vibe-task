@@ -1,5 +1,8 @@
 import * as path from "node:path";
+import * as fs from "node:fs/promises";
+import * as readline from "node:readline/promises";
 import { spawn } from "node:child_process";
+import { stdin as input, stdout as output } from "node:process";
 import { pathToFileURL } from "node:url";
 import { CodexAppServerClient } from "./app/client.js";
 import { loadRunnerConfig } from "./loader/config-loader.js";
@@ -22,6 +25,8 @@ const LOG_FILE_PATH = path.resolve("logs/log.log");
 const LOG_MAX_BYTES = 10 * 1024 * 1024;
 const LOG_MAX_FILES = 5;
 const DEFAULT_CONFIG_PATH = "config/config.yml";
+const TASKS_PROJECTS_REL_PATH = "../../tasks/projects";
+const REPOSITORY_PARENT_REL_PATH = "../../..";
 
 // 設定値から返信モードを決定し、旧設定も後方互換で解釈する。
 function resolveReplyMode(config: RunnerConfig): ReplyMode {
@@ -157,6 +162,94 @@ export function parseRuntimeOptions(
   };
 }
 
+// CLI引数にtasksファイルの位置引数があるか判定する。
+function hasPositionalTaskFileArg(args: string[]): boolean {
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (!arg) continue;
+    if (arg.startsWith("--config=")) continue;
+    if (arg === "--config" || arg === "-c") {
+      i += 1;
+      continue;
+    }
+    if (arg.startsWith("--max-auto-reply-count=")) continue;
+    if (arg === "--max-auto-reply-count" || arg === "-r") {
+      i += 1;
+      continue;
+    }
+    if (arg.startsWith("-")) continue;
+    return true;
+  }
+  return false;
+}
+
+// repository_dir/task_file 未指定かつ位置引数なしのときだけ選択UIを出す。
+export function shouldPromptProjectSelection(args: string[], config: RunnerConfig): boolean {
+  if (hasPositionalTaskFileArg(args)) return false;
+  if (config.prompts?.task_file) return false;
+  if (config.prompts?.repository_dir) return false;
+  return true;
+}
+
+// tasks/projects ディレクトリの絶対パスを返す。
+export function resolveTasksProjectsDir(runnerRoot: string): string {
+  return path.resolve(runnerRoot, TASKS_PROJECTS_REL_PATH);
+}
+
+// 選択されたプロジェクト名から repository_dir を解決する。
+export function resolveRepositoryDirFromProjectName(
+  runnerRoot: string,
+  projectName: string
+): string {
+  return path.resolve(runnerRoot, REPOSITORY_PARENT_REL_PATH, projectName);
+}
+
+// tasks/projects 配下のプロジェクトフォルダ名を取得する。
+export async function listTaskProjectNames(runnerRoot: string): Promise<string[]> {
+  const projectsDir = resolveTasksProjectsDir(runnerRoot);
+  const entries = await fs.readdir(projectsDir, { withFileTypes: true });
+  return entries
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort((a, b) => a.localeCompare(b));
+}
+
+// 番号入力またはフォルダ名入力を選択値へ変換する。
+export function parseProjectSelectionInput(
+  answer: string,
+  projectNames: string[]
+): string | undefined {
+  const inputText = answer.trim();
+  if (!inputText) return undefined;
+  const index = Number(inputText);
+  if (Number.isInteger(index) && index >= 1 && index <= projectNames.length) {
+    return projectNames[index - 1];
+  }
+  if (projectNames.includes(inputText)) {
+    return inputText;
+  }
+  return undefined;
+}
+
+// プロジェクト候補を表示し番号で1つ選択させる。
+async function askProjectSelection(projectNames: string[]): Promise<string> {
+  const rl = readline.createInterface({ input, output });
+  try {
+    console.log("prompts.repository_dir が未設定です。対象プロジェクトを選択してください。");
+    projectNames.forEach((name, index) => {
+      console.log(`  ${index + 1}. ${name}`);
+    });
+    while (true) {
+      const answer = await rl.question(`project [1-${projectNames.length}] > `);
+      const selected = parseProjectSelectionInput(answer, projectNames);
+      if (selected) return selected;
+      console.log("invalid selection");
+    }
+  } finally {
+    rl.close();
+  }
+}
+
 // 完了日時を yyyy-mm-dd HH:mm:ss 形式の文字列へ整形する。
 export function formatCompletedAt(date: Date): string {
   const yyyy = String(date.getFullYear());
@@ -198,9 +291,12 @@ export function mergeTaskDefaults(
 }
 
 // configのprompts設定をtask既定値形式へ変換する。
-export function promptConfigToDefaults(config: RunnerConfig): TaskDefaults {
+export function promptConfigToDefaults(
+  config: RunnerConfig,
+  fallbackRepositoryDir?: string
+): TaskDefaults {
   return {
-    cwd: config.prompts?.repository_dir,
+    cwd: config.prompts?.repository_dir ?? fallbackRepositoryDir,
     approval_policy: config.prompts?.approval_policy,
     sandbox: config.prompts?.sandbox,
   };
@@ -226,11 +322,27 @@ async function main(): Promise<void> {
     maxFiles: LOG_MAX_FILES,
   });
 
-  const runtime = parseRuntimeOptions(args, config, runnerRoot);
+  let runtime = parseRuntimeOptions(args, config, runnerRoot);
+  let selectedRepositoryDir: string | undefined;
+
+  if (shouldPromptProjectSelection(args, config)) {
+    const projectNames = await listTaskProjectNames(runnerRoot);
+    if (projectNames.length === 0) {
+      throw new Error(`No project directories found under ${resolveTasksProjectsDir(runnerRoot)}`);
+    }
+    const selectedProject = await askProjectSelection(projectNames);
+    selectedRepositoryDir = resolveRepositoryDirFromProjectName(runnerRoot, selectedProject);
+    const selectedTaskFile = resolveTaskFileFromRepositoryDir(selectedRepositoryDir, runnerRoot);
+    if (!selectedTaskFile) {
+      throw new Error(`Failed to resolve task file from selected project: ${selectedProject}`);
+    }
+    runtime = { ...runtime, taskFilePath: selectedTaskFile };
+  }
+
   const absTaskFilePath = resolveRunnerPath(runnerRoot, runtime.taskFilePath);
   const { tasks, defaults } = await loadTasks(absTaskFilePath);
   const mergedDefaults = resolveDefaultsCwd(
-    mergeTaskDefaults(defaults, promptConfigToDefaults(config)),
+    mergeTaskDefaults(defaults, promptConfigToDefaults(config, selectedRepositoryDir)),
     runnerRoot
   );
 
