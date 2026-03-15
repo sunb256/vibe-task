@@ -134,6 +134,7 @@ test("does not render the removed project subtitle", async () => {
   expect(screen.getByRole("button", { name: "Setting" })).toBeInTheDocument();
   expect(screen.queryByText("VIBE TASK")).not.toBeInTheDocument();
   expect(screen.getByRole("heading", { level: 1, name: "impl" })).toBeInTheDocument();
+  expect(screen.getByText("/tmp/impl")).toBeInTheDocument();
   expect(screen.getAllByRole("columnheader").map((header) => header.textContent)).toEqual([
     "id",
     "task",

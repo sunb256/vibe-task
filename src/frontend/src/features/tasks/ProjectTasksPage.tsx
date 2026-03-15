@@ -262,7 +262,16 @@ export function ProjectTasksPage() {
   return (
     <PageFrame
       eyebrow={null}
-      title={<span className="inline-flex h-9 items-center pl-1">{project ? project.name : "Project"}</span>}
+      title={(
+        <span className="inline-flex h-9 items-center gap-2 pl-1">
+          <span>{project ? project.name : "Project"}</span>
+          {project?.repositoryPath ? (
+            <span aria-hidden="true" className="text-xs font-normal text-[var(--muted)]">
+              {project.repositoryPath}
+            </span>
+          ) : null}
+        </span>
+      )}
       onImported={handleImported}
     >
       <section className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
