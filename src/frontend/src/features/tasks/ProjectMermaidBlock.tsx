@@ -13,7 +13,8 @@ import { Notice } from "../../components/Notice";
 
 const DEFAULT_SCALE = 1;
 const MIN_SCALE = 0.5;
-const SCALE_STEP = 0.1;
+const BUTTON_SCALE_STEP = 0.1;
+const WHEEL_SCALE_STEP = 0.25;
 
 type MermaidApi = {
   initialize: (config: MermaidConfig) => void;
@@ -184,7 +185,7 @@ function MermaidModal(props: MermaidModalProps) {
           onClick={(event) => event.stopPropagation()}
         >
           <div className="pointer-events-none absolute left-3 top-3 z-10 rounded bg-white/95 px-2 py-1 text-xs font-semibold text-[var(--muted)] shadow">
-            {props.view.scale.toFixed(1)}x
+            {formatScale(props.view.scale)}x
           </div>
           <div className="absolute right-3 top-3 z-10 flex items-center gap-2 rounded bg-white/95 p-1 shadow">
             <IconButton
@@ -298,7 +299,7 @@ function handleWheelZoom(
   setView: Dispatch<SetStateAction<MermaidView>>,
 ) {
   event.preventDefault();
-  const delta = event.deltaY < 0 ? SCALE_STEP : -SCALE_STEP;
+  const delta = event.deltaY < 0 ? WHEEL_SCALE_STEP : -WHEEL_SCALE_STEP;
   setView((current) => ({ ...current, scale: clampScale(current.scale + delta) }));
 }
 
@@ -350,15 +351,19 @@ function normalizeId(value: string) {
 }
 
 function zoomIn(current: number) {
-  return clampScale(current + SCALE_STEP);
+  return clampScale(current + BUTTON_SCALE_STEP);
 }
 
 function zoomOut(current: number) {
-  return clampScale(current - SCALE_STEP);
+  return clampScale(current - BUTTON_SCALE_STEP);
 }
 
 function clampScale(value: number) {
-  return Math.max(MIN_SCALE, Number(value.toFixed(1)));
+  return Math.max(MIN_SCALE, Number(value.toFixed(2)));
+}
+
+function formatScale(value: number) {
+  return value.toFixed(2).replace(/0$/, "").replace(/\.0$/, ".0");
 }
 
 function DragIcon() {

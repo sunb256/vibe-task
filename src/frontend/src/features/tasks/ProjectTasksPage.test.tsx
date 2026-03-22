@@ -342,11 +342,11 @@ test("switches to docs tab and renders markdown viewer", async () => {
   fireEvent.click(screen.getByRole("button", { name: "拡大" }));
   expect(screen.getByText("1.1x")).toBeInTheDocument();
   fireEvent.wheel(screen.getByTestId("mermaid-modal-canvas"), { deltaY: 100 });
-  expect(screen.getByText("1.0x")).toBeInTheDocument();
-  for (let i = 0; i < 16; i += 1) {
+  expect(screen.getByText("0.85x")).toBeInTheDocument();
+  for (let i = 0; i < 20; i += 1) {
     fireEvent.click(screen.getByRole("button", { name: "拡大" }));
   }
-  expect(screen.getByText("2.6x")).toBeInTheDocument();
+  expect(screen.getByText("2.85x")).toBeInTheDocument();
   const modalDiagram = screen.getByTestId("mermaid-modal-diagram");
   const initialTransform = modalDiagram.getAttribute("style");
   fireEvent.mouseDown(screen.getByTestId("mermaid-modal-canvas"), { clientX: 100, clientY: 100 });
