@@ -1,4 +1,18 @@
 task:
+  - id: "153"
+    url: "https://github.com/sunb256/vibe-task/pull/168"
+    title: "Runner CLI 引数を簡素化して task153 に対応"
+    action: |
+      runnerの引数が多くなっていてよくわからなくなっているので、シンプルにしたい
+
+      以下のみにしたい。詳細はすべてconfigで決めればいいものとする
+
+
+      -c configファイル or --config configファイル
+      -t タスク or --task タスク 
+      -h ヘルプ
+
+      configの指定がない場合は、config/config.yml を使用する
   - id: "152"
     url: "https://github.com/sunb256/vibe-task/pull/167"
     title: "Runner CLI に --task オプションを追加して task152 に対応"

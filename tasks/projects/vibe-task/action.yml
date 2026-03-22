@@ -1,15 +1,1 @@
-task:
-  - id: '153'
-    url: '-'
-    title: '-'
-    action: |
-      runnerの引数が多くなっていてよくわからなくなっているので、シンプルにしたい
-
-      以下のみにしたい。詳細はすべてconfigで決めればいいものとする
-
-
-      -c configファイル or --config configファイル
-      -t タスク or --task タスク 
-      -h ヘルプ
-
-      configの指定がない場合は、config/config.yml を使用する
+task: []
