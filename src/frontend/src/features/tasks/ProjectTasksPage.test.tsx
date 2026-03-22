@@ -310,7 +310,8 @@ test("switches to docs tab and renders markdown viewer", async () => {
   vi.mocked(fetchProjectDoc).mockResolvedValue({
     name: "README.md",
     path: "README.md",
-    content: "# Hello\n\n```mermaid\ngraph TD\n  A --> B\n```",
+    content:
+      "---\ntitle: Hello Doc\ntags:\n  - guide\n  - mermaid\npublished: true\n---\n# Hello\n\n```mermaid\ngraph TD\n  A --> B\n```",
   });
 
   render(
@@ -349,6 +350,16 @@ test("switches to docs tab and renders markdown viewer", async () => {
   await waitFor(() => {
     expect(screen.getByRole("button", { name: "README.md" })).toBeInTheDocument();
   });
+  const frontMatterTable = screen.getByRole("table", { name: "Front matter" });
+  expect(frontMatterTable).toBeInTheDocument();
+  expect(screen.getByRole("columnheader", { name: "Key" })).toBeInTheDocument();
+  expect(screen.getByRole("columnheader", { name: "Value" })).toBeInTheDocument();
+  expect(screen.getByText("title")).toBeInTheDocument();
+  expect(screen.getByText("Hello Doc")).toBeInTheDocument();
+  expect(screen.getByText("tags")).toBeInTheDocument();
+  expect(screen.getByText("guide, mermaid")).toBeInTheDocument();
+  expect(screen.getByText("published")).toBeInTheDocument();
+  expect(screen.getByText("true")).toBeInTheDocument();
   expect(screen.getByRole("heading", { level: 1, name: "Hello" })).toBeInTheDocument();
   await waitFor(() => {
     expect(screen.getByTestId("mermaid-preview-diagram")).toBeInTheDocument();

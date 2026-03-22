@@ -4,6 +4,7 @@ import ReactMarkdown, { type Components } from "react-markdown";
 import { Notice } from "../../components/Notice";
 import { readErrorMessage } from "../../lib/readErrorMessage";
 import { ProjectMermaidBlock } from "./ProjectMermaidBlock";
+import { type FrontMatterRow, splitFrontMatter } from "./frontMatter";
 import { fetchProjectDoc, fetchProjectDocs } from "./taskApi";
 import type { ProjectDocFile, ProjectDocSummary } from "./types";
 
@@ -23,6 +24,7 @@ export function ProjectDocsPanel(props: ProjectDocsPanelProps) {
   const [isLoadingDocs, setIsLoadingDocs] = useState(false);
   const [isLoadingDoc, setIsLoadingDoc] = useState(false);
   const visibleDocs = useMemo(() => filterDocs(docs, searchQuery), [docs, searchQuery]);
+  const parsedDoc = useMemo(() => splitFrontMatter(currentDoc?.content ?? ""), [currentDoc?.content]);
 
   useEffect(() => {
     if (!isActive || !projectId) {
@@ -153,7 +155,8 @@ export function ProjectDocsPanel(props: ProjectDocsPanelProps) {
             {isLoadingDoc ? <Notice tone="neutral" message="Loading markdown..." /> : null}
             {!docError && !isLoadingDoc && currentDoc && currentPath ? (
               <article className="break-words text-sm leading-7 text-[var(--ink)]">
-                <ReactMarkdown components={MARKDOWN_COMPONENTS}>{currentDoc.content}</ReactMarkdown>
+                {parsedDoc.rows.length > 0 ? <FrontMatterTable rows={parsedDoc.rows} /> : null}
+                <ReactMarkdown components={MARKDOWN_COMPONENTS}>{parsedDoc.body}</ReactMarkdown>
               </article>
             ) : null}
           </div>
@@ -183,6 +186,35 @@ function docButtonClass(isActive: boolean) {
     return "w-full rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-left text-xs font-semibold text-blue-700";
   }
   return "w-full rounded-md border border-transparent px-3 py-2 text-left text-xs font-medium text-[var(--ink)] hover:border-[var(--border)] hover:bg-zinc-50";
+}
+
+type FrontMatterTableProps = {
+  rows: FrontMatterRow[];
+};
+
+function FrontMatterTable(props: FrontMatterTableProps) {
+  return (
+    <div className="mb-4 overflow-x-auto rounded-md border border-[var(--border)] bg-zinc-50/70">
+      <table aria-label="Front matter" className="min-w-full border-collapse text-left text-xs">
+        <thead className="bg-zinc-100 text-[var(--muted)]">
+          <tr>
+            <th className="w-40 border-b border-[var(--border)] px-3 py-2 font-semibold">Key</th>
+            <th className="border-b border-[var(--border)] px-3 py-2 font-semibold">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          {props.rows.map((row, index) => (
+            <tr key={`${row.key}-${index}`}>
+              <th className="border-b border-[var(--border)] px-3 py-2 align-top font-semibold text-[var(--ink)]">
+                {row.key}
+              </th>
+              <td className="border-b border-[var(--border)] px-3 py-2 text-[var(--ink)]">{row.value}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 const MARKDOWN_COMPONENTS: Components = {
