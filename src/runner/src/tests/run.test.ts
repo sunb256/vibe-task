@@ -209,7 +209,7 @@ test("parseRuntimeOptions derives task file from prompts.repository_dir", () => 
     },
     "/home/yyy/ghq/github.com/xxx/vibe-task/src/runner"
   );
-  assert.equal(runtime.taskFilePath, "../../tasks/projects/tmux-codex-status/action.yml");
+  assert.equal(runtime.taskFilePath, "../../tasks/projects/tmux-codex-status/runner.yml");
 });
 
 test("shouldPromptProjectSelection is true when prompts and positional task file are missing", () => {

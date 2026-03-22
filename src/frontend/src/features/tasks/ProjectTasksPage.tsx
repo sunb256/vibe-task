@@ -11,24 +11,27 @@ import { ProjectDocsPanel } from "./ProjectDocsPanel";
 import type { Project } from "../projects/types";
 import {
   readCachedProject,
+  readCachedRunnerHistory,
   readCachedTasks,
   saveProjectCache,
+  saveRunnerHistoryCache,
   saveTaskCache,
 } from "./projectTasksPageCache";
 import {
-  createActionTask,
+  createTask,
   deleteTask,
   fetchTasks,
   swapTaskId,
   updateTask,
 } from "./taskApi";
-import type { TaskRecord, TaskSource } from "./types";
+import type { RunnerHistoryRecord, TaskRecord, TaskSource } from "./types";
 
 const defaultTaskAction = "";
 const AUTO_REFRESH_MS = 60_000;
 type ProjectTab = "tasks" | "docs";
 const defaultVisibleSources: Record<TaskSource, boolean> = {
   action: true,
+  runner: true,
   pending: true,
   done: false,
   cancel: false,
@@ -38,6 +41,7 @@ export function ProjectTasksPage() {
   const { projectId = "" } = useParams();
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<TaskRecord[]>([]);
+  const [runnerHistory, setRunnerHistory] = useState<RunnerHistoryRecord[]>([]);
   const [activeTab, setActiveTab] = useState<ProjectTab>("tasks");
   const [error, setError] = useState("");
   const [createError, setCreateError] = useState("");
@@ -50,6 +54,7 @@ export function ProjectTasksPage() {
   const [isSwapping, setIsSwapping] = useState(false);
   const [editTask, setEditTask] = useState<TaskRecord | null>(null);
   const [newTaskAction, setNewTaskAction] = useState(defaultTaskAction);
+  const [createTaskSource, setCreateTaskSource] = useState<TaskSource>("action");
   const [editTaskAction, setEditTaskAction] = useState("");
   const [editTaskSource, setEditTaskSource] = useState<TaskSource>("action");
   const [visibleSources, setVisibleSources] = useState(defaultVisibleSources);
@@ -64,14 +69,16 @@ export function ProjectTasksPage() {
 
     async function loadPage() {
       setError("");
-      applyCache(projectId, setProject, setTasks, setIsLoading);
+      applyCache(projectId, setProject, setTasks, setRunnerHistory, setIsLoading);
       try {
-        const loadedTasks = await readTasks(projectId);
+        const loadedTaskData = await readTasks(projectId);
         if (cancelled) {
           return;
         }
-        saveTaskCache(projectId, loadedTasks);
-        setTasks(loadedTasks);
+        saveTaskCache(projectId, loadedTaskData.tasks);
+        saveRunnerHistoryCache(projectId, loadedTaskData.runnerHistory);
+        setTasks(loadedTaskData.tasks);
+        setRunnerHistory(loadedTaskData.runnerHistory);
         setIsLoading(false);
         try {
           const loadedProject = await readProject(projectId);
@@ -112,7 +119,7 @@ export function ProjectTasksPage() {
     }
 
     const intervalId = window.setInterval(() => {
-      void refreshTasks(projectId, setTasks).catch((loadError) => {
+      void refreshTasks(projectId, setTasks, setRunnerHistory).catch((loadError) => {
         setError(readErrorMessage(loadError, "タスク一覧の取得に失敗しました。"));
       });
     }, AUTO_REFRESH_MS);
@@ -129,7 +136,7 @@ export function ProjectTasksPage() {
     }
     try {
       await deleteTask(projectId, task.source, task.id);
-      await refreshTasks(projectId, setTasks);
+      await refreshTasks(projectId, setTasks, setRunnerHistory);
     } catch (deleteError) {
       setError(readErrorMessage(deleteError, "タスクの削除に失敗しました。"));
     }
@@ -143,7 +150,7 @@ export function ProjectTasksPage() {
     setError("");
     try {
       await swapTaskId(projectId, task.source, task.id, swapWithId);
-      await refreshTasks(projectId, setTasks);
+      await refreshTasks(projectId, setTasks, setRunnerHistory);
     } catch (swapError) {
       setError(readErrorMessage(swapError, "task の並び替えに失敗しました。"));
     } finally {
@@ -154,6 +161,7 @@ export function ProjectTasksPage() {
   function openCreateDialog() {
     setCreateError("");
     setNewTaskAction(defaultTaskAction);
+    setCreateTaskSource("action");
     setIsCreateOpen(true);
   }
 
@@ -174,6 +182,7 @@ export function ProjectTasksPage() {
       event.preventDefault();
       setCreateError("");
       setNewTaskAction(defaultTaskAction);
+      setCreateTaskSource("action");
       setIsCreateOpen(true);
     }
 
@@ -189,6 +198,7 @@ export function ProjectTasksPage() {
     }
     setCreateError("");
     setIsCreateOpen(false);
+    setCreateTaskSource("action");
     createButtonRef.current?.focus();
   }
 
@@ -218,14 +228,21 @@ export function ProjectTasksPage() {
     }
   }
 
+  function handleCreateTaskSource(status: string) {
+    if (isTaskSource(status)) {
+      setCreateTaskSource(status);
+    }
+  }
+
   async function handleCreate() {
     setIsCreating(true);
     setCreateError("");
     try {
-      const created = await createActionTask(projectId);
-      await updateTask(projectId, "action", created.id, newTaskAction);
-      await refreshTasks(projectId, setTasks);
+      const created = await createTask(projectId, createTaskSource);
+      await updateTask(projectId, created.source, created.id, newTaskAction);
+      await refreshTasks(projectId, setTasks, setRunnerHistory);
       setIsCreateOpen(false);
+      setCreateTaskSource("action");
       createButtonRef.current?.focus();
     } catch (createError) {
       setCreateError(readErrorMessage(createError, "task の作成に失敗しました。"));
@@ -243,7 +260,7 @@ export function ProjectTasksPage() {
     try {
       const nextSource = editTaskSource === editTask.source ? undefined : editTaskSource;
       await updateTask(projectId, editTask.source, editTask.id, editTaskAction, nextSource);
-      await refreshTasks(projectId, setTasks);
+      await refreshTasks(projectId, setTasks, setRunnerHistory);
       setIsEditOpen(false);
       setEditTask(null);
       setEditTaskAction("");
@@ -259,7 +276,7 @@ export function ProjectTasksPage() {
   async function handleImported() {
     setError("");
     try {
-      await refreshTasks(projectId, setTasks);
+      await refreshTasks(projectId, setTasks, setRunnerHistory);
     } catch (loadError) {
       setError(readErrorMessage(loadError, "タスク一覧の取得に失敗しました。"));
       return;
@@ -311,6 +328,7 @@ export function ProjectTasksPage() {
               </button>
             ))}
           </div>
+          <RunnerHistoryPanel history={runnerHistory} />
           {error ? <Notice tone="error" message={error} /> : null}
           {isLoading ? <Notice tone="neutral" message="Loading tasks..." /> : null}
           {!error && !isLoading && visibleTasks.length === 0 ? (
@@ -430,7 +448,11 @@ export function ProjectTasksPage() {
           submitLabel="新規作成"
           submittingLabel="作成中..."
           enableShortcut
+          statusLabel="種別"
+          statusValue={createTaskSource}
+          statusOptions={TASK_STATUS_OPTIONS}
           onActionChange={setNewTaskAction}
+          onStatusChange={handleCreateTaskSource}
           onClose={closeCreateDialog}
           onSubmit={handleCreate}
         />
@@ -467,27 +489,39 @@ async function readProject(projectId: string) {
 
 async function readTasks(projectId: string) {
   const taskResponse = await fetchTasks(projectId);
-  return taskResponse.tasks;
+  return {
+    tasks: taskResponse.tasks,
+    runnerHistory: taskResponse.runnerHistory ?? [],
+  };
 }
 
-async function refreshTasks(projectId: string, setTasks: (tasks: TaskRecord[]) => void) {
-  const tasks = await readTasks(projectId);
-  saveTaskCache(projectId, tasks);
-  setTasks(tasks);
+async function refreshTasks(
+  projectId: string,
+  setTasks: (tasks: TaskRecord[]) => void,
+  setRunnerHistory: (history: RunnerHistoryRecord[]) => void,
+) {
+  const taskData = await readTasks(projectId);
+  saveTaskCache(projectId, taskData.tasks);
+  saveRunnerHistoryCache(projectId, taskData.runnerHistory);
+  setTasks(taskData.tasks);
+  setRunnerHistory(taskData.runnerHistory);
 }
 
 function applyCache(
   projectId: string,
   setProject: (project: Project | null) => void,
   setTasks: (tasks: TaskRecord[]) => void,
+  setRunnerHistory: (history: RunnerHistoryRecord[]) => void,
   setIsLoading: (isLoading: boolean) => void,
 ) {
   const cachedTasks = readCachedTasks(projectId);
   if (cachedTasks) {
     setTasks(cachedTasks);
+    setRunnerHistory(readCachedRunnerHistory(projectId) ?? []);
     setIsLoading(false);
   } else {
     setTasks([]);
+    setRunnerHistory([]);
     setIsLoading(true);
   }
   const cachedProject = readCachedProject(projectId);
@@ -578,6 +612,55 @@ function prLabel(url: string) {
     return "PR";
   }
   return `PR#${matched[1]}`;
+}
+
+type RunnerHistoryPanelProps = {
+  history: RunnerHistoryRecord[];
+};
+
+function RunnerHistoryPanel(props: RunnerHistoryPanelProps) {
+  const history = [...props.history].reverse();
+  return (
+    <section className="mb-4 rounded-lg border border-[var(--border)] bg-white px-3 py-2">
+      <div className="mb-2 flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-[var(--ink)]">RUNNER履歴</h2>
+        <span className="text-xs text-[var(--muted)]">{history.length}件</span>
+      </div>
+      {history.length === 0 ? (
+        <p className="text-xs text-[var(--muted)]">履歴はありません。</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-left text-xs">
+            <thead>
+              <tr className="text-[var(--muted)]">
+                <th className="px-2 py-1 font-medium">id</th>
+                <th className="px-2 py-1 font-medium">datetime</th>
+                <th className="px-2 py-1 font-medium">status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {history.map((item, index) => (
+                <tr key={`${item.datetime}-${index}`} className="border-t border-[var(--border)]">
+                  <td className="px-2 py-1 text-[var(--ink)]">{item.id.join(", ")}</td>
+                  <td className="px-2 py-1 text-[var(--ink)]">{item.datetime}</td>
+                  <td className="px-2 py-1">
+                    <span className={runnerStatusClass(item.status)}>{item.status.toUpperCase()}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function runnerStatusClass(status: RunnerHistoryRecord["status"]) {
+  if (status === "error") {
+    return "inline-flex rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-rose-700";
+  }
+  return "inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-emerald-700";
 }
 
 function showTaskTitle(title: string) {
@@ -696,7 +779,13 @@ function isEditableTarget(target: EventTarget | null) {
 }
 
 function isTaskSource(value: string): value is TaskSource {
-  return value === "action" || value === "pending" || value === "done" || value === "cancel";
+  return (
+    value === "action" ||
+    value === "runner" ||
+    value === "pending" ||
+    value === "done" ||
+    value === "cancel"
+  );
 }
 
 function toggleSourceFilter(
@@ -709,7 +798,7 @@ function toggleSourceFilter(
   }));
 }
 
-const TASK_FILTER_ORDER: TaskSource[] = ["action", "pending", "done", "cancel"];
+const TASK_FILTER_ORDER: TaskSource[] = ["action", "runner", "pending", "done", "cancel"];
 const SOURCE_META: Record<
   TaskSource,
   {
@@ -723,6 +812,12 @@ const SOURCE_META: Record<
     label: "TODO",
     badgeClass: "bg-blue-100 text-blue-700",
     filterClass: "border-blue-200 bg-blue-100 text-blue-700",
+    descending: false,
+  },
+  runner: {
+    label: "RUNNER",
+    badgeClass: "bg-emerald-100 text-emerald-700",
+    filterClass: "border-emerald-200 bg-emerald-100 text-emerald-700",
     descending: false,
   },
   pending: {

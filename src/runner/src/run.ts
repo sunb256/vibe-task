@@ -6,7 +6,7 @@ import { stdin as input, stdout as output } from "node:process";
 import { pathToFileURL } from "node:url";
 import { CodexAppServerClient } from "./app/client.js";
 import { loadRunnerConfig } from "./loader/config-loader.js";
-import { loadTasks } from "./loader/task-loader.js";
+import { appendRunnerHistory, isRunnerTaskFile, loadTasks } from "./loader/task-loader.js";
 import { JsonlTransport } from "./transport/jsonl-transport.js";
 import type { RunnerConfig, TaskDefaults } from "./shared/types.js";
 import { setupRotatingLog } from "./shared/rotating-log.js";
@@ -81,7 +81,7 @@ function resolveTaskFileFromRepositoryDir(
   if (!projectDir || projectDir === "." || projectDir === ".." || projectDir === path.sep) {
     return undefined;
   }
-  return `../../tasks/projects/${projectDir}/action.yml`;
+  return `../../tasks/projects/${projectDir}/runner.yml`;
 }
 
 // defaults.cwd が相対指定ならrunnerルート基準の絶対パスへ変換する。
@@ -282,6 +282,21 @@ export function buildTaskPrompt(action: string, commonPrompt?: string): string {
   return `${common}\n\n${action}`;
 }
 
+function runnerErrorHistoryIds(
+  completedTaskIds: string[],
+  currentTaskId: string | null,
+  fallbackTaskIds: string[]
+): string[] {
+  const ids = [...completedTaskIds];
+  if (currentTaskId && !ids.includes(currentTaskId)) {
+    ids.push(currentTaskId);
+  }
+  if (ids.length > 0) {
+    return ids;
+  }
+  return fallbackTaskIds;
+}
+
 // task.ymlと設定ファイル由来のdefaultsを統合し設定側を優先する。
 export function mergeTaskDefaults(
   taskDefaults: TaskDefaults,
@@ -341,6 +356,8 @@ async function main(): Promise<void> {
 
   const absTaskFilePath = resolveRunnerPath(runnerRoot, runtime.taskFilePath);
   const { tasks, defaults } = await loadTasks(absTaskFilePath);
+  const taskIds = tasks.map((task) => String(task.id));
+  const shouldWriteRunnerHistory = isRunnerTaskFile(absTaskFilePath);
   const mergedDefaults = resolveDefaultsCwd(
     mergeTaskDefaults(defaults, promptConfigToDefaults(config, selectedRepositoryDir)),
     runnerRoot
@@ -361,6 +378,8 @@ async function main(): Promise<void> {
     maxAutoReplyCount: runtime.maxAutoReplyCount,
   });
 
+  const completedTaskIds: string[] = [];
+  let currentTaskId: string | null = null;
   try {
     await client.initialize();
 
@@ -379,6 +398,7 @@ async function main(): Promise<void> {
     // console.log(`\nStarted thread: ${threadId}`);
 
     for (const [index, task] of tasks.entries()) {
+      currentTaskId = String(task.id);
       if (index > 0) {
         console.log("");
       }
@@ -414,10 +434,34 @@ async function main(): Promise<void> {
 
       // 連続 task の区切りを安定させるため少し待つ
       await sleep(100);
+      if (currentTaskId) {
+        completedTaskIds.push(currentTaskId);
+      }
+      currentTaskId = null;
     }
 
     const completedAt = formatCompletedAt(new Date());
+    if (shouldWriteRunnerHistory) {
+      await appendRunnerHistory(absTaskFilePath, {
+        id: taskIds,
+        datetime: completedAt,
+        status: "done",
+      });
+    }
     console.log(`\n\nAll tasks completed. [${completedAt}]`);
+  } catch (error) {
+    if (shouldWriteRunnerHistory) {
+      try {
+        await appendRunnerHistory(absTaskFilePath, {
+          id: runnerErrorHistoryIds(completedTaskIds, currentTaskId, taskIds),
+          datetime: formatCompletedAt(new Date()),
+          status: "error",
+        });
+      } catch (historyError) {
+        console.error("[runner history] failed to append history", historyError);
+      }
+    }
+    throw error;
   } finally {
     client.close();
   }

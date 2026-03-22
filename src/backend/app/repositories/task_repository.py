@@ -8,11 +8,12 @@ from ruamel.yaml.error import YAMLError
 from ruamel.yaml.scalarstring import LiteralScalarString
 
 from app.errors import AppError
-from app.models import ProjectRecord, TaskRecord
+from app.models import ProjectRecord, RunnerHistoryRecord, TaskRecord
 
-TASK_SOURCES: Final[tuple[str, ...]] = ("action", "pending", "done", "cancel")
+TASK_SOURCES: Final[tuple[str, ...]] = ("action", "runner", "pending", "done", "cancel")
 SOURCE_FILES: Final[dict[str, str]] = {
     "action": "action.yml",
+    "runner": "runner.yml",
     "pending": "pending.yml",
     "done": "done.yml",
     "cancel": "cancel.yml",
@@ -33,7 +34,7 @@ class TaskRepository:
             path = project_dir / self._source_file_name(source)
             if path.exists():
                 continue
-            path.write_text("task: []\n", encoding="utf-8")
+            path.write_text(self._empty_document_text(source), encoding="utf-8")
 
     def relocate_project_files(
         self,
@@ -55,6 +56,11 @@ class TaskRepository:
             document = self._load_source(project, source)
             records.extend(self._to_task_records(project.id, source, document))
         return records
+
+    def list_runner_history(self, project: ProjectRecord) -> list[RunnerHistoryRecord]:
+        document = self._load_source(project, "runner")
+        history_items = self._get_history_items(document)
+        return [self._to_runner_history_record(item) for item in history_items]
 
     def get_task(
         self,
@@ -261,11 +267,51 @@ class TaskRepository:
                 max_id = max(max_id, int(value))
         return max_id
 
+    def _empty_document_text(self, source: str) -> str:
+        if source == "runner":
+            return "task: []\nhistory: []\n"
+        return "task: []\n"
+
     def _get_task_items(self, document: dict) -> MutableSequence:
         tasks = document.get("task", [])
         if not isinstance(tasks, MutableSequence):
             raise AppError("task file is invalid", 400)
         return tasks
+
+    def _get_history_items(self, document: dict) -> MutableSequence:
+        history = document.get("history", [])
+        if not isinstance(history, MutableSequence):
+            raise AppError("task file is invalid", 400)
+        return history
+
+    def _to_runner_history_record(self, item: object) -> RunnerHistoryRecord:
+        if not isinstance(item, dict):
+            raise AppError("task file is invalid", 400)
+        ids = self._history_ids(item.get("id"))
+        datetime = item.get("datetime")
+        status = item.get("status")
+        if not isinstance(datetime, str) or not datetime.strip():
+            raise AppError("task file is invalid", 400)
+        if status not in {"done", "error"}:
+            raise AppError("task file is invalid", 400)
+        return RunnerHistoryRecord(
+            ids=ids,
+            datetime=datetime.strip(),
+            status=status,
+        )
+
+    def _history_ids(self, value: object) -> list[str]:
+        if isinstance(value, (int, str)):
+            return [str(value)]
+        if not isinstance(value, MutableSequence):
+            raise AppError("task file is invalid", 400)
+        ids: list[str] = []
+        for item in value:
+            if isinstance(item, (int, str)):
+                ids.append(str(item))
+                continue
+            raise AppError("task file is invalid", 400)
+        return ids
 
     def _resolve_source_path(self, project: ProjectRecord, source: str) -> Path:
         project_dir = self._resolve_project_dir(project)

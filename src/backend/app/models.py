@@ -49,6 +49,20 @@ class TaskRecord:
 
 
 @dataclass(slots=True)
+class RunnerHistoryRecord:
+    ids: list[str]
+    datetime: str
+    status: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.ids,
+            "datetime": self.datetime,
+            "status": self.status,
+        }
+
+
+@dataclass(slots=True)
 class ProjectDocSummary:
     name: str
     path: str

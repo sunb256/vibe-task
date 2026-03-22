@@ -58,7 +58,7 @@ vi.mock("../projects/projectApi", () => ({
 }));
 
 vi.mock("./taskApi", () => ({
-  createActionTask: vi.fn(),
+  createTask: vi.fn(),
   deleteTask: vi.fn(),
   fetchProjectDoc: vi.fn(),
   fetchProjectDocs: vi.fn(),
@@ -69,7 +69,7 @@ vi.mock("./taskApi", () => ({
 
 import { fetchProjects } from "../projects/projectApi";
 import {
-  createActionTask,
+  createTask,
   fetchProjectDoc,
   fetchProjectDocs,
   fetchTasks,
@@ -125,6 +125,13 @@ test("does not render the removed project subtitle", async () => {
         action: "done task 10",
       },
     ],
+    runnerHistory: [
+      {
+        id: ["1", "2", "3"],
+        datetime: "2026-03-22 09:00:00",
+        status: "done",
+      },
+    ],
   });
 
   render(
@@ -164,7 +171,13 @@ test("does not render the removed project subtitle", async () => {
   expect(repositoryPath).toBeInTheDocument();
   expect(repositoryPath).toHaveClass("text-sm");
   expect(repositoryPath.parentElement).toHaveClass("h-10", "items-center", "justify-end");
-  expect(screen.getAllByRole("columnheader").map((header) => header.textContent)).toEqual([
+  const taskTable = screen
+    .getAllByRole("table")
+    .find((table) => within(table).queryByRole("columnheader", { name: "actions" }));
+  if (!taskTable) {
+    throw new Error("task table is missing");
+  }
+  expect(within(taskTable).getAllByRole("columnheader").map((header) => header.textContent)).toEqual([
     "id",
     "task",
     "actions",
@@ -181,26 +194,31 @@ test("does not render the removed project subtitle", async () => {
   expect(createButton.closest("div")).toHaveClass("justify-start", "pl-2");
   expect(screen.queryByRole("button", { name: "新規" })).not.toBeInTheDocument();
   expect(screen.queryByRole("link", { name: "impl" })).not.toBeInTheDocument();
-  const table = screen.getByRole("table");
-  expect(table).toHaveClass("border-spacing-y-1");
-  expect(createButton.compareDocumentPosition(table) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(taskTable).toHaveClass("border-spacing-y-1");
+  expect(createButton.compareDocumentPosition(taskTable) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   const todoToggle = screen.getByRole("button", { name: "TODO(1)" });
+  const runnerToggle = screen.getByRole("button", { name: "RUNNER(0)" });
   const pendingToggle = screen.getByRole("button", { name: "PENDING(0)" });
   const doneToggle = screen.getByRole("button", { name: "DONE(2)" });
   const cancelToggle = screen.getByRole("button", { name: "CANCEL(0)" });
   expect(todoToggle).toHaveAttribute("aria-pressed", "true");
+  expect(runnerToggle).toHaveAttribute("aria-pressed", "true");
   expect(pendingToggle).toHaveAttribute("aria-pressed", "true");
   expect(doneToggle).toHaveAttribute("aria-pressed", "false");
   expect(cancelToggle).toHaveAttribute("aria-pressed", "false");
   expect(todoToggle).toHaveClass("bg-blue-100", "text-blue-700", "rounded-full");
+  expect(runnerToggle).toHaveClass("bg-emerald-100", "text-emerald-700", "rounded-full");
   expect(pendingToggle).toHaveClass("bg-amber-100", "text-amber-700", "rounded-full");
   expect(doneToggle).toHaveClass("rounded-full");
   expect(cancelToggle).toHaveClass("rounded-full");
-  expect(screen.getByRole("columnheader", { name: "id" })).toHaveClass("whitespace-nowrap");
-  expect(screen.getByRole("columnheader", { name: "task" })).toHaveClass("w-full");
-  expect(screen.getByRole("columnheader", { name: "actions" })).toHaveClass("pl-1", "pr-3");
-  expect(screen.getByRole("columnheader", { name: "actions" })).toHaveClass("w-[13rem]");
-  expect(screen.getByRole("columnheader", { name: "url" })).toHaveClass("text-center");
+  expect(screen.getByRole("heading", { level: 2, name: "RUNNER履歴" })).toBeInTheDocument();
+  expect(screen.getByText("1, 2, 3")).toBeInTheDocument();
+  expect(screen.getByText("2026-03-22 09:00:00")).toBeInTheDocument();
+  expect(within(taskTable).getByRole("columnheader", { name: "id" })).toHaveClass("whitespace-nowrap");
+  expect(within(taskTable).getByRole("columnheader", { name: "task" })).toHaveClass("w-full");
+  expect(within(taskTable).getByRole("columnheader", { name: "actions" })).toHaveClass("pl-1", "pr-3");
+  expect(within(taskTable).getByRole("columnheader", { name: "actions" })).toHaveClass("w-[13rem]");
+  expect(within(taskTable).getByRole("columnheader", { name: "url" })).toHaveClass("text-center");
   expect(screen.getByRole("link", { name: "PR#4" })).toHaveAttribute(
     "href",
     "https://github.com/sunb256/impl/pull/4",
@@ -222,7 +240,7 @@ test("does not render the removed project subtitle", async () => {
   expect(editButtons[0].parentElement).not.toHaveClass("flex-wrap");
   expect(screen.getByRole("button", { name: "task 1 を上へ" })).toBeDisabled();
   expect(screen.getByRole("button", { name: "task 1 を下へ" })).toBeDisabled();
-  const rows = screen.getAllByRole("row");
+  const rows = within(taskTable).getAllByRole("row");
   expect(rows).toHaveLength(2);
   expect(rows[1].querySelector("td")).toHaveClass("py-2", "whitespace-nowrap");
   expect(rows[1].querySelector("td")).toHaveClass("group-hover:bg-amber-50/70");
@@ -620,7 +638,7 @@ test("creates a new action task from modal editor", async () => {
         },
       ],
     });
-  vi.mocked(createActionTask).mockResolvedValue({
+  vi.mocked(createTask).mockResolvedValue({
     projectId: "project-1",
     source: "action",
     id: "2",
@@ -681,13 +699,13 @@ test("creates a new action task from modal editor", async () => {
   expect(screen.getByRole("dialog", { name: "新規タスク" })).toBeInTheDocument();
   fireEvent.mouseDown(screen.getByRole("dialog", { name: "新規タスク" }).parentElement!);
   expect(screen.queryByRole("dialog", { name: "新規タスク" })).not.toBeInTheDocument();
-  expect(createActionTask).not.toHaveBeenCalled();
+  expect(createTask).not.toHaveBeenCalled();
 
   fireEvent.click(screen.getByRole("button", { name: "新規タスク(N)" }));
   expect(screen.getByRole("dialog", { name: "新規タスク" })).toBeInTheDocument();
   fireEvent.keyDown(window, { key: "Escape" });
   expect(screen.queryByRole("dialog", { name: "新規タスク" })).not.toBeInTheDocument();
-  expect(createActionTask).not.toHaveBeenCalled();
+  expect(createTask).not.toHaveBeenCalled();
 
   fireEvent.click(screen.getByRole("button", { name: "新規タスク(N)" }));
   expect(screen.getByRole("dialog", { name: "新規タスク" })).toBeInTheDocument();
@@ -697,7 +715,7 @@ test("creates a new action task from modal editor", async () => {
   fireEvent.keyDown(window, { key: "Enter", ctrlKey: true });
 
   await waitFor(() => {
-    expect(createActionTask).toHaveBeenCalledWith("project-1");
+    expect(createTask).toHaveBeenCalledWith("project-1", "action");
     expect(updateTask).toHaveBeenCalledWith(
       "project-1",
       "action",

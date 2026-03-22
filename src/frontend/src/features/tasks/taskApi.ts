@@ -1,8 +1,15 @@
 import { apiFetch } from "../../lib/api";
-import type { ProjectDocFile, ProjectDocSummary, TaskRecord, TaskSource } from "./types";
+import type {
+  ProjectDocFile,
+  ProjectDocSummary,
+  RunnerHistoryRecord,
+  TaskRecord,
+  TaskSource,
+} from "./types";
 
 type TaskListResponse = {
   tasks: TaskRecord[];
+  runnerHistory?: RunnerHistoryRecord[];
 };
 
 type DocListResponse = {
@@ -27,8 +34,8 @@ export function fetchProjectDoc(projectId: string, docPath: string) {
   });
 }
 
-export function createActionTask(projectId: string) {
-  return apiFetch<TaskRecord>(`/api/projects/${projectId}/tasks/action`, {
+export function createTask(projectId: string, source: TaskSource) {
+  return apiFetch<TaskRecord>(`/api/projects/${projectId}/tasks/${source}`, {
     method: "POST",
   });
 }

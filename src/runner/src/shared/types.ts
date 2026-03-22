@@ -33,10 +33,17 @@ export type TaskDefaults = {
   model?: string;
 };
 
+export type RunnerHistoryEntry = {
+  id: Array<string | number>;
+  datetime: string;
+  status: "done" | "error";
+};
+
 export type TaskFile = {
   task?: TaskSpec[];
   tasks?: TaskSpec[];
   defaults?: TaskDefaults;
+  history?: RunnerHistoryEntry[];
 };
 
 export type RunnerConfig = {

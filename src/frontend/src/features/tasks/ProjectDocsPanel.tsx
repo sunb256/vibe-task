@@ -135,7 +135,7 @@ export function ProjectDocsPanel(props: ProjectDocsPanelProps) {
         <Notice tone="neutral" message="検索条件に一致するMarkdownはありません。" />
       ) : null}
       {!loadError && !isLoadingDocs && visibleDocs.length > 0 ? (
-        <div className="grid gap-3 lg:grid-cols-[18rem_minmax(0,1fr)]">
+        <div className="grid gap-3 lg:grid-cols-[16rem_minmax(0,1fr)]">
           <div className="max-h-[70vh] overflow-auto rounded-lg border border-[var(--border)] bg-white p-2">
             <ul className="space-y-1">
               {visibleDocs.map((doc) => (

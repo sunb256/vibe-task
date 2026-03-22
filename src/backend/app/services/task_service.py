@@ -1,4 +1,4 @@
-from app.models import TaskRecord
+from app.models import RunnerHistoryRecord, TaskRecord
 from app.repositories.project_repository import ProjectRepository
 from app.repositories.task_repository import TaskRepository
 
@@ -12,6 +12,10 @@ class TaskService:
     def list_tasks(self, project_id: str) -> list[TaskRecord]:
         project = self._load_project(project_id)
         return self.task_repository.list_tasks(project)
+
+    def list_runner_history(self, project_id: str) -> list[RunnerHistoryRecord]:
+        project = self._load_project(project_id)
+        return self.task_repository.list_runner_history(project)
 
     def get_task(self, project_id: str, source: str, task_id: str) -> TaskRecord:
         project = self._load_project(project_id)
@@ -43,8 +47,11 @@ class TaskService:
         self.task_repository.swap_task_id(project, source, task_id, swap_with_id)
 
     def create_action_task(self, project_id: str) -> TaskRecord:
+        return self.create_task(project_id, "action")
+
+    def create_task(self, project_id: str, source: str) -> TaskRecord:
         project = self._load_project(project_id)
-        return self.task_repository.create_task(project, "action")
+        return self.task_repository.create_task(project, source)
 
     def _load_project(self, project_id: str):
         project = self.project_repository.get_project(project_id)
