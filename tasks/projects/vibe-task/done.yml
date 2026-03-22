@@ -1,7 +1,7 @@
 task:
   - id: "146"
-    url: "https://github.com/sunb256/vibe-task/pull/160"
-    title: "プロジェクト画面にdocsタブとMarkdown viewerを追加"
+    url: "https://github.com/sunb256/vibe-task/pull/161"
+    title: "プロジェクト画面ヘッダのタブ表示を整理しtask146をdoneへ移動"
     action: |-
       frontend プロジェクト画面
 
