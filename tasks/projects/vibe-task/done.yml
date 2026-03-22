@@ -1,4 +1,28 @@
 task:
+  - id: "157"
+    url: "https://github.com/sunb256/vibe-task/pull/172"
+    title: "frontend プロジェクト画面にRunnerタブと一覧/ログ/履歴タブを追加"
+    action: |
+      frontend プロジェクト画面
+
+      ヘッダ部
+
+      プロジェクト名 | docs
+
+      となっているが、
+
+      プロジェクト名 | Runner | docs
+
+      というタブ構成にしたい
+
+      既存のRunnerをこのRunnerタブに移動したい
+
+
+      Runnerタブのコンテンツ内でタブ構成
+
+      一覧 | Runnerログ | 履歴
+
+      という風にしたい
   - id: "156"
     url: "https://github.com/sunb256/vibe-task/pull/171"
     title: "frontendからRunner実行とログ表示を追加してtask156に対応"
