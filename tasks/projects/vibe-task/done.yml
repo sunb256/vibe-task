@@ -1,4 +1,11 @@
 task:
+  - id: "148"
+    url: "https://github.com/sunb256/vibe-task/pull/163"
+    title: "docsのYAML frontmatterをテーブル表示してtask148に対応"
+    action: |-
+      frontend プロジェクト画面
+
+      markdownでyamlフロントマターがあるときに表示が崩れる。githubで表示しているようにテーブル表示などでうまく対応してほしい
   - id: "143"
     url: "https://github.com/sunb256/vibe-task/pull/162"
     title: "Settingダイアログをスクロール可能にしてtask143をdoneへ移動"

@@ -1,8 +1,1 @@
-task:
-  - id: '148'
-    url: '-'
-    title: '-'
-    action: |-
-      frontend プロジェクト画面
-
-      markdownでyamlフロントマターがあるときに表示が崩れる。githubで表示しているようにテーブル表示などでうまく対応してほしい
+task: []
