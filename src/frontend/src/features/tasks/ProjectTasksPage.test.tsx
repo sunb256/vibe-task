@@ -60,8 +60,10 @@ vi.mock("../projects/projectApi", () => ({
 vi.mock("./taskApi", () => ({
   createTask: vi.fn(),
   deleteTask: vi.fn(),
+  executeRunner: vi.fn(),
   fetchProjectDoc: vi.fn(),
   fetchProjectDocs: vi.fn(),
+  fetchRunnerLogs: vi.fn(),
   fetchTasks: vi.fn(),
   swapTaskId: vi.fn(),
   updateTask: vi.fn(),
@@ -70,8 +72,10 @@ vi.mock("./taskApi", () => ({
 import { fetchProjects } from "../projects/projectApi";
 import {
   createTask,
+  executeRunner,
   fetchProjectDoc,
   fetchProjectDocs,
+  fetchRunnerLogs,
   fetchTasks,
   swapTaskId,
   updateTask,
@@ -81,6 +85,13 @@ beforeEach(() => {
   vi.spyOn(globalThis, "fetch").mockResolvedValue(
     new Response(JSON.stringify({ headerBand: "zinc" })),
   );
+  vi.mocked(fetchRunnerLogs).mockResolvedValue({
+    running: false,
+    log: "",
+  });
+  vi.mocked(executeRunner).mockResolvedValue({
+    running: true,
+  });
 });
 
 afterEach(() => {
@@ -427,6 +438,56 @@ test("switches to docs tab and renders markdown viewer", async () => {
   fireEvent.click(screen.getByRole("button", { name: "impl" }));
   expect(screen.queryByRole("searchbox", { name: "Search" })).not.toBeInTheDocument();
   expect(screen.getByRole("button", { name: "新規タスク(N)" })).toBeInTheDocument();
+});
+
+test("starts runner execution and shows runner logs", async () => {
+  vi.mocked(fetchProjects).mockResolvedValue({
+    projects: [
+      {
+        id: "project-1",
+        name: "impl",
+        repositoryPath: "/tmp/impl",
+      },
+    ],
+  });
+  vi.mocked(fetchTasks).mockResolvedValue({
+    tasks: [
+      {
+        projectId: "project-1",
+        source: "action",
+        id: "1",
+        title: "-",
+        url: "-",
+        action: "task body",
+      },
+    ],
+    runnerHistory: [],
+  });
+  vi.mocked(fetchRunnerLogs)
+    .mockResolvedValueOnce({ running: false, log: "" })
+    .mockResolvedValueOnce({ running: true, log: "runner started" });
+
+  render(
+    <MemoryRouter initialEntries={["/projects/project-1"]}>
+      <Routes>
+        <Route path="/projects/:projectId" element={<ProjectTasksPage />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByRole("button", { name: "RUNNER実行" })).toBeInTheDocument();
+  });
+
+  fireEvent.click(screen.getByRole("button", { name: "RUNNER実行" }));
+
+  await waitFor(() => {
+    expect(executeRunner).toHaveBeenCalledWith("project-1");
+    expect(screen.getByRole("heading", { level: 2, name: "RUNNER履歴" })).toBeInTheDocument();
+  });
+  expect(screen.getByRole("button", { name: "RUNNER実行中..." })).toBeDisabled();
+  expect(screen.getByText("RUNNING")).toBeInTheDocument();
+  expect(screen.getByText("runner started")).toBeInTheDocument();
 });
 
 test("swaps task ids with up/down buttons", async () => {

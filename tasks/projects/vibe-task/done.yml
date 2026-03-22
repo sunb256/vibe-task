@@ -1,4 +1,11 @@
 task:
+  - id: "156"
+    url: "https://github.com/sunb256/vibe-task/pull/171"
+    title: "frontendからRunner実行とログ表示を追加してtask156に対応"
+    action: |
+      frontend プロジェクト画面
+
+      runnerを実行できる仕組みが欲しい。実行して、結果のログをfrontend側で見たい
   - id: "153"
     url: "https://github.com/sunb256/vibe-task/pull/168"
     title: "Runner CLI 引数を簡素化して task153 に対応"

@@ -15,6 +15,11 @@ export type RunnerHistoryRecord = {
   status: "done" | "error";
 };
 
+export type RunnerLogRecord = {
+  running: boolean;
+  log: string;
+};
+
 export type ProjectDocSummary = {
   name: string;
   path: string;

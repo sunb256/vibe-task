@@ -63,6 +63,18 @@ class RunnerHistoryRecord:
 
 
 @dataclass(slots=True)
+class RunnerLogRecord:
+    running: bool
+    log: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "running": self.running,
+            "log": self.log,
+        }
+
+
+@dataclass(slots=True)
 class ProjectDocSummary:
     name: str
     path: str
