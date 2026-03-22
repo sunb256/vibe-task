@@ -1,4 +1,12 @@
 task:
+  - id: "145"
+    url: "https://github.com/sunb256/vibe-task/pull/160"
+    title: "プロジェクト画面にdocsタブとMarkdown viewerを追加"
+    action: |
+      frontend プロジェクト画面 docsタブにおいて、mermaid対応をしたい
+      markdownの中にはmermaidで記載されているものがある。
+
+      これをきれいに表示したい、拡大縮小リセットなどの機能もあるといい
   - id: "144"
     url: "https://github.com/sunb256/vibe-task/pull/159"
     title: "プロジェクト画面にdocsタブとMarkdown viewerを追加"

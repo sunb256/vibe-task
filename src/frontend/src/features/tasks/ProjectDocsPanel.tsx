@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 
 import { Notice } from "../../components/Notice";
 import { displayPath } from "../../lib/displayPath";
 import { readErrorMessage } from "../../lib/readErrorMessage";
+import { ProjectMermaidBlock } from "./ProjectMermaidBlock";
 import { fetchProjectDoc, fetchProjectDocs } from "./taskApi";
 import type { ProjectDocFile, ProjectDocSummary } from "./types";
 
@@ -157,12 +158,8 @@ const MARKDOWN_COMPONENTS: Components = {
   ul: ({ children }) => <ul className="mb-3 list-disc pl-5">{children}</ul>,
   ol: ({ children }) => <ol className="mb-3 list-decimal pl-5">{children}</ol>,
   li: ({ children }) => <li className="mb-1">{children}</li>,
-  pre: ({ children }) => (
-    <pre className="mb-3 overflow-x-auto rounded-md border border-[var(--border)] bg-zinc-50 p-3">
-      {children}
-    </pre>
-  ),
-  code: ({ children }) => <code className="rounded bg-zinc-100 px-1 py-0.5">{children}</code>,
+  pre: ({ children }) => <>{children}</>,
+  code: ({ className, children }) => renderCodeBlock(className, children),
   a: ({ href, children }) => (
     <a
       href={href}
@@ -174,3 +171,36 @@ const MARKDOWN_COMPONENTS: Components = {
     </a>
   ),
 };
+
+function renderCodeBlock(className: string | undefined, children: ReactNode) {
+  const code = codeText(children);
+  if (isMermaid(className)) {
+    return <ProjectMermaidBlock chart={code} />;
+  }
+  if (isBlockCode(className, code)) {
+    return (
+      <pre className="mb-3 overflow-x-auto rounded-md border border-[var(--border)] bg-zinc-50 p-3">
+        <code className={className}>{code}</code>
+      </pre>
+    );
+  }
+  return <code className="rounded bg-zinc-100 px-1 py-0.5">{code}</code>;
+}
+
+function isMermaid(className: string | undefined) {
+  return className?.includes("language-mermaid") ?? false;
+}
+
+function isBlockCode(className: string | undefined, code: string) {
+  if (className && className !== "language-mermaid") {
+    return true;
+  }
+  return code.includes("\n");
+}
+
+function codeText(children: ReactNode) {
+  const text = Array.isArray(children)
+    ? children.map((item) => String(item)).join("")
+    : String(children);
+  return text.replace(/\n$/, "");
+}
