@@ -334,12 +334,12 @@ test("switches to docs tab and renders markdown viewer", async () => {
   });
   const docsSearch = screen.getByRole("searchbox", { name: "Search" });
   expect(docsSearch).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "README.md" })).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "docs/guide.md" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "README" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "docs/guide" })).toBeInTheDocument();
   fireEvent.change(docsSearch, { target: { value: "guide" } });
   await waitFor(() => {
-    expect(screen.queryByRole("button", { name: "README.md" })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "docs/guide.md" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "README" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "docs/guide" })).toBeInTheDocument();
   });
   await waitFor(() => {
     expect(fetchProjectDoc).toHaveBeenCalledWith("project-1", "docs/guide.md");
@@ -348,7 +348,7 @@ test("switches to docs tab and renders markdown viewer", async () => {
   expect(screen.getByText("検索条件に一致するMarkdownはありません。")).toBeInTheDocument();
   fireEvent.change(docsSearch, { target: { value: "" } });
   await waitFor(() => {
-    expect(screen.getByRole("button", { name: "README.md" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "README" })).toBeInTheDocument();
   });
   const frontMatterTable = screen.getByRole("table", { name: "Front matter" });
   expect(frontMatterTable).toBeInTheDocument();

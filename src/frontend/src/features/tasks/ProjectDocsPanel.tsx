@@ -145,7 +145,7 @@ export function ProjectDocsPanel(props: ProjectDocsPanelProps) {
                     onClick={() => setCurrentPath(doc.path)}
                     className={docButtonClass(doc.path === currentPath)}
                   >
-                    {doc.path}
+                    {docMenuLabel(doc.path)}
                   </button>
                 </li>
               ))}
@@ -187,6 +187,10 @@ function docButtonClass(isActive: boolean) {
     return "w-full rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-left text-xs font-semibold text-blue-700";
   }
   return "w-full rounded-md border border-transparent px-3 py-2 text-left text-xs font-medium text-[var(--ink)] hover:border-[var(--border)] hover:bg-zinc-50";
+}
+
+function docMenuLabel(path: string) {
+  return path.replace(/\.md$/i, "");
 }
 
 type FrontMatterTableProps = {
