@@ -1332,3 +1332,9 @@ task:
 
       こんなログがずっと続いてしまう。
       こういうのは除外したい
+  - id: '155'
+    url: "https://github.com/sunb256/vibe-task/pull/170"
+    title: "frontend: docs mermaid モーダル幅を拡大"
+    action: |
+      frontend プロジェクト画面
+      docs mermaid のモーダル表示のwidthをもう少し広げてほしい
