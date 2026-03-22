@@ -44,6 +44,15 @@ vi.mock("@monaco-editor/react", () => ({
   ),
 }));
 
+vi.mock("mermaid", () => ({
+  default: {
+    initialize: vi.fn(),
+    render: vi.fn(async () => ({
+      svg: '<svg role="img" aria-label="mermaid"><text>diagram</text></svg>',
+    })),
+  },
+}));
+
 vi.mock("../projects/projectApi", () => ({
   fetchProjects: vi.fn(),
 }));
@@ -292,7 +301,7 @@ test("switches to docs tab and renders markdown viewer", async () => {
   vi.mocked(fetchProjectDoc).mockResolvedValue({
     name: "README.md",
     path: "README.md",
-    content: "# Hello\n- item",
+    content: "# Hello\n\n```mermaid\ngraph TD\n  A --> B\n```",
   });
 
   render(
@@ -316,6 +325,17 @@ test("switches to docs tab and renders markdown viewer", async () => {
   expect(screen.getByRole("button", { name: "README.md" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "docs/guide.md" })).toBeInTheDocument();
   expect(screen.getByRole("heading", { level: 1, name: "Hello" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "縮小" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "拡大" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "リセット" })).toBeInTheDocument();
+  expect(screen.getByText("1.0x")).toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.getByTestId("mermaid-diagram")).toBeInTheDocument();
+  });
+  fireEvent.click(screen.getByRole("button", { name: "拡大" }));
+  expect(screen.getByText("1.1x")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "リセット" }));
+  expect(screen.getByText("1.0x")).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "新規タスク(N)" })).not.toBeInTheDocument();
 
   fireEvent.click(screen.getByRole("button", { name: "impl" }));
