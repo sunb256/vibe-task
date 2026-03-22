@@ -325,17 +325,34 @@ test("switches to docs tab and renders markdown viewer", async () => {
   expect(screen.getByRole("button", { name: "README.md" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "docs/guide.md" })).toBeInTheDocument();
   expect(screen.getByRole("heading", { level: 1, name: "Hello" })).toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.getByTestId("mermaid-preview-diagram")).toBeInTheDocument();
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Mermaidを拡大表示" }));
+  expect(screen.getByRole("dialog", { name: "Mermaid preview" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "ドラッグ" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "縮小" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "拡大" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "リセット" })).toBeInTheDocument();
-  expect(screen.getByText("1.0x")).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "閉じる" })).toBeInTheDocument();
   await waitFor(() => {
-    expect(screen.getByTestId("mermaid-diagram")).toBeInTheDocument();
+    expect(screen.getByTestId("mermaid-modal-diagram")).toBeInTheDocument();
   });
+  expect(screen.getByText("1.0x")).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "拡大" }));
   expect(screen.getByText("1.1x")).toBeInTheDocument();
+  fireEvent.wheel(screen.getByTestId("mermaid-modal-canvas"), { deltaY: 100 });
+  expect(screen.getByText("1.0x")).toBeInTheDocument();
+  const modalDiagram = screen.getByTestId("mermaid-modal-diagram");
+  const initialTransform = modalDiagram.getAttribute("style");
+  fireEvent.mouseDown(screen.getByTestId("mermaid-modal-canvas"), { clientX: 100, clientY: 100 });
+  fireEvent.mouseMove(screen.getByTestId("mermaid-modal-canvas"), { clientX: 120, clientY: 115 });
+  fireEvent.mouseUp(screen.getByTestId("mermaid-modal-canvas"));
+  expect(modalDiagram.getAttribute("style")).not.toBe(initialTransform);
   fireEvent.click(screen.getByRole("button", { name: "リセット" }));
   expect(screen.getByText("1.0x")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "閉じる" }));
+  expect(screen.queryByRole("dialog", { name: "Mermaid preview" })).not.toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "新規タスク(N)" })).not.toBeInTheDocument();
 
   fireEvent.click(screen.getByRole("button", { name: "impl" }));
