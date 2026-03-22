@@ -8,9 +8,14 @@ from app.services.runner_service import reset_runner_process_store_for_test
 class FakeProcess:
     def __init__(self, return_code: int | None) -> None:
         self.return_code = return_code
+        self.terminated = False
 
     def poll(self) -> int | None:
         return self.return_code
+
+    def terminate(self) -> None:
+        self.terminated = True
+        self.return_code = 0
 
 
 @pytest.fixture(autouse=True)
@@ -61,6 +66,31 @@ def test_execute_runner_returns_conflict_while_running(client, project_repo: Pat
     assert first.status_code == 202
     assert second.status_code == 409
     assert second.get_json()["error"] == "runner is already running"
+
+
+def test_cancel_runner_stops_running_process(client, project_repo: Path, monkeypatch):
+    process = FakeProcess(None)
+    monkeypatch.setattr(
+        "app.services.runner_service.subprocess.Popen",
+        lambda *_args, **_kwargs: process,
+    )
+    project_id = create_project(client, project_repo)
+    client.post(f"/api/projects/{project_id}/runner/execute")
+
+    response = client.post(f"/api/projects/{project_id}/runner/cancel")
+
+    assert response.status_code == 202
+    assert response.get_json() == {"running": False}
+    assert process.terminated is True
+
+
+def test_cancel_runner_returns_conflict_when_not_running(client, project_repo: Path):
+    project_id = create_project(client, project_repo)
+
+    response = client.post(f"/api/projects/{project_id}/runner/cancel")
+
+    assert response.status_code == 409
+    assert response.get_json()["error"] == "runner is not running"
 
 
 def test_get_runner_logs_returns_tail_lines(client, project_repo: Path):

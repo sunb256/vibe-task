@@ -18,6 +18,7 @@ import {
   saveTaskCache,
 } from "./projectTasksPageCache";
 import {
+  cancelRunner,
   createTask,
   deleteTask,
   executeRunner,
@@ -56,6 +57,7 @@ export function ProjectTasksPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRunnerRunning, setIsRunnerRunning] = useState(false);
   const [isRunnerStarting, setIsRunnerStarting] = useState(false);
+  const [isRunnerCanceling, setIsRunnerCanceling] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -169,7 +171,9 @@ export function ProjectTasksPage() {
       isCreateOpen ||
       isEditOpen ||
       isCreating ||
-      isEditing
+      isEditing ||
+      isRunnerStarting ||
+      isRunnerCanceling
     ) {
       return;
     }
@@ -183,7 +187,17 @@ export function ProjectTasksPage() {
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [activeTab, projectId, isCreateOpen, isEditOpen, isCreating, isEditing, isLoading]);
+  }, [
+    activeTab,
+    projectId,
+    isCreateOpen,
+    isEditOpen,
+    isCreating,
+    isEditing,
+    isLoading,
+    isRunnerStarting,
+    isRunnerCanceling,
+  ]);
 
   async function handleDelete(task: TaskRecord) {
     const ok = window.confirm(`task ${task.id} を削除しますか？`);
@@ -374,6 +388,27 @@ export function ProjectTasksPage() {
     }
   }
 
+  async function handleRunnerCancel() {
+    const confirmed = window.confirm("Runnerをキャンセルしますか？");
+    if (!confirmed) {
+      return;
+    }
+    setRunnerLogError("");
+    setIsRunnerCanceling(true);
+    try {
+      await cancelRunner(projectId);
+      const log = await readRunnerLog(projectId);
+      setRunnerLog(log.log);
+      setIsRunnerRunning(log.running);
+      runnerRunningRef.current = log.running;
+      await refreshTasks(projectId, setTasks, setRunnerHistory);
+    } catch (cancelError) {
+      setRunnerLogError(readErrorMessage(cancelError, "runner のキャンセルに失敗しました。"));
+    } finally {
+      setIsRunnerCanceling(false);
+    }
+  }
+
   const orderedTasks = orderTasks(tasks);
   const visibleTasks = filterTasks(orderedTasks, visibleSources);
   const runnerTasks = orderedTasks.filter((task) => task.source === "runner");
@@ -438,9 +473,16 @@ export function ProjectTasksPage() {
             <PrimaryButton
               type="button"
               onClick={() => void handleRunnerExecute()}
-              disabled={isRunnerStarting || isRunnerRunning}
+              disabled={isRunnerStarting || isRunnerRunning || isRunnerCanceling}
             >
               {isRunnerStarting ? "起動中..." : isRunnerRunning ? "Runner実行中..." : "Runner実行"}
+            </PrimaryButton>
+            <PrimaryButton
+              type="button"
+              onClick={() => void handleRunnerCancel()}
+              disabled={!isRunnerRunning || isRunnerStarting || isRunnerCanceling}
+            >
+              {isRunnerCanceling ? "キャンセル中..." : "Runnerキャンセル"}
             </PrimaryButton>
             <button
               type="button"

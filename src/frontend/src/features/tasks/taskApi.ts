@@ -87,6 +87,12 @@ export function executeRunner(projectId: string) {
   });
 }
 
+export function cancelRunner(projectId: string) {
+  return apiFetch<RunnerExecuteResponse>(`/api/projects/${projectId}/runner/cancel`, {
+    method: "POST",
+  });
+}
+
 export function fetchRunnerLogs(projectId: string, lines = 200) {
   return apiFetch<RunnerLogRecord>(`/api/projects/${projectId}/runner/logs?lines=${lines}`, {
     cache: "no-store",

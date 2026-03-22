@@ -36,6 +36,15 @@ class RunnerProcessStore:
         with self._lock:
             return self._is_running_locked(project_id)
 
+    def stop(self, project_id: str) -> None:
+        with self._lock:
+            process = self._processes.get(project_id)
+            if process is None or process.poll() is not None:
+                self._processes.pop(project_id, None)
+                raise AppError("runner is not running", 409)
+            process.terminate()
+            self._processes.pop(project_id, None)
+
     def clear(self) -> None:
         with self._lock:
             self._processes.clear()
@@ -64,6 +73,10 @@ class RunnerService:
         project = self._load_project(project_id)
         command = self._build_runner_command(project)
         runner_process_store.start(project.id, command, self.repo_root)
+
+    def cancel_runner(self, project_id: str) -> None:
+        project = self._load_project(project_id)
+        runner_process_store.stop(project.id)
 
     def read_runner_logs(self, project_id: str, lines: int) -> RunnerLogRecord:
         self._load_project(project_id)

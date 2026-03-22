@@ -58,6 +58,7 @@ vi.mock("../projects/projectApi", () => ({
 }));
 
 vi.mock("./taskApi", () => ({
+  cancelRunner: vi.fn(),
   createTask: vi.fn(),
   deleteTask: vi.fn(),
   executeRunner: vi.fn(),
@@ -71,6 +72,7 @@ vi.mock("./taskApi", () => ({
 
 import { fetchProjects } from "../projects/projectApi";
 import {
+  cancelRunner,
   createTask,
   executeRunner,
   fetchProjectDoc,
@@ -91,6 +93,9 @@ beforeEach(() => {
   });
   vi.mocked(executeRunner).mockResolvedValue({
     running: true,
+  });
+  vi.mocked(cancelRunner).mockResolvedValue({
+    running: false,
   });
 });
 
@@ -501,6 +506,68 @@ test("starts runner execution and shows runner logs", async () => {
   expect(screen.getByRole("button", { name: "Runner実行中..." })).toBeDisabled();
   expect(screen.getByText("RUNNING")).toBeInTheDocument();
   expect(screen.getByText("runner started")).toBeInTheDocument();
+});
+
+test("cancels running runner from runner tab", async () => {
+  const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+  vi.mocked(fetchProjects).mockResolvedValue({
+    projects: [
+      {
+        id: "project-1",
+        name: "impl",
+        repositoryPath: "/tmp/impl",
+      },
+    ],
+  });
+  vi.mocked(fetchTasks).mockResolvedValue({
+    tasks: [
+      {
+        projectId: "project-1",
+        source: "runner",
+        id: "1",
+        title: "-",
+        url: "-",
+        action: "task body",
+      },
+    ],
+    runnerHistory: [],
+  });
+  vi.mocked(fetchRunnerLogs)
+    .mockResolvedValueOnce({ running: false, log: "" })
+    .mockResolvedValueOnce({ running: false, log: "" })
+    .mockResolvedValueOnce({ running: true, log: "running..." })
+    .mockResolvedValueOnce({ running: false, log: "cancelled" })
+    .mockResolvedValue({ running: false, log: "cancelled" });
+
+  render(
+    <MemoryRouter initialEntries={["/projects/project-1"]}>
+      <Routes>
+        <Route path="/projects/:projectId" element={<ProjectTasksPage />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByRole("button", { name: "Runner" })).toBeInTheDocument();
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Runner" }));
+  fireEvent.click(screen.getByRole("button", { name: "Runner実行" }));
+
+  await waitFor(() => {
+    expect(screen.getByRole("button", { name: "Runnerキャンセル" })).toBeEnabled();
+    expect(executeRunner).toHaveBeenCalledWith("project-1");
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Runnerキャンセル" }));
+
+  await waitFor(() => {
+    expect(confirmSpy).toHaveBeenNthCalledWith(1, "RUNNERを実行しますか？");
+    expect(confirmSpy).toHaveBeenNthCalledWith(2, "Runnerをキャンセルしますか？");
+    expect(cancelRunner).toHaveBeenCalledWith("project-1");
+  });
+  await waitFor(() => {
+    expect(screen.getByRole("button", { name: "Runner実行" })).toBeEnabled();
+  });
+  expect(screen.getByRole("button", { name: "Runnerキャンセル" })).toBeDisabled();
 });
 
 test("swaps task ids with up/down buttons", async () => {
