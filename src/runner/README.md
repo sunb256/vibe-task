@@ -7,27 +7,17 @@
 cd src/runner
 npx tsx src/run.ts
  # or
-npx tsx src/run.ts tasks.yml
- # or
-npx tsx src/run.ts tasks.yml --verbose
- # or
-npx tsx src/run.ts tasks.yml --harfauto
- # or
-npx tsx src/run.ts tasks.yml --fullauto
- # or
-npx tsx src/run.ts tasks.yml -h
- # or
-npx tsx src/run.ts tasks.yml -f
- # or
-npx tsx src/run.ts tasks.yml -f --max-auto-reply-count 5
- # or
 npx tsx src/run.ts -c config/config.yml
  # or
 npx tsx src/run.ts --config config/config.yml
  # or
-npx tsx src/run.ts -c config/config.yml --task vibe-task
+npx tsx src/run.ts -t vibe-task
  # or
 npx tsx src/run.ts --task=vibe-task
+ # or
+npx tsx src/run.ts --task=vibe-task --verbose
+ # or
+npx tsx src/run.ts -h
 ```
 
 `config/config.yml` に `verbose` / `codex` / `thread` / `prompts` / `reply_wanted` を設定すると、
@@ -36,9 +26,11 @@ npx tsx src/run.ts --task=vibe-task
 設定ファイルは引数で上書きできます。
 - `-c <PATH>` / `--config <PATH>`
 - `--config=<PATH>`
-- `--task <PROJECT>` / `--task=<PROJECT>`: `../../tasks/projects/<PROJECT>/runner.yml` を使って実行
-  - `--task` は位置引数の task file より優先されます
-  - 指定した project が存在しない場合はエラーで終了します
+- `-t <PROJECT>` / `--task <PROJECT>` / `--task=<PROJECT>`: `../../tasks/projects/<PROJECT>/runner.yml` を使って実行
+- `--verbose`: verbose ログを有効化
+- `-h` / `--help`: usage を表示して終了
+
+上記以外の CLI オプションや位置引数はサポートしておらず、エラーで終了します。
 
 `prompts` では task 入力文の共通化と既定オプションを設定できます。
 - `task_file`: 読み込む tasks ファイルパス
@@ -61,11 +53,6 @@ CLI の `--verbose` 指定がある場合は config より優先して有効に�
   - `harfauto`: 質問時はユーザ入力を待つ（空Enterまたは `/skip` で次タスクへ進む）
   - `fullauto`: 質問時も `"続けてください"` を自動送信して継続
 - `max_auto_reply_count`: `fullauto` 時の連続自動返信回数上限（既定: `3`）
-
-モードは CLI 引数でも上書きできます。
-- `-h` / `--harfauto`: ハーフオート
-- `-f` / `--fullauto`: フルオート
-- `-r <N>` / `--max-auto-reply-count <N>`: `fullauto` 時の連続自動返信回数上限
 
 ログ出力は自動で `logs/log.log` に保存されます（各行に日時を付与）。
 - ローテート: `10MB` を超えたら世代を切り替え

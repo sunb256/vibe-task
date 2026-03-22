@@ -21,6 +21,15 @@ type RuntimeOptions = {
   maxAutoReplyCount?: number;
   taskProjectName?: string;
   hasTaskProjectOption: boolean;
+  showHelp: boolean;
+};
+
+type CliArgs = {
+  configPath: string;
+  taskProjectName?: string;
+  hasTaskProjectOption: boolean;
+  verbose: boolean;
+  showHelp: boolean;
 };
 
 const LOG_FILE_PATH = path.resolve("logs/log.log");
@@ -29,7 +38,13 @@ const LOG_MAX_FILES = 5;
 const DEFAULT_CONFIG_PATH = "config/config.yml";
 const TASKS_PROJECTS_REL_PATH = "../../tasks/projects";
 const REPOSITORY_PARENT_REL_PATH = "../../..";
-const TASK_PROJECT_OPTION_NAME = "--task";
+const CONFIG_OPTION_NAME = "--config";
+const CONFIG_SHORT_OPTION_NAME = "-c";
+const TASK_OPTION_NAME = "--task";
+const TASK_SHORT_OPTION_NAME = "-t";
+const HELP_OPTION_NAME = "--help";
+const HELP_SHORT_OPTION_NAME = "-h";
+const VERBOSE_OPTION_NAME = "--verbose";
 
 // 設定値から返信モードを決定し、旧設定も後方互換で解釈する。
 function resolveReplyMode(config: RunnerConfig): ReplyMode {
@@ -39,20 +54,103 @@ function resolveReplyMode(config: RunnerConfig): ReplyMode {
   return config.reply_wanted?.auto_reply === true ? "fullauto" : "harfauto";
 }
 
-// 0以上の整数文字列を数値へ変換する。
-function parseNonNegativeInteger(value: string | undefined): number | undefined {
-  if (value === undefined) return undefined;
-  if (!/^\d+$/.test(value)) return undefined;
-  const parsed = Number(value);
-  return Number.isSafeInteger(parsed) ? parsed : undefined;
-}
-
 // 設定ファイル引数として有効な値だけを返す。
 function getConfigValue(value: string | undefined): string | undefined {
   if (!value || value.startsWith("-")) {
     return undefined;
   }
   return value;
+}
+
+function buildUsageText(): string {
+  return [
+    "Usage: npx tsx src/run.ts [-c <config>] [-t <project>] [--verbose] [-h]",
+    "",
+    "Options:",
+    "  -c, --config <path>    config file path (default: config/config.yml)",
+    "  -t, --task <project>   use ../../tasks/projects/<project>/runner.yml",
+    "      --verbose          enable verbose event logs",
+    "  -h, --help             show this help",
+  ].join("\n");
+}
+
+function hasHelpOption(args: string[]): boolean {
+  return args.includes(HELP_SHORT_OPTION_NAME) || args.includes(HELP_OPTION_NAME);
+}
+
+function isUsageError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  return (
+    error.message.startsWith("Unsupported option:") ||
+    error.message.startsWith("Positional arguments are not supported:") ||
+    error.message.includes("option requires")
+  );
+}
+
+function parseCliArgs(args: string[]): CliArgs {
+  if (hasHelpOption(args)) {
+    return {
+      configPath: DEFAULT_CONFIG_PATH,
+      hasTaskProjectOption: false,
+      verbose: false,
+      showHelp: true,
+    };
+  }
+
+  let configPath = DEFAULT_CONFIG_PATH;
+  let taskProjectName: string | undefined;
+  let hasTaskProjectOption = false;
+  let verbose = false;
+
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (!arg) continue;
+
+    if (arg.startsWith(`${CONFIG_OPTION_NAME}=`)) {
+      const value = getConfigValue(arg.split("=")[1]);
+      if (!value) throw new Error(`${CONFIG_OPTION_NAME} option requires a path`);
+      configPath = value;
+      continue;
+    }
+    if (arg === CONFIG_OPTION_NAME || arg === CONFIG_SHORT_OPTION_NAME) {
+      const value = getConfigValue(args[i + 1]);
+      if (!value) throw new Error(`${arg} option requires a path`);
+      configPath = value;
+      i += 1;
+      continue;
+    }
+    if (arg.startsWith(`${TASK_OPTION_NAME}=`)) {
+      const value = getConfigValue(arg.split("=")[1]);
+      if (!value) throw new Error(`${TASK_OPTION_NAME} option requires a project name`);
+      taskProjectName = value;
+      hasTaskProjectOption = true;
+      continue;
+    }
+    if (arg === TASK_OPTION_NAME || arg === TASK_SHORT_OPTION_NAME) {
+      const value = getConfigValue(args[i + 1]);
+      if (!value) throw new Error(`${arg} option requires a project name`);
+      taskProjectName = value;
+      hasTaskProjectOption = true;
+      i += 1;
+      continue;
+    }
+    if (arg === VERBOSE_OPTION_NAME) {
+      verbose = true;
+      continue;
+    }
+    if (arg.startsWith("-")) {
+      throw new Error(`Unsupported option: ${arg}`);
+    }
+    throw new Error(`Positional arguments are not supported: ${arg}`);
+  }
+
+  return {
+    configPath,
+    taskProjectName,
+    hasTaskProjectOption,
+    verbose,
+    showHelp: false,
+  };
 }
 
 // runner実行スクリプトの場所からrunnerルートを解決する。
@@ -92,33 +190,6 @@ function resolveTaskFileFromProjectName(projectName: string): string {
   return `../../tasks/projects/${projectName}/runner.yml`;
 }
 
-// `--task` オプションの指定有無と値を抽出する。
-function parseTaskProjectOption(args: string[]): {
-  hasTaskProjectOption: boolean;
-  taskProjectName?: string;
-} {
-  let taskProjectName: string | undefined;
-  let hasTaskProjectOption = false;
-
-  for (let i = 0; i < args.length; i += 1) {
-    const arg = args[i];
-    if (!arg) continue;
-
-    if (arg.startsWith(`${TASK_PROJECT_OPTION_NAME}=`)) {
-      hasTaskProjectOption = true;
-      taskProjectName = getConfigValue(arg.split("=")[1]) ?? taskProjectName;
-      continue;
-    }
-    if (arg === TASK_PROJECT_OPTION_NAME) {
-      hasTaskProjectOption = true;
-      taskProjectName = getConfigValue(args[i + 1]) ?? taskProjectName;
-      i += 1;
-    }
-  }
-
-  return { hasTaskProjectOption, taskProjectName };
-}
-
 // defaults.cwd が相対指定ならrunnerルート基準の絶対パスへ変換する。
 export function resolveDefaultsCwd(defaults: TaskDefaults, baseDir: string): TaskDefaults {
   const cwd = defaults.cwd;
@@ -130,19 +201,7 @@ export function resolveDefaultsCwd(defaults: TaskDefaults, baseDir: string): Tas
 
 // CLI引数から設定ファイルパスを抽出する。
 export function parseConfigPathOption(args: string[]): string {
-  for (let i = 0; i < args.length; i += 1) {
-    const arg = args[i];
-    if (!arg) {
-      continue;
-    }
-    if (arg.startsWith("--config=")) {
-      return getConfigValue(arg.split("=")[1]) ?? DEFAULT_CONFIG_PATH;
-    }
-    if (arg === "--config" || arg === "-c") {
-      return getConfigValue(args[i + 1]) ?? DEFAULT_CONFIG_PATH;
-    }
-  }
-  return DEFAULT_CONFIG_PATH;
+  return parseCliArgs(args).configPath;
 }
 
 // CLI引数と設定を統合して実行時オプションを決める。
@@ -151,98 +210,32 @@ export function parseRuntimeOptions(
   config: RunnerConfig,
   runnerRoot = process.cwd()
 ): RuntimeOptions {
-  let taskFileArg: string | undefined;
-  let maxAutoReplyCountArg: number | undefined;
-  const taskProjectOption = parseTaskProjectOption(args);
-
-  for (let i = 0; i < args.length; i += 1) {
-    const arg = args[i];
-    if (!arg) {
-      continue;
-    }
-    if (arg.startsWith("--max-auto-reply-count=")) {
-      maxAutoReplyCountArg = parseNonNegativeInteger(arg.split("=")[1]) ?? maxAutoReplyCountArg;
-      continue;
-    }
-    if (arg === "--max-auto-reply-count" || arg === "-r") {
-      maxAutoReplyCountArg = parseNonNegativeInteger(args[i + 1]) ?? maxAutoReplyCountArg;
-      i += 1;
-      continue;
-    }
-    if (arg.startsWith("--config=")) {
-      continue;
-    }
-    if (arg === "--config" || arg === "-c") {
-      i += 1;
-      continue;
-    }
-    if (arg.startsWith(`${TASK_PROJECT_OPTION_NAME}=`)) {
-      continue;
-    }
-    if (arg === TASK_PROJECT_OPTION_NAME) {
-      i += 1;
-      continue;
-    }
-    if (arg.startsWith("-")) {
-      continue;
-    }
-    if (!taskFileArg) {
-      taskFileArg = arg;
-    }
-  }
-
-  const hasHarfAuto = args.includes("-h") || args.includes("--harfauto") || args.includes("--halfauto");
-  const hasFullAuto = args.includes("-f") || args.includes("--fullauto");
-  const replyMode = hasHarfAuto ? "harfauto" : hasFullAuto ? "fullauto" : resolveReplyMode(config);
+  const cli = parseCliArgs(args);
+  const replyMode = resolveReplyMode(config);
   const configTaskFile =
     config.prompts?.task_file ??
     resolveTaskFileFromRepositoryDir(config.prompts?.repository_dir, runnerRoot);
   return {
     taskFilePath:
-      (taskProjectOption.taskProjectName
-        ? resolveTaskFileFromProjectName(taskProjectOption.taskProjectName)
+      (cli.taskProjectName
+        ? resolveTaskFileFromProjectName(cli.taskProjectName)
         : undefined) ??
-      taskFileArg ??
       configTaskFile ??
       "task.yml",
-    verbose: args.includes("--verbose") || config.verbose === true,
+    verbose: cli.verbose || config.verbose === true,
     replyMode,
-    maxAutoReplyCount: maxAutoReplyCountArg ?? config.reply_wanted?.max_auto_reply_count,
-    taskProjectName: taskProjectOption.taskProjectName,
-    hasTaskProjectOption: taskProjectOption.hasTaskProjectOption,
+    maxAutoReplyCount: config.reply_wanted?.max_auto_reply_count,
+    taskProjectName: cli.taskProjectName,
+    hasTaskProjectOption: cli.hasTaskProjectOption,
+    showHelp: cli.showHelp,
   };
-}
-
-// CLI引数にtasksファイルの位置引数があるか判定する。
-function hasPositionalTaskFileArg(args: string[]): boolean {
-  for (let i = 0; i < args.length; i += 1) {
-    const arg = args[i];
-    if (!arg) continue;
-    if (arg.startsWith("--config=")) continue;
-    if (arg === "--config" || arg === "-c") {
-      i += 1;
-      continue;
-    }
-    if (arg.startsWith("--max-auto-reply-count=")) continue;
-    if (arg === "--max-auto-reply-count" || arg === "-r") {
-      i += 1;
-      continue;
-    }
-    if (arg.startsWith(`${TASK_PROJECT_OPTION_NAME}=`)) continue;
-    if (arg === TASK_PROJECT_OPTION_NAME) {
-      i += 1;
-      continue;
-    }
-    if (arg.startsWith("-")) continue;
-    return true;
-  }
-  return false;
 }
 
 // repository_dir/task_file 未指定かつ位置引数なしのときだけ選択UIを出す。
 export function shouldPromptProjectSelection(args: string[], config: RunnerConfig): boolean {
-  if (parseTaskProjectOption(args).hasTaskProjectOption) return false;
-  if (hasPositionalTaskFileArg(args)) return false;
+  const cli = parseCliArgs(args);
+  if (cli.showHelp) return false;
+  if (cli.hasTaskProjectOption) return false;
   if (config.prompts?.task_file) return false;
   if (config.prompts?.repository_dir) return false;
   return true;
@@ -401,6 +394,10 @@ function isEntryPoint(): boolean {
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const runnerRoot = resolveRunnerRoot(process.argv[1]);
+  if (hasHelpOption(args)) {
+    console.log(buildUsageText());
+    return;
+  }
   const configPath = resolveRunnerPath(runnerRoot, parseConfigPathOption(args));
   const config = await loadRunnerConfig(configPath);
   setupRotatingLog({
@@ -411,10 +408,14 @@ async function main(): Promise<void> {
 
   let runtime = parseRuntimeOptions(args, config, runnerRoot);
   let selectedRepositoryDir: string | undefined;
+  if (runtime.showHelp) {
+    console.log(buildUsageText());
+    return;
+  }
 
   if (runtime.hasTaskProjectOption) {
     if (!runtime.taskProjectName) {
-      throw new Error(`${TASK_PROJECT_OPTION_NAME} option requires a project name`);
+      throw new Error(`${TASK_OPTION_NAME} option requires a project name`);
     }
     const projectNames = await listTaskProjectNames(runnerRoot);
     const selected = resolveTaskProjectSelection(
@@ -558,6 +559,12 @@ async function main(): Promise<void> {
 
 if (isEntryPoint()) {
   main().catch((err) => {
+    if (isUsageError(err)) {
+      console.error(err instanceof Error ? err.message : err);
+      console.log(`\n${buildUsageText()}`);
+      process.exit(1);
+      return;
+    }
     console.error(err);
     process.exit(1);
   });
