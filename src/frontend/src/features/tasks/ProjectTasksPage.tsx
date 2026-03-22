@@ -428,6 +428,9 @@ export function ProjectTasksPage() {
       {activeTab === "runner" ? (
         <section className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
           <div className="mb-4 flex w-full items-center justify-start gap-2 pl-2">
+            <PrimaryButton type="button" onClick={openCreateRunnerDialog} disabled={isCreating}>
+              新規Runner
+            </PrimaryButton>
             <PrimaryButton
               type="button"
               onClick={() => void handleRunnerExecute()}
@@ -435,22 +438,19 @@ export function ProjectTasksPage() {
             >
               {isRunnerStarting ? "起動中..." : isRunnerRunning ? "RUNNER実行中..." : "RUNNER実行"}
             </PrimaryButton>
-            <PrimaryButton type="button" onClick={openCreateRunnerDialog} disabled={isCreating}>
-              新規RUNNERタスク
-            </PrimaryButton>
             <button
               type="button"
               onClick={() => setActiveRunnerTab("list")}
               className={runnerTabClass(activeRunnerTab === "list")}
             >
-              {`一覧(${runnerTasks.length})`}
+              Runner
             </button>
             <button
               type="button"
               onClick={() => setActiveRunnerTab("log")}
               className={runnerTabClass(activeRunnerTab === "log")}
             >
-              Runnerログ
+              ログ
             </button>
             <button
               type="button"
@@ -843,15 +843,15 @@ type RunnerLogPanelProps = {
 
 function RunnerLogPanel(props: RunnerLogPanelProps) {
   return (
-    <section className="rounded-lg border border-[var(--border)] bg-white px-3 py-2">
+    <section className="flex h-[calc(100vh-16rem)] min-h-[28rem] flex-col rounded-lg border border-[var(--border)] bg-white px-3 py-2">
       <div className="mb-2 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-[var(--ink)]">Runnerログ</h2>
+        <h2 className="text-sm font-semibold text-[var(--ink)]">ログ</h2>
         <span className={runnerStateClass(props.isRunning)}>
           {props.isRunning ? "RUNNING" : "IDLE"}
         </span>
       </div>
       {props.logError ? <Notice tone="error" message={props.logError} /> : null}
-      <pre className="max-h-72 overflow-auto rounded-md border border-[var(--border)] bg-zinc-950 px-3 py-2 text-xs leading-5 text-zinc-100">
+      <pre className="min-h-0 flex-1 overflow-auto rounded-md border border-[var(--border)] bg-zinc-950 px-3 py-2 text-xs leading-5 text-zinc-100">
         {props.runnerLog || "ログはありません。"}
       </pre>
     </section>

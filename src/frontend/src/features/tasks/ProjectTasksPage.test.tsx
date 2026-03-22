@@ -293,15 +293,15 @@ test("does not render the removed project subtitle", async () => {
   expect(screen.queryByText("DONE #10", { selector: "span" })).not.toBeInTheDocument();
 
   fireEvent.click(runnerTab);
-  expect(screen.getByRole("button", { name: "一覧(0)" })).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "Runnerログ" })).toBeInTheDocument();
+  expect(screen.getAllByRole("button", { name: "Runner" })).toHaveLength(2);
+  expect(screen.getByRole("button", { name: "ログ" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "履歴" })).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "履歴" }));
   expect(screen.getByRole("heading", { level: 2, name: "RUNNER履歴" })).toBeInTheDocument();
   expect(screen.getByText("1, 2, 3")).toBeInTheDocument();
   expect(screen.getByText("2026-03-22 09:00:00")).toBeInTheDocument();
-  fireEvent.click(screen.getByRole("button", { name: "Runnerログ" }));
-  expect(screen.getByRole("heading", { level: 2, name: "Runnerログ" })).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "ログ" }));
+  expect(screen.getByRole("heading", { level: 2, name: "ログ" })).toBeInTheDocument();
   fireEvent.click(tasksTab);
 
   const doneToggleAfterRunner = screen.getByRole("button", { name: "DONE(2)" });
@@ -495,7 +495,7 @@ test("starts runner execution and shows runner logs", async () => {
   await waitFor(() => {
     expect(executeRunner).toHaveBeenCalledWith("project-1");
   });
-  fireEvent.click(screen.getByRole("button", { name: "Runnerログ" }));
+  fireEvent.click(screen.getByRole("button", { name: "ログ" }));
   expect(screen.getByRole("button", { name: "RUNNER実行中..." })).toBeDisabled();
   expect(screen.getByText("RUNNING")).toBeInTheDocument();
   expect(screen.getByText("runner started")).toBeInTheDocument();
@@ -971,11 +971,13 @@ test("refreshes tasks every 60 seconds", async () => {
   });
   expect(intervalHandlers.length).toBeGreaterThan(0);
 
-  const latestHandler = intervalHandlers[intervalHandlers.length - 1];
-  latestHandler?.();
+  const beforeRefreshCallCount = vi.mocked(fetchTasks).mock.calls.length;
+  intervalHandlers.forEach((handler) => {
+    handler();
+  });
 
   await waitFor(() => {
-    expect(vi.mocked(fetchTasks).mock.calls.length).toBeGreaterThanOrEqual(2);
+    expect(vi.mocked(fetchTasks).mock.calls.length).toBeGreaterThan(beforeRefreshCallCount);
     expect(screen.getByText("refreshed task")).toBeInTheDocument();
   });
 });
