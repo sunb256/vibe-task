@@ -503,7 +503,7 @@ test("starts runner execution and shows runner logs", async () => {
     expect(executeRunner).toHaveBeenCalledWith("project-1");
   });
   fireEvent.click(screen.getByRole("button", { name: "ログ" }));
-  expect(screen.getByRole("button", { name: "Runner実行中..." })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Runnerキャンセル" })).toBeEnabled();
   expect(screen.getByText("RUNNING")).toBeInTheDocument();
   expect(screen.getByText("runner started")).toBeInTheDocument();
 });
@@ -567,7 +567,7 @@ test("cancels running runner from runner tab", async () => {
   await waitFor(() => {
     expect(screen.getByRole("button", { name: "Runner実行" })).toBeEnabled();
   });
-  expect(screen.getByRole("button", { name: "Runnerキャンセル" })).toBeDisabled();
+  expect(screen.queryByRole("button", { name: "Runnerキャンセル" })).not.toBeInTheDocument();
 });
 
 test("swaps task ids with up/down buttons", async () => {

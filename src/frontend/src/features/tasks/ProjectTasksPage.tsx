@@ -409,6 +409,14 @@ export function ProjectTasksPage() {
     }
   }
 
+  async function handleRunnerAction() {
+    if (isRunnerRunning) {
+      await handleRunnerCancel();
+      return;
+    }
+    await handleRunnerExecute();
+  }
+
   const orderedTasks = orderTasks(tasks);
   const visibleTasks = filterTasks(orderedTasks, visibleSources);
   const runnerTasks = orderedTasks.filter((task) => task.source === "runner");
@@ -472,17 +480,16 @@ export function ProjectTasksPage() {
             </PrimaryButton>
             <PrimaryButton
               type="button"
-              onClick={() => void handleRunnerExecute()}
-              disabled={isRunnerStarting || isRunnerRunning || isRunnerCanceling}
+              onClick={() => void handleRunnerAction()}
+              disabled={isRunnerStarting || isRunnerCanceling}
             >
-              {isRunnerStarting ? "起動中..." : isRunnerRunning ? "Runner実行中..." : "Runner実行"}
-            </PrimaryButton>
-            <PrimaryButton
-              type="button"
-              onClick={() => void handleRunnerCancel()}
-              disabled={!isRunnerRunning || isRunnerStarting || isRunnerCanceling}
-            >
-              {isRunnerCanceling ? "キャンセル中..." : "Runnerキャンセル"}
+              {isRunnerStarting
+                ? "起動中..."
+                : isRunnerCanceling
+                  ? "キャンセル中..."
+                  : isRunnerRunning
+                    ? "Runnerキャンセル"
+                    : "Runner実行"}
             </PrimaryButton>
             <button
               type="button"
