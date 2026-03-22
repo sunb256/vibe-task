@@ -142,9 +142,10 @@ test("does not render the removed project subtitle", async () => {
   expect(screen.getByRole("link", { name: "Skills" })).toHaveAttribute("href", "/skills");
   expect(screen.getByRole("button", { name: "Setting" })).toBeInTheDocument();
   expect(screen.queryByText("VIBE TASK")).not.toBeInTheDocument();
-  expect(screen.getByRole("heading", { level: 1, name: "impl" })).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "/tmp/impl" })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { level: 1, name: /impl/i })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "impl" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "docs" })).toBeInTheDocument();
+  expect(screen.getByText("/tmp/impl")).toBeInTheDocument();
   expect(screen.getAllByRole("columnheader").map((header) => header.textContent)).toEqual([
     "id",
     "task",
@@ -303,7 +304,7 @@ test("switches to docs tab and renders markdown viewer", async () => {
   );
 
   await waitFor(() => {
-    expect(screen.getByRole("button", { name: "/tmp/impl" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "impl" })).toBeInTheDocument();
   });
 
   fireEvent.click(screen.getByRole("button", { name: "docs" }));
@@ -317,7 +318,7 @@ test("switches to docs tab and renders markdown viewer", async () => {
   expect(screen.getByRole("heading", { level: 1, name: "Hello" })).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "新規タスク(N)" })).not.toBeInTheDocument();
 
-  fireEvent.click(screen.getByRole("button", { name: "/tmp/impl" }));
+  fireEvent.click(screen.getByRole("button", { name: "impl" }));
   expect(screen.getByRole("button", { name: "新規タスク(N)" })).toBeInTheDocument();
 });
 

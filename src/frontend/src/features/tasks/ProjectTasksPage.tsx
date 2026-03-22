@@ -280,18 +280,14 @@ export function ProjectTasksPage() {
   return (
     <PageFrame
       eyebrow={null}
-      title={(
-        <span className="inline-flex h-9 items-end pl-1">
-          <span>{project ? project.name : "Project"}</span>
-        </span>
-      )}
+      title={<ProjectTabs repositoryName={project?.name ?? "Project"} activeTab={activeTab} onChange={setActiveTab} />}
       actions={
         project?.repositoryPath ? (
-          <ProjectTabs
-            repositoryPath={project.repositoryPath}
-            activeTab={activeTab}
-            onChange={setActiveTab}
-          />
+          <div className="flex h-9 items-end justify-end pr-1">
+            <span aria-hidden="true" className="text-xs font-normal leading-none text-[var(--muted)]">
+              {project.repositoryPath}
+            </span>
+          </div>
         ) : undefined
       }
       onImported={handleImported}
@@ -508,7 +504,7 @@ function applyCache(
 }
 
 type ProjectTabsProps = {
-  repositoryPath: string;
+  repositoryName: string;
   activeTab: ProjectTab;
   onChange: (nextTab: ProjectTab) => void;
 };
@@ -522,7 +518,7 @@ function ProjectTabs(props: ProjectTabsProps) {
           onClick={() => props.onChange("tasks")}
           className={projectTabClass(props.activeTab === "tasks")}
         >
-          {props.repositoryPath}
+          {props.repositoryName}
         </button>
         <button
           type="button"
