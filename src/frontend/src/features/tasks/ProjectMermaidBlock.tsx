@@ -131,14 +131,14 @@ export function ProjectMermaidBlock(props: ProjectMermaidBlockProps) {
   }
 
   return (
-    <div className="mb-3 rounded-md border border-[var(--border)] bg-zinc-50 p-3">
+    <>
       {isRendering ? <Notice tone="neutral" message="Rendering mermaid..." /> : null}
       {!isRendering && svg ? (
         <button
           type="button"
           onClick={openModal}
           aria-label="Mermaidを拡大表示"
-          className="block w-full overflow-hidden rounded border border-[var(--border)] bg-white p-2 text-left hover:border-sky-300"
+          className="mb-3 block w-full overflow-hidden rounded border border-[var(--border)] bg-white p-2 text-left hover:border-sky-300"
         >
           <p className="mb-2 text-xs font-semibold text-[var(--muted)]">クリックで拡大表示</p>
           <div
@@ -166,7 +166,7 @@ export function ProjectMermaidBlock(props: ProjectMermaidBlockProps) {
           onDragStop={() => setDragState((current) => ({ ...current, active: false }))}
         />
       ) : null}
-    </div>
+    </>
   );
 }
 
