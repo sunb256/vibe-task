@@ -11,13 +11,13 @@ import type { ProjectDocFile, ProjectDocSummary } from "./types";
 type ProjectDocsPanelProps = {
   projectId: string;
   repositoryPath: string;
-  searchQuery: string;
   isActive: boolean;
 };
 
 export function ProjectDocsPanel(props: ProjectDocsPanelProps) {
-  const { projectId, repositoryPath, searchQuery, isActive } = props;
+  const { projectId, repositoryPath, isActive } = props;
   const [docs, setDocs] = useState<ProjectDocSummary[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [currentPath, setCurrentPath] = useState("");
   const [currentDoc, setCurrentDoc] = useState<ProjectDocFile | null>(null);
   const [loadError, setLoadError] = useState("");
@@ -106,7 +106,27 @@ export function ProjectDocsPanel(props: ProjectDocsPanelProps) {
   return (
     <section className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
       <div className="mb-4 rounded-lg border border-[var(--border)] bg-white px-3 py-2 text-xs text-[var(--muted)]">
-        {displayPath(repositoryPath)}
+        <div className="flex items-center justify-between gap-3">
+          <span className="truncate">{displayPath(repositoryPath)}</span>
+          <div className="relative w-full max-w-56">
+            <img
+              src="/assets/images/search.svg"
+              alt=""
+              aria-hidden="true"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-65"
+            />
+            <input
+              id="project-doc-search"
+              type="search"
+              aria-label="Search"
+              autoFocus
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search"
+              className="h-8 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12"
+            />
+          </div>
+        </div>
       </div>
       {loadError ? <Notice tone="error" message={loadError} /> : null}
       {isLoadingDocs ? <Notice tone="neutral" message="Loading docs..." /> : null}
