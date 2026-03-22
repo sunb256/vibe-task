@@ -1,12 +1,30 @@
 import { apiFetch } from "../../lib/api";
-import type { TaskRecord, TaskSource } from "./types";
+import type { ProjectDocFile, ProjectDocSummary, TaskRecord, TaskSource } from "./types";
 
 type TaskListResponse = {
   tasks: TaskRecord[];
 };
 
+type DocListResponse = {
+  docs: ProjectDocSummary[];
+};
+
 export function fetchTasks(projectId: string) {
   return apiFetch<TaskListResponse>(`/api/projects/${projectId}/tasks`);
+}
+
+export function fetchProjectDocs(projectId: string) {
+  return apiFetch<DocListResponse>(`/api/projects/${projectId}/docs`, { cache: "no-store" });
+}
+
+export function fetchProjectDoc(projectId: string, docPath: string) {
+  const encodedPath = docPath
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+  return apiFetch<ProjectDocFile>(`/api/projects/${projectId}/docs/${encodedPath}`, {
+    cache: "no-store",
+  });
 }
 
 export function createActionTask(projectId: string) {

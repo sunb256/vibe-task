@@ -7,6 +7,7 @@ from app.repositories.project_repository import ProjectRepository
 from app.repositories.prompt_repository import PromptRepository
 from app.repositories.skill_repository import SkillRepository
 from app.services.app_settings_service import AppSettingsService
+from app.services.doc_service import DocService
 from app.services.project_service import ProjectService
 from app.services.prompt_service import PromptService
 from app.services.skill_service import SkillService
@@ -150,6 +151,20 @@ def swap_task_id(project_id: str, source: str, task_id: str):
     service = TaskService(_project_repository())
     service.swap_task_id(project_id, source, task_id, swap_with_id.strip())
     return "", 204
+
+
+@api_bp.get("/projects/<project_id>/docs")
+def list_project_docs(project_id: str):
+    service = DocService(_project_repository())
+    docs = [item.to_dict() for item in service.list_docs(project_id)]
+    return jsonify({"docs": docs})
+
+
+@api_bp.get("/projects/<project_id>/docs/<path:doc_path>")
+def get_project_doc(project_id: str, doc_path: str):
+    service = DocService(_project_repository())
+    doc = service.get_doc(project_id, doc_path)
+    return jsonify(doc.to_dict())
 
 
 @api_bp.get("/prompts")

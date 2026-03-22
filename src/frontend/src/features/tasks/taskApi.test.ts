@@ -1,6 +1,13 @@
 import { afterEach, vi } from "vitest";
 
-import { deleteTask, fetchTasks, swapTaskId, updateTask } from "./taskApi";
+import {
+  deleteTask,
+  fetchProjectDoc,
+  fetchProjectDocs,
+  fetchTasks,
+  swapTaskId,
+  updateTask,
+} from "./taskApi";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -75,5 +82,34 @@ test("updateTask, deleteTask, and swapTaskId use the scoped task endpoint", asyn
       method: "PATCH",
       body: JSON.stringify({ swapWithId: "2" }),
     }),
+  );
+});
+
+test("fetchProjectDocs and fetchProjectDoc request docs endpoints without cache", async () => {
+  const fetchMock = vi
+    .spyOn(globalThis, "fetch")
+    .mockResolvedValueOnce(new Response(JSON.stringify({ docs: [] })))
+    .mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          name: "guide.md",
+          path: "docs/guide.md",
+          content: "# Guide\n",
+        }),
+      ),
+    );
+
+  await fetchProjectDocs("project-1");
+  await fetchProjectDoc("project-1", "docs/guide.md");
+
+  expect(fetchMock).toHaveBeenNthCalledWith(
+    1,
+    "/api/projects/project-1/docs",
+    expect.objectContaining({ cache: "no-store" }),
+  );
+  expect(fetchMock).toHaveBeenNthCalledWith(
+    2,
+    "/api/projects/project-1/docs/docs/guide.md",
+    expect.objectContaining({ cache: "no-store" }),
   );
 });

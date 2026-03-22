@@ -22,14 +22,16 @@ description: 日本語の仕様書・設計書向けに Mermaid の flowchart �
 
 ## 出力
 
-出力は`docs/` 配下に出力する。
-特にしていなければ、以下のファイル名とする
+- 出力は`docs/` 配下に出力する。
+- 特に指定がなければ、以下のファイル名とする  
+  `docs/mermaid.md` とする
+- 同名ファイルがあった場合は、上書きする
 
-`docs/marmeid.md` とする
 
 ## 使う場面
 
 次のような依頼で使う。
+
 - 文章や箇条書きから flowchart を作る
 - API やシステム連携の説明から sequenceDiagram を作る
 - 既存の Mermaid を仕様書向けに整理する
@@ -69,8 +71,32 @@ description: 日本語の仕様書・設計書向けに Mermaid の flowchart �
 - 分岐は必要最小限
 - 複雑なら分割を優先
 
+- 以下のように`"`で括って記載すること
+
+例
+```bash
+flowchart TD
+    A["run start"] --> B["Start_session"]
+    B --> C["start_path(math_no)"]
+```
+
+
+- 適切に改行をすること
+- 改行は <br/> を使用する
+- 記法にミスがないかを十分に確認すること。
+- 矢印が長くなると図が大きくなり見にくいので以下の設定を先頭行に加えること。
+
+```
+%%{init: {'flowchart': {'nodeSpacing': 20, 'rankSpacing': 30}}}%%
+
+flowchart TD
+    A["run start"] --> B["start_session"]
+```
+
 ### sequenceDiagram
+
 次のような内容で使う。
+
 - API 呼び出し順
 - 画面、API、DB のやり取り
 - サービス間連携

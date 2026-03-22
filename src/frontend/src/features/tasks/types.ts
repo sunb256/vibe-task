@@ -8,3 +8,12 @@ export type TaskRecord = {
   url: string;
   action: string;
 };
+
+export type ProjectDocSummary = {
+  name: string;
+  path: string;
+};
+
+export type ProjectDocFile = ProjectDocSummary & {
+  content: string;
+};

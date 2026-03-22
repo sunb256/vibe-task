@@ -51,13 +51,22 @@ vi.mock("../projects/projectApi", () => ({
 vi.mock("./taskApi", () => ({
   createActionTask: vi.fn(),
   deleteTask: vi.fn(),
+  fetchProjectDoc: vi.fn(),
+  fetchProjectDocs: vi.fn(),
   fetchTasks: vi.fn(),
   swapTaskId: vi.fn(),
   updateTask: vi.fn(),
 }));
 
 import { fetchProjects } from "../projects/projectApi";
-import { createActionTask, fetchTasks, swapTaskId, updateTask } from "./taskApi";
+import {
+  createActionTask,
+  fetchProjectDoc,
+  fetchProjectDocs,
+  fetchTasks,
+  swapTaskId,
+  updateTask,
+} from "./taskApi";
 
 beforeEach(() => {
   vi.spyOn(globalThis, "fetch").mockResolvedValue(
@@ -133,7 +142,9 @@ test("does not render the removed project subtitle", async () => {
   expect(screen.getByRole("link", { name: "Skills" })).toHaveAttribute("href", "/skills");
   expect(screen.getByRole("button", { name: "Setting" })).toBeInTheDocument();
   expect(screen.queryByText("VIBE TASK")).not.toBeInTheDocument();
-  expect(screen.getByRole("heading", { level: 1, name: "impl" })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { level: 1, name: /impl/i })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "impl" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "docs" })).toBeInTheDocument();
   expect(screen.getByText("/tmp/impl")).toBeInTheDocument();
   expect(screen.getAllByRole("columnheader").map((header) => header.textContent)).toEqual([
     "id",
@@ -248,6 +259,67 @@ test("does not render the removed project subtitle", async () => {
     "bg-[#dcf5e3]",
     "text-[#3f7651]",
   );
+});
+
+test("switches to docs tab and renders markdown viewer", async () => {
+  vi.mocked(fetchProjects).mockResolvedValue({
+    projects: [
+      {
+        id: "project-1",
+        name: "impl",
+        repositoryPath: "/tmp/impl",
+      },
+    ],
+  });
+  vi.mocked(fetchTasks).mockResolvedValue({
+    tasks: [
+      {
+        projectId: "project-1",
+        source: "action",
+        id: "1",
+        title: "-",
+        url: "-",
+        action: "task body",
+      },
+    ],
+  });
+  vi.mocked(fetchProjectDocs).mockResolvedValue({
+    docs: [
+      { name: "README.md", path: "README.md" },
+      { name: "guide.md", path: "docs/guide.md" },
+    ],
+  });
+  vi.mocked(fetchProjectDoc).mockResolvedValue({
+    name: "README.md",
+    path: "README.md",
+    content: "# Hello\n- item",
+  });
+
+  render(
+    <MemoryRouter initialEntries={["/projects/project-1"]}>
+      <Routes>
+        <Route path="/projects/:projectId" element={<ProjectTasksPage />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByRole("button", { name: "impl" })).toBeInTheDocument();
+  });
+
+  fireEvent.click(screen.getByRole("button", { name: "docs" }));
+
+  await waitFor(() => {
+    expect(fetchProjectDocs).toHaveBeenCalledWith("project-1");
+    expect(fetchProjectDoc).toHaveBeenCalledWith("project-1", "README.md");
+  });
+  expect(screen.getByRole("button", { name: "README.md" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "docs/guide.md" })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { level: 1, name: "Hello" })).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "新規タスク(N)" })).not.toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole("button", { name: "impl" }));
+  expect(screen.getByRole("button", { name: "新規タスク(N)" })).toBeInTheDocument();
 });
 
 test("swaps task ids with up/down buttons", async () => {
