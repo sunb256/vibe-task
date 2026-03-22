@@ -1,4 +1,11 @@
 task:
+  - id: "150"
+    url: "https://github.com/sunb256/vibe-task/pull/165"
+    title: "docs左メニューのmd拡張子表示を除去してtask150に対応"
+    action: |
+      frontend プロジェクト一覧
+
+      docs 左メニュー .mdの拡張子の表示は不要
   - id: "149"
     url: "https://github.com/sunb256/vibe-task/pull/164"
     title: "docsのcodeブロックにsyntax highlightを追加してtask149に対応"
