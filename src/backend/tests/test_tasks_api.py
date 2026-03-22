@@ -102,6 +102,33 @@ def test_lists_tasks_from_all_sources(client, project_repo: Path, project_tasks_
     ]
 
 
+def test_accepts_unquoted_runner_history_datetime(client, project_repo: Path, project_tasks_root: Path):
+    project_id = create_project(client, project_repo, project_tasks_root, with_seed=False)
+    runner_file = project_tasks_root / "impl" / "runner.yml"
+    runner_file.write_text(
+        (
+            "task: []\n"
+            "history:\n"
+            "  - id: [1, 2, 3]\n"
+            "    datetime: 2026-03-22 09:00:00\n"
+            "    status: done\n"
+        ),
+        encoding="utf-8",
+    )
+
+    response = client.get(f"/api/projects/{project_id}/tasks")
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert payload["runnerHistory"] == [
+        {
+            "id": ["1", "2", "3"],
+            "datetime": "2026-03-22 09:00:00",
+            "status": "done",
+        }
+    ]
+
+
 def test_creates_missing_status_files_when_listing_tasks(
     client,
     project_repo: Path,

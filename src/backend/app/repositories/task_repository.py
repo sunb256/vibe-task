@@ -1,5 +1,6 @@
 import re
 from collections.abc import MutableSequence
+from datetime import date, datetime
 from pathlib import Path
 from typing import Final
 
@@ -288,17 +289,27 @@ class TaskRepository:
         if not isinstance(item, dict):
             raise AppError("task file is invalid", 400)
         ids = self._history_ids(item.get("id"))
-        datetime = item.get("datetime")
+        datetime_value = self._history_datetime(item.get("datetime"))
         status = item.get("status")
-        if not isinstance(datetime, str) or not datetime.strip():
-            raise AppError("task file is invalid", 400)
         if status not in {"done", "error"}:
             raise AppError("task file is invalid", 400)
         return RunnerHistoryRecord(
             ids=ids,
-            datetime=datetime.strip(),
+            datetime=datetime_value,
             status=status,
         )
+
+    def _history_datetime(self, value: object) -> str:
+        if isinstance(value, str):
+            normalized = value.strip()
+            if normalized:
+                return normalized
+            raise AppError("task file is invalid", 400)
+        if isinstance(value, datetime):
+            return value.isoformat(sep=" ", timespec="seconds")
+        if isinstance(value, date):
+            return value.isoformat()
+        raise AppError("task file is invalid", 400)
 
     def _history_ids(self, value: object) -> list[str]:
         if isinstance(value, (int, str)):
