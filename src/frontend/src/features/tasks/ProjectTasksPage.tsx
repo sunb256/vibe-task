@@ -283,8 +283,8 @@ export function ProjectTasksPage() {
       title={<ProjectTabs repositoryName={project?.name ?? "Project"} activeTab={activeTab} onChange={setActiveTab} />}
       actions={
         project?.repositoryPath ? (
-          <div className="flex h-9 items-end justify-end pr-1">
-            <span aria-hidden="true" className="text-xs font-normal leading-none text-[var(--muted)]">
+          <div className="flex h-10 items-center justify-end pr-1">
+            <span aria-hidden="true" className="text-sm font-normal leading-5 text-[var(--muted)]">
               {project.repositoryPath}
             </span>
           </div>
@@ -511,8 +511,8 @@ type ProjectTabsProps = {
 
 function ProjectTabs(props: ProjectTabsProps) {
   return (
-    <div className="flex h-9 items-end justify-start pr-1">
-      <div className="inline-flex items-center rounded-md border border-[var(--border)] bg-white p-1">
+    <div className="flex h-10 items-center justify-start pr-1">
+      <div className="inline-flex items-center gap-2">
         <button
           type="button"
           onClick={() => props.onChange("tasks")}
@@ -534,9 +534,9 @@ function ProjectTabs(props: ProjectTabsProps) {
 
 function projectTabClass(isActive: boolean) {
   if (isActive) {
-    return "rounded px-3 py-1 text-xs font-semibold text-[var(--ink)]";
+    return "rounded px-3 py-1 text-sm font-semibold text-[var(--ink)]";
   }
-  return "rounded px-3 py-1 text-xs text-[var(--muted)] hover:bg-zinc-100";
+  return "rounded px-3 py-1 text-sm text-[var(--muted)] hover:bg-zinc-100";
 }
 
 type TaskPrLinkProps = {

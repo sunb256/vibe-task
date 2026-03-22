@@ -152,9 +152,18 @@ test("does not render the removed project subtitle", async () => {
   expect(screen.getByRole("button", { name: "Setting" })).toBeInTheDocument();
   expect(screen.queryByText("VIBE TASK")).not.toBeInTheDocument();
   expect(screen.getByRole("heading", { level: 1, name: /impl/i })).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "impl" })).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "docs" })).toBeInTheDocument();
-  expect(screen.getByText("/tmp/impl")).toBeInTheDocument();
+  const tasksTab = screen.getByRole("button", { name: "impl" });
+  const docsTab = screen.getByRole("button", { name: "docs" });
+  expect(tasksTab).toBeInTheDocument();
+  expect(docsTab).toBeInTheDocument();
+  expect(tasksTab).toHaveClass("text-sm");
+  expect(docsTab).toHaveClass("text-sm");
+  expect(tasksTab.parentElement).toHaveClass("inline-flex", "items-center", "gap-2");
+  expect(tasksTab.parentElement).not.toHaveClass("border");
+  const repositoryPath = screen.getByText("/tmp/impl");
+  expect(repositoryPath).toBeInTheDocument();
+  expect(repositoryPath).toHaveClass("text-sm");
+  expect(repositoryPath.parentElement).toHaveClass("h-10", "items-center", "justify-end");
   expect(screen.getAllByRole("columnheader").map((header) => header.textContent)).toEqual([
     "id",
     "task",

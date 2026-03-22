@@ -1,4 +1,11 @@
 task:
+  - id: "146"
+    url: "https://github.com/sunb256/vibe-task/pull/160"
+    title: "プロジェクト画面にdocsタブとMarkdown viewerを追加"
+    action: |-
+      frontend プロジェクト画面
+
+      ヘッダ部、 タブ部の枠は不要で各タブの文字をもう少し大きく。右寄せのrepositoryPathも同じ高さにして(今は下側になっている)
   - id: "145"
     url: "https://github.com/sunb256/vibe-task/pull/160"
     title: "プロジェクト画面にdocsタブとMarkdown viewerを追加"
