@@ -1,4 +1,18 @@
 task:
+  - id: "147"
+    url: "https://github.com/sunb256/vibe-task/pull/161"
+    title: "プロジェクト画面ヘッダのタブ表示を整理しtask146をdoneへ移動"
+    action: |-
+      frontend プロジェクト画面
+
+      docsタブで検索機能をつけてほしい。今はコンテンツ部の上部に入力があるがそれは不要で他の画面と同様にインクリメンタルサーチ機能が欲しい
+  - id: "146"
+    url: "https://github.com/sunb256/vibe-task/pull/161"
+    title: "プロジェクト画面ヘッダのタブ表示を整理しtask146をdoneへ移動"
+    action: |-
+      frontend プロジェクト画面
+
+      ヘッダ部、 タブ部の枠は不要で各タブの文字をもう少し大きく。右寄せのrepositoryPathも同じ高さにして(今は下側になっている)
   - id: "145"
     url: "https://github.com/sunb256/vibe-task/pull/160"
     title: "プロジェクト画面にdocsタブとMarkdown viewerを追加"

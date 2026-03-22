@@ -152,9 +152,18 @@ test("does not render the removed project subtitle", async () => {
   expect(screen.getByRole("button", { name: "Setting" })).toBeInTheDocument();
   expect(screen.queryByText("VIBE TASK")).not.toBeInTheDocument();
   expect(screen.getByRole("heading", { level: 1, name: /impl/i })).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "impl" })).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "docs" })).toBeInTheDocument();
-  expect(screen.getByText("/tmp/impl")).toBeInTheDocument();
+  const tasksTab = screen.getByRole("button", { name: "impl" });
+  const docsTab = screen.getByRole("button", { name: "docs" });
+  expect(tasksTab).toBeInTheDocument();
+  expect(docsTab).toBeInTheDocument();
+  expect(tasksTab).toHaveClass("text-base");
+  expect(docsTab).toHaveClass("text-base");
+  expect(tasksTab.parentElement).toHaveClass("inline-flex", "items-center", "gap-2");
+  expect(tasksTab.parentElement).not.toHaveClass("border");
+  const repositoryPath = screen.getByText("/tmp/impl");
+  expect(repositoryPath).toBeInTheDocument();
+  expect(repositoryPath).toHaveClass("text-sm");
+  expect(repositoryPath.parentElement).toHaveClass("h-10", "items-center", "justify-end");
   expect(screen.getAllByRole("columnheader").map((header) => header.textContent)).toEqual([
     "id",
     "task",
@@ -322,8 +331,24 @@ test("switches to docs tab and renders markdown viewer", async () => {
     expect(fetchProjectDocs).toHaveBeenCalledWith("project-1");
     expect(fetchProjectDoc).toHaveBeenCalledWith("project-1", "README.md");
   });
+  const docsSearch = screen.getByRole("searchbox", { name: "Search" });
+  expect(docsSearch).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "README.md" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "docs/guide.md" })).toBeInTheDocument();
+  fireEvent.change(docsSearch, { target: { value: "guide" } });
+  await waitFor(() => {
+    expect(screen.queryByRole("button", { name: "README.md" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "docs/guide.md" })).toBeInTheDocument();
+  });
+  await waitFor(() => {
+    expect(fetchProjectDoc).toHaveBeenCalledWith("project-1", "docs/guide.md");
+  });
+  fireEvent.change(docsSearch, { target: { value: "not-found" } });
+  expect(screen.getByText("検索条件に一致するMarkdownはありません。")).toBeInTheDocument();
+  fireEvent.change(docsSearch, { target: { value: "" } });
+  await waitFor(() => {
+    expect(screen.getByRole("button", { name: "README.md" })).toBeInTheDocument();
+  });
   expect(screen.getByRole("heading", { level: 1, name: "Hello" })).toBeInTheDocument();
   await waitFor(() => {
     expect(screen.getByTestId("mermaid-preview-diagram")).toBeInTheDocument();
@@ -362,6 +387,7 @@ test("switches to docs tab and renders markdown viewer", async () => {
   expect(screen.queryByRole("button", { name: "新規タスク(N)" })).not.toBeInTheDocument();
 
   fireEvent.click(screen.getByRole("button", { name: "impl" }));
+  expect(screen.queryByRole("searchbox", { name: "Search" })).not.toBeInTheDocument();
   expect(screen.getByRole("button", { name: "新規タスク(N)" })).toBeInTheDocument();
 });
 

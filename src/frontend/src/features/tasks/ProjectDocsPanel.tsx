@@ -1,8 +1,7 @@
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 
 import { Notice } from "../../components/Notice";
-import { displayPath } from "../../lib/displayPath";
 import { readErrorMessage } from "../../lib/readErrorMessage";
 import { ProjectMermaidBlock } from "./ProjectMermaidBlock";
 import { fetchProjectDoc, fetchProjectDocs } from "./taskApi";
@@ -10,19 +9,20 @@ import type { ProjectDocFile, ProjectDocSummary } from "./types";
 
 type ProjectDocsPanelProps = {
   projectId: string;
-  repositoryPath: string;
   isActive: boolean;
 };
 
 export function ProjectDocsPanel(props: ProjectDocsPanelProps) {
-  const { projectId, repositoryPath, isActive } = props;
+  const { projectId, isActive } = props;
   const [docs, setDocs] = useState<ProjectDocSummary[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [currentPath, setCurrentPath] = useState("");
   const [currentDoc, setCurrentDoc] = useState<ProjectDocFile | null>(null);
   const [loadError, setLoadError] = useState("");
   const [docError, setDocError] = useState("");
   const [isLoadingDocs, setIsLoadingDocs] = useState(false);
   const [isLoadingDoc, setIsLoadingDoc] = useState(false);
+  const visibleDocs = useMemo(() => filterDocs(docs, searchQuery), [docs, searchQuery]);
 
   useEffect(() => {
     if (!isActive || !projectId) {
@@ -90,25 +90,52 @@ export function ProjectDocsPanel(props: ProjectDocsPanelProps) {
     };
   }, [currentPath, isActive, projectId]);
 
+  useEffect(() => {
+    if (!isActive) {
+      return;
+    }
+    setCurrentPath((current) => resolveInitialPath(visibleDocs, current));
+  }, [isActive, visibleDocs]);
+
   if (!isActive) {
     return null;
   }
 
   return (
     <section className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
-      <div className="mb-4 rounded-lg border border-[var(--border)] bg-white px-3 py-2 text-xs text-[var(--muted)]">
-        {displayPath(repositoryPath)}
+      <div className="mb-4 flex justify-start">
+        <div className="relative w-full max-w-56">
+          <img
+            src="/assets/images/search.svg"
+            alt=""
+            aria-hidden="true"
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-65"
+          />
+          <input
+            id="project-doc-search"
+            type="search"
+            aria-label="Search"
+            autoFocus
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Search"
+            className="h-9 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12"
+          />
+        </div>
       </div>
       {loadError ? <Notice tone="error" message={loadError} /> : null}
       {isLoadingDocs ? <Notice tone="neutral" message="Loading docs..." /> : null}
       {!loadError && !isLoadingDocs && docs.length === 0 ? (
         <Notice tone="neutral" message="Markdown は見つかりませんでした。" />
       ) : null}
-      {!loadError && !isLoadingDocs && docs.length > 0 ? (
+      {!loadError && !isLoadingDocs && docs.length > 0 && visibleDocs.length === 0 ? (
+        <Notice tone="neutral" message="検索条件に一致するMarkdownはありません。" />
+      ) : null}
+      {!loadError && !isLoadingDocs && visibleDocs.length > 0 ? (
         <div className="grid gap-3 lg:grid-cols-[18rem_minmax(0,1fr)]">
           <div className="max-h-[70vh] overflow-auto rounded-lg border border-[var(--border)] bg-white p-2">
             <ul className="space-y-1">
-              {docs.map((doc) => (
+              {visibleDocs.map((doc) => (
                 <li key={doc.path}>
                   <button
                     type="button"
@@ -124,7 +151,7 @@ export function ProjectDocsPanel(props: ProjectDocsPanelProps) {
           <div className="min-h-[18rem] rounded-lg border border-[var(--border)] bg-white px-4 py-3">
             {docError ? <Notice tone="error" message={docError} /> : null}
             {isLoadingDoc ? <Notice tone="neutral" message="Loading markdown..." /> : null}
-            {!docError && !isLoadingDoc && currentDoc ? (
+            {!docError && !isLoadingDoc && currentDoc && currentPath ? (
               <article className="break-words text-sm leading-7 text-[var(--ink)]">
                 <ReactMarkdown components={MARKDOWN_COMPONENTS}>{currentDoc.content}</ReactMarkdown>
               </article>
@@ -141,6 +168,14 @@ function resolveInitialPath(docs: ProjectDocSummary[], currentPath: string) {
     return currentPath;
   }
   return docs[0]?.path ?? "";
+}
+
+function filterDocs(docs: ProjectDocSummary[], queryText: string) {
+  const query = queryText.trim().toLowerCase();
+  if (!query) {
+    return docs;
+  }
+  return docs.filter((doc) => doc.path.toLowerCase().includes(query));
 }
 
 function docButtonClass(isActive: boolean) {
