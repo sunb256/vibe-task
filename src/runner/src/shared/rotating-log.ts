@@ -14,6 +14,12 @@ function toText(chunk: unknown): string {
   return String(chunk);
 }
 
+// 進捗スピナーのような一時更新チャンクはログ保存対象から除外する。
+export function isTransientTerminalUpdate(text: string): boolean {
+  if (!text.startsWith("\r")) return false;
+  return !text.includes("\n");
+}
+
 // ログ出力時刻を yyyy-mm-dd HH:mm:ss 形式へ整形する。
 function formatDateTime(date: Date): string {
   const yyyy = String(date.getFullYear());
@@ -89,7 +95,11 @@ export function setupRotatingLog(options: RotatingLogOptions): void {
   };
 
   const enqueue = (chunk: unknown): void => {
-    const text = addTimestamp(toText(chunk));
+    const rawText = toText(chunk);
+    if (isTransientTerminalUpdate(rawText)) {
+      return;
+    }
+    const text = addTimestamp(rawText);
     writeQueue = writeQueue
       .then(async () => {
         await appendWithRotate(options, text);
