@@ -3,6 +3,7 @@ import type {
   ProjectDocFile,
   ProjectDocSummary,
   RunnerHistoryRecord,
+  RunnerLogRecord,
   TaskRecord,
   TaskSource,
 } from "./types";
@@ -14,6 +15,10 @@ type TaskListResponse = {
 
 type DocListResponse = {
   docs: ProjectDocSummary[];
+};
+
+type RunnerExecuteResponse = {
+  running: boolean;
 };
 
 export function fetchTasks(projectId: string) {
@@ -73,5 +78,17 @@ export function swapTaskId(
   return apiFetch<void>(`/api/projects/${projectId}/tasks/${source}/${taskId}/swap`, {
     method: "PATCH",
     json: { swapWithId },
+  });
+}
+
+export function executeRunner(projectId: string) {
+  return apiFetch<RunnerExecuteResponse>(`/api/projects/${projectId}/runner/execute`, {
+    method: "POST",
+  });
+}
+
+export function fetchRunnerLogs(projectId: string, lines = 200) {
+  return apiFetch<RunnerLogRecord>(`/api/projects/${projectId}/runner/logs?lines=${lines}`, {
+    cache: "no-store",
   });
 }

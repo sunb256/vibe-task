@@ -3,8 +3,10 @@ import { afterEach, vi } from "vitest";
 import {
   createTask,
   deleteTask,
+  executeRunner,
   fetchProjectDoc,
   fetchProjectDocs,
+  fetchRunnerLogs,
   fetchTasks,
   swapTaskId,
   updateTask,
@@ -139,6 +141,27 @@ test("fetchProjectDocs and fetchProjectDoc request docs endpoints without cache"
   expect(fetchMock).toHaveBeenNthCalledWith(
     2,
     "/api/projects/project-1/docs/docs/guide.md",
+    expect.objectContaining({ cache: "no-store" }),
+  );
+});
+
+test("executeRunner and fetchRunnerLogs call runner endpoints", async () => {
+  const fetchMock = vi
+    .spyOn(globalThis, "fetch")
+    .mockResolvedValueOnce(new Response(JSON.stringify({ running: true })))
+    .mockResolvedValueOnce(new Response(JSON.stringify({ running: false, log: "done" })));
+
+  await executeRunner("project-1");
+  await fetchRunnerLogs("project-1", 123);
+
+  expect(fetchMock).toHaveBeenNthCalledWith(
+    1,
+    "/api/projects/project-1/runner/execute",
+    expect.objectContaining({ method: "POST" }),
+  );
+  expect(fetchMock).toHaveBeenNthCalledWith(
+    2,
+    "/api/projects/project-1/runner/logs?lines=123",
     expect.objectContaining({ cache: "no-store" }),
   );
 });

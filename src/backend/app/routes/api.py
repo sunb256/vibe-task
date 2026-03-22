@@ -10,6 +10,7 @@ from app.services.app_settings_service import AppSettingsService
 from app.services.doc_service import DocService
 from app.services.project_service import ProjectService
 from app.services.prompt_service import PromptService
+from app.services.runner_service import RunnerService
 from app.services.skill_service import SkillService
 from app.services.task_service import TaskService
 
@@ -154,6 +155,21 @@ def swap_task_id(project_id: str, source: str, task_id: str):
     return "", 204
 
 
+@api_bp.post("/projects/<project_id>/runner/execute")
+def execute_runner(project_id: str):
+    service = RunnerService(_project_repository())
+    service.execute_runner(project_id)
+    return jsonify({"running": True}), 202
+
+
+@api_bp.get("/projects/<project_id>/runner/logs")
+def get_runner_logs(project_id: str):
+    lines = _parse_runner_log_lines(request.args.get("lines"))
+    service = RunnerService(_project_repository())
+    payload = service.read_runner_logs(project_id, lines)
+    return jsonify(payload.to_dict())
+
+
 @api_bp.get("/projects/<project_id>/docs")
 def list_project_docs(project_id: str):
     service = DocService(_project_repository())
@@ -281,3 +297,15 @@ def _prompt_repository() -> PromptRepository:
 def _skill_repository() -> SkillRepository:
     skills_dir = Path(current_app.config["SKILLS_DIR"])
     return SkillRepository(skills_dir)
+
+
+def _parse_runner_log_lines(raw_value: str | None) -> int:
+    if raw_value is None or not raw_value.strip():
+        return 200
+    value = raw_value.strip()
+    if not value.isdigit():
+        raise AppError("lines must be an integer", 400)
+    lines = int(value)
+    if lines <= 0 or lines > 2000:
+        raise AppError("lines must be between 1 and 2000", 400)
+    return lines

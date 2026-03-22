@@ -21,6 +21,16 @@ SOURCE_FILES: Final[dict[str, str]] = {
 }
 
 
+def normalize_project_directory_name(name: str, project_id: str) -> str:
+    lowered = name.strip().lower()
+    dashed = re.sub(r"\s+", "-", lowered)
+    normalized = re.sub(r"[^a-z0-9._-]+", "-", dashed)
+    normalized = normalized.strip("-._")
+    if normalized:
+        return normalized
+    return f"project-{project_id}"
+
+
 class TaskRepository:
     def __init__(self, projects_root: Path) -> None:
         self.projects_root = projects_root
@@ -343,13 +353,7 @@ class TaskRepository:
         return project_dir
 
     def _project_directory_name(self, name: str, project_id: str) -> str:
-        lowered = name.strip().lower()
-        dashed = re.sub(r"\s+", "-", lowered)
-        normalized = re.sub(r"[^a-z0-9._-]+", "-", dashed)
-        normalized = normalized.strip("-._")
-        if normalized:
-            return normalized
-        return f"project-{project_id}"
+        return normalize_project_directory_name(name, project_id)
 
     def _normalize_dash_placeholders(self, raw_text: str) -> str:
         normalized: list[str] = []

@@ -20,6 +20,8 @@ import {
 import {
   createTask,
   deleteTask,
+  executeRunner,
+  fetchRunnerLogs,
   fetchTasks,
   swapTaskId,
   updateTask,
@@ -28,6 +30,8 @@ import type { RunnerHistoryRecord, TaskRecord, TaskSource } from "./types";
 
 const defaultTaskAction = "";
 const AUTO_REFRESH_MS = 60_000;
+const RUNNER_LOG_REFRESH_MS = 2_000;
+const RUNNER_LOG_LINES = 300;
 type ProjectTab = "tasks" | "docs";
 const defaultVisibleSources: Record<TaskSource, boolean> = {
   action: true,
@@ -44,9 +48,12 @@ export function ProjectTasksPage() {
   const [runnerHistory, setRunnerHistory] = useState<RunnerHistoryRecord[]>([]);
   const [activeTab, setActiveTab] = useState<ProjectTab>("tasks");
   const [error, setError] = useState("");
+  const [runnerLogError, setRunnerLogError] = useState("");
   const [createError, setCreateError] = useState("");
   const [editError, setEditError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isRunnerRunning, setIsRunnerRunning] = useState(false);
+  const [isRunnerStarting, setIsRunnerStarting] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -58,11 +65,17 @@ export function ProjectTasksPage() {
   const [editTaskAction, setEditTaskAction] = useState("");
   const [editTaskSource, setEditTaskSource] = useState<TaskSource>("action");
   const [visibleSources, setVisibleSources] = useState(defaultVisibleSources);
+  const [runnerLog, setRunnerLog] = useState("");
   const createButtonRef = useRef<HTMLButtonElement | null>(null);
+  const runnerRunningRef = useRef(false);
 
   useEffect(() => {
     setActiveTab("tasks");
   }, [projectId]);
+
+  useEffect(() => {
+    runnerRunningRef.current = isRunnerRunning;
+  }, [isRunnerRunning]);
 
   useEffect(() => {
     let cancelled = false;
@@ -104,6 +117,43 @@ export function ProjectTasksPage() {
       cancelled = true;
     };
   }, [projectId]);
+
+  useEffect(() => {
+    if (!projectId || activeTab !== "tasks") {
+      return;
+    }
+    let cancelled = false;
+
+    async function pollRunnerLog() {
+      try {
+        const wasRunning = runnerRunningRef.current;
+        const log = await readRunnerLog(projectId);
+        if (cancelled) {
+          return;
+        }
+        setRunnerLog(log.log);
+        setIsRunnerRunning(log.running);
+        runnerRunningRef.current = log.running;
+        setRunnerLogError("");
+        if (wasRunning && !log.running) {
+          await refreshTasks(projectId, setTasks, setRunnerHistory);
+        }
+      } catch (runnerError) {
+        if (!cancelled) {
+          setRunnerLogError(readErrorMessage(runnerError, "runner ログの取得に失敗しました。"));
+        }
+      }
+    }
+
+    void pollRunnerLog();
+    const intervalId = window.setInterval(() => {
+      void pollRunnerLog();
+    }, RUNNER_LOG_REFRESH_MS);
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [activeTab, projectId]);
 
   useEffect(() => {
     if (
@@ -291,6 +341,23 @@ export function ProjectTasksPage() {
     }
   }
 
+  async function handleRunnerExecute() {
+    setRunnerLogError("");
+    setIsRunnerStarting(true);
+    try {
+      await executeRunner(projectId);
+      setVisibleSources((current) => ({ ...current, runner: true }));
+      const log = await readRunnerLog(projectId);
+      setRunnerLog(log.log);
+      setIsRunnerRunning(log.running);
+      runnerRunningRef.current = log.running;
+    } catch (runnerError) {
+      setRunnerLogError(readErrorMessage(runnerError, "runner の実行に失敗しました。"));
+    } finally {
+      setIsRunnerStarting(false);
+    }
+  }
+
   const orderedTasks = orderTasks(tasks);
   const visibleTasks = filterTasks(orderedTasks, visibleSources);
 
@@ -316,6 +383,13 @@ export function ProjectTasksPage() {
             >
               新規タスク(N)
             </PrimaryButton>
+            <PrimaryButton
+              type="button"
+              onClick={() => void handleRunnerExecute()}
+              disabled={isRunnerStarting || isRunnerRunning}
+            >
+              {isRunnerStarting ? "起動中..." : isRunnerRunning ? "RUNNER実行中..." : "RUNNER実行"}
+            </PrimaryButton>
             {TASK_FILTER_ORDER.map((source, index) => (
               <button
                 key={source}
@@ -328,7 +402,14 @@ export function ProjectTasksPage() {
               </button>
             ))}
           </div>
-          {visibleSources.runner ? <RunnerHistoryPanel history={runnerHistory} /> : null}
+          {visibleSources.runner ? (
+            <RunnerHistoryPanel
+              history={runnerHistory}
+              runnerLog={runnerLog}
+              isRunning={isRunnerRunning}
+              logError={runnerLogError}
+            />
+          ) : null}
           {error ? <Notice tone="error" message={error} /> : null}
           {isLoading ? <Notice tone="neutral" message="Loading tasks..." /> : null}
           {!error && !isLoading && visibleTasks.length === 0 ? (
@@ -495,6 +576,10 @@ async function readTasks(projectId: string) {
   };
 }
 
+async function readRunnerLog(projectId: string) {
+  return fetchRunnerLogs(projectId, RUNNER_LOG_LINES);
+}
+
 async function refreshTasks(
   projectId: string,
   setTasks: (tasks: TaskRecord[]) => void,
@@ -616,6 +701,9 @@ function prLabel(url: string) {
 
 type RunnerHistoryPanelProps = {
   history: RunnerHistoryRecord[];
+  runnerLog: string;
+  isRunning: boolean;
+  logError: string;
 };
 
 function RunnerHistoryPanel(props: RunnerHistoryPanelProps) {
@@ -652,8 +740,27 @@ function RunnerHistoryPanel(props: RunnerHistoryPanelProps) {
           </table>
         </div>
       )}
+      <div className="mt-3 border-t border-[var(--border)] pt-3">
+        <div className="mb-2 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-[var(--ink)]">RUNNERログ</h3>
+          <span className={runnerStateClass(props.isRunning)}>
+            {props.isRunning ? "RUNNING" : "IDLE"}
+          </span>
+        </div>
+        {props.logError ? <Notice tone="error" message={props.logError} /> : null}
+        <pre className="max-h-72 overflow-auto rounded-md border border-[var(--border)] bg-zinc-950 px-3 py-2 text-xs leading-5 text-zinc-100">
+          {props.runnerLog || "ログはありません。"}
+        </pre>
+      </div>
     </section>
   );
+}
+
+function runnerStateClass(isRunning: boolean) {
+  if (isRunning) {
+    return "inline-flex rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs text-blue-700";
+  }
+  return "inline-flex rounded-full border border-zinc-300 bg-zinc-100 px-2 py-0.5 text-xs text-zinc-700";
 }
 
 function runnerStatusClass(status: RunnerHistoryRecord["status"]) {
