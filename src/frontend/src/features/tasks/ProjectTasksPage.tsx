@@ -534,9 +534,9 @@ function ProjectTabs(props: ProjectTabsProps) {
 
 function projectTabClass(isActive: boolean) {
   if (isActive) {
-    return "rounded px-3 py-1 text-sm font-semibold text-[var(--ink)]";
+    return "rounded px-3 py-1 text-base font-semibold text-[var(--ink)]";
   }
-  return "rounded px-3 py-1 text-sm text-[var(--muted)] hover:bg-zinc-100";
+  return "rounded px-3 py-1 text-base text-[var(--muted)] hover:bg-zinc-100";
 }
 
 type TaskPrLinkProps = {

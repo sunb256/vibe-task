@@ -156,8 +156,8 @@ test("does not render the removed project subtitle", async () => {
   const docsTab = screen.getByRole("button", { name: "docs" });
   expect(tasksTab).toBeInTheDocument();
   expect(docsTab).toBeInTheDocument();
-  expect(tasksTab).toHaveClass("text-sm");
-  expect(docsTab).toHaveClass("text-sm");
+  expect(tasksTab).toHaveClass("text-base");
+  expect(docsTab).toHaveClass("text-base");
   expect(tasksTab.parentElement).toHaveClass("inline-flex", "items-center", "gap-2");
   expect(tasksTab.parentElement).not.toHaveClass("border");
   const repositoryPath = screen.getByText("/tmp/impl");
