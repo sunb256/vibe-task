@@ -1,4 +1,38 @@
 task:
+  - id: "151"
+    url: "https://github.com/sunb256/vibe-task/pull/166"
+    title: "RUNNERタスク種別とrunner履歴表示を追加してtask151に対応"
+    action: |
+      frontend プロジェクト画面
+      タスクの種類が4種類あるが、新規にRUNNERタスクを作りたい
+
+      RUNNERタスクはRunnerで実行できるタスク
+
+      Runnerで各タスクをまとめて実行することを考えている
+      定期的に必要なタイミングで実行できるとすごく便利に使える機能
+
+      RUNNERタスクは終了後にDONEタスクに移動せずに、RUNNERにとどめる(再利用が可能なように)
+
+      RUNNERタスクは以下のファイルとする
+      ./tasks/projects/プロジェクト名/runner.yml
+
+      履歴も分かったほうが好ましい
+
+
+      以下のようなフォーマット
+
+      runner.yml
+      ```
+      task:
+        - id: "1"
+          action: |
+            xxx
+
+      history:
+        - id: [1, 2, 3]
+          datetime: "yyyy-mm-dd HH:mm:ss"
+          status: done or error
+      ```
   - id: "150"
     url: "https://github.com/sunb256/vibe-task/pull/165"
     title: "docs左メニューのmd拡張子表示を除去してtask150に対応"
