@@ -3,7 +3,10 @@ import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
 import test from "node:test";
-import { appendWithRotateForTest } from "../shared/rotating-log.js";
+import {
+  appendWithRotateForTest,
+  isTransientTerminalUpdate,
+} from "../shared/rotating-log.js";
 
 async function withTempDir(run: (dir: string) => Promise<void>): Promise<void> {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), "runner-log-test-"));
@@ -31,4 +34,13 @@ test("appendWithRotateForTest rotates and keeps max files", async () => {
     assert.equal(first, "second\n");
     assert.equal(second, "first\n");
   });
+});
+
+test("isTransientTerminalUpdate returns true for spinner-like chunk", () => {
+  assert.equal(isTransientTerminalUpdate("\r| thinking..."), true);
+});
+
+test("isTransientTerminalUpdate returns false for normal and newline chunks", () => {
+  assert.equal(isTransientTerminalUpdate("normal line\n"), false);
+  assert.equal(isTransientTerminalUpdate("\rcommand output\n"), false);
 });
