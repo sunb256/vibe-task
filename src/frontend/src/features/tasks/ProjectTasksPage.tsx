@@ -373,6 +373,7 @@ export function ProjectTasksPage() {
     if (!confirmed) {
       return;
     }
+    setActiveRunnerTab("log");
     setRunnerLogError("");
     setIsRunnerStarting(true);
     try {

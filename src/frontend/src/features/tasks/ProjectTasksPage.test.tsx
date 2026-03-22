@@ -502,7 +502,7 @@ test("starts runner execution and shows runner logs", async () => {
     expect(confirmSpy).toHaveBeenCalledWith("RUNNERを実行しますか？");
     expect(executeRunner).toHaveBeenCalledWith("project-1");
   });
-  fireEvent.click(screen.getByRole("button", { name: "ログ" }));
+  expect(screen.getByRole("heading", { level: 2, name: "ログ" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Runnerキャンセル" })).toBeEnabled();
   expect(screen.getByText("RUNNING")).toBeInTheDocument();
   expect(screen.getByText("runner started")).toBeInTheDocument();
