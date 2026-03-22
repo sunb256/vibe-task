@@ -92,7 +92,7 @@ def test_lists_tasks_from_all_sources(client, project_repo: Path, project_tasks_
     assert response.status_code == 200
     payload = response.get_json()
     assert {task["source"] for task in payload["tasks"]} == {"action", "runner", "pending", "done", "cancel"}
-    assert [task["id"] for task in payload["tasks"]] == ["1", "5", "3", "2", "4"]
+    assert [task["id"] for task in payload["tasks"]] == ["1", "3", "2", "4", "5"]
     assert payload["runnerHistory"] == [
         {
             "id": ["1", "2", "3"],
@@ -212,7 +212,7 @@ def test_deletes_task(client, project_repo: Path, project_tasks_root: Path):
     assert response.status_code == 204
     tasks_response = client.get(f"/api/projects/{project_id}/tasks")
     payload = tasks_response.get_json()
-    assert [task["id"] for task in payload["tasks"]] == ["1", "5", "3", "4"]
+    assert [task["id"] for task in payload["tasks"]] == ["1", "3", "4", "5"]
 
 
 def test_moves_task_to_pending_source(client, project_repo: Path, project_tasks_root: Path):
@@ -269,7 +269,7 @@ def test_expands_env_var_in_repository_path_when_loading_tasks(
     assert created.status_code == 201
     assert listed.status_code == 200
     payload = listed.get_json()
-    assert [task["id"] for task in payload["tasks"]] == ["1", "5", "3", "2", "4"]
+    assert [task["id"] for task in payload["tasks"]] == ["1", "3", "2", "4", "5"]
 
 
 def test_creates_runner_task(client, project_repo: Path, project_tasks_root: Path):

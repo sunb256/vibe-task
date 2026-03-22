@@ -10,7 +10,7 @@ from ruamel.yaml.scalarstring import LiteralScalarString
 from app.errors import AppError
 from app.models import ProjectRecord, RunnerHistoryRecord, TaskRecord
 
-TASK_SOURCES: Final[tuple[str, ...]] = ("action", "runner", "pending", "done", "cancel")
+TASK_SOURCES: Final[tuple[str, ...]] = ("action", "pending", "done", "cancel", "runner")
 SOURCE_FILES: Final[dict[str, str]] = {
     "action": "action.yml",
     "runner": "runner.yml",

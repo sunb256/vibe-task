@@ -20,25 +20,28 @@ prompts:
   # task_file: ../../tasks/projects/vibe-task/runner.yml
   common: |
     1. 最初にカントフォルダのフォルダ名を取得して下さい (@PWDとする)
-       また、ベースフォルダは ~/ghq/github.com/sunb256/vibe-task です(@BASE_DIRとする)
+     また、ベースフォルダは ~/ghq/github.com/sunb256/vibe-task です(@BASE_DIRとする)
 
     2. 今回のタスクは @BASE_DIR/tasks/projects/@PWD/action.yml task.id: の `一番小さい番号` です
 
     3. AGENTS.md と @BASE_DIR/tasks/projects/@PWD/action.yml に従って実装して下さい
 
     4. 実装方法は、~/.codex/implement.md に従って実装して下さい
+      ブランチはdevブランチで作業してください
 
     5. 完了後は AGENTS.md に従って lint/test/typecheck を実行し、その結果を要約して下さい
-       使用するツールは AGENTS.md を参照して実施
+      使用するツールは AGENTS.md を参照して実施
 
     6. 次に差分を self-review し、必要な修正をして下さい
 
     7. 最後に AGENTS.md に記載の レビュー方法を行い、PR して下さい
 
-    8. タスクが完了したら、'id'と同じコードに 'title' と 'url' を追加して PR のタイトルと URL を追加し、
-       @BASE_DIR/tasks/projects/@PWD/done.yml へ作業タスク1つを移動して下さい
+    8. タスクが完了したら、'id'と同じコードに 'title' と 'url' を追加して PR のタイトルと URL を追加してください
+      yamlへの追加は、`title` と `url` は常にダブルクォートで記述すること
 
-    9. 完了後、PR のタイトルと URL を提示して下さい
+    9. @BASE_DIR/tasks/projects/@PWD/done.yml へ作業タスク1つを移動して下さい
+
+    10. 完了後、PR のタイトルと URL を提示して下さい
 
 
 reply_wanted:

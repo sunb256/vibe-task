@@ -24,6 +24,10 @@ npx tsx src/run.ts tasks.yml -f --max-auto-reply-count 5
 npx tsx src/run.ts -c config/config.yml
  # or
 npx tsx src/run.ts --config config/config.yml
+ # or
+npx tsx src/run.ts -c config/config.yml --task vibe-task
+ # or
+npx tsx src/run.ts --task=vibe-task
 ```
 
 `config/config.yml` に `verbose` / `codex` / `thread` / `prompts` / `reply_wanted` を設定すると、
@@ -32,6 +36,9 @@ npx tsx src/run.ts --config config/config.yml
 設定ファイルは引数で上書きできます。
 - `-c <PATH>` / `--config <PATH>`
 - `--config=<PATH>`
+- `--task <PROJECT>` / `--task=<PROJECT>`: `../../tasks/projects/<PROJECT>/runner.yml` を使って実行
+  - `--task` は位置引数の task file より優先されます
+  - 指定した project が存在しない場合はエラーで終了します
 
 `prompts` では task 入力文の共通化と既定オプションを設定できます。
 - `task_file`: 読み込む tasks ファイルパス

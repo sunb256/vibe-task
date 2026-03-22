@@ -31,7 +31,7 @@ const AUTO_REFRESH_MS = 60_000;
 type ProjectTab = "tasks" | "docs";
 const defaultVisibleSources: Record<TaskSource, boolean> = {
   action: true,
-  runner: true,
+  runner: false,
   pending: true,
   done: false,
   cancel: false,
@@ -328,7 +328,7 @@ export function ProjectTasksPage() {
               </button>
             ))}
           </div>
-          <RunnerHistoryPanel history={runnerHistory} />
+          {visibleSources.runner ? <RunnerHistoryPanel history={runnerHistory} /> : null}
           {error ? <Notice tone="error" message={error} /> : null}
           {isLoading ? <Notice tone="neutral" message="Loading tasks..." /> : null}
           {!error && !isLoading && visibleTasks.length === 0 ? (
@@ -798,7 +798,7 @@ function toggleSourceFilter(
   }));
 }
 
-const TASK_FILTER_ORDER: TaskSource[] = ["action", "runner", "pending", "done", "cancel"];
+const TASK_FILTER_ORDER: TaskSource[] = ["action", "pending", "done", "cancel", "runner"];
 const SOURCE_META: Record<
   TaskSource,
   {
@@ -816,8 +816,8 @@ const SOURCE_META: Record<
   },
   runner: {
     label: "RUNNER",
-    badgeClass: "bg-emerald-100 text-emerald-700",
-    filterClass: "border-emerald-200 bg-emerald-100 text-emerald-700",
+    badgeClass: "bg-orange-100 text-orange-700",
+    filterClass: "border-orange-200 bg-orange-100 text-orange-700",
     descending: false,
   },
   pending: {
