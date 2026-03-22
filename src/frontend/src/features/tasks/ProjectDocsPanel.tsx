@@ -107,8 +107,8 @@ export function ProjectDocsPanel(props: ProjectDocsPanelProps) {
     <section className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
       <div className="mb-4 rounded-lg border border-[var(--border)] bg-white px-3 py-2 text-xs text-[var(--muted)]">
         <div className="flex items-center justify-between gap-3">
-          <span className="truncate">{displayPath(repositoryPath)}</span>
-          <div className="relative w-full max-w-56">
+          <span className="min-w-0 flex-1 truncate">{displayPath(repositoryPath)}</span>
+          <div className="relative w-full max-w-56 shrink-0">
             <img
               src="/assets/images/search.svg"
               alt=""
