@@ -416,7 +416,6 @@ export function ProjectTasksPage() {
         <ProjectDocsPanel
           isActive={activeTab === "docs"}
           projectId={projectId}
-          repositoryPath={project.repositoryPath}
         />
       ) : null}
       {activeTab === "tasks" ? (

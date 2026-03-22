@@ -2,7 +2,6 @@ import { type ReactNode, useEffect, useMemo, useState } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 
 import { Notice } from "../../components/Notice";
-import { displayPath } from "../../lib/displayPath";
 import { readErrorMessage } from "../../lib/readErrorMessage";
 import { ProjectMermaidBlock } from "./ProjectMermaidBlock";
 import { fetchProjectDoc, fetchProjectDocs } from "./taskApi";
@@ -10,12 +9,11 @@ import type { ProjectDocFile, ProjectDocSummary } from "./types";
 
 type ProjectDocsPanelProps = {
   projectId: string;
-  repositoryPath: string;
   isActive: boolean;
 };
 
 export function ProjectDocsPanel(props: ProjectDocsPanelProps) {
-  const { projectId, repositoryPath, isActive } = props;
+  const { projectId, isActive } = props;
   const [docs, setDocs] = useState<ProjectDocSummary[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPath, setCurrentPath] = useState("");
@@ -105,27 +103,24 @@ export function ProjectDocsPanel(props: ProjectDocsPanelProps) {
 
   return (
     <section className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
-      <div className="mb-4 rounded-lg border border-[var(--border)] bg-white px-3 py-2 text-xs text-[var(--muted)]">
-        <div className="flex items-center justify-between gap-3">
-          <span className="min-w-0 flex-1 truncate">{displayPath(repositoryPath)}</span>
-          <div className="relative w-full max-w-56 shrink-0">
-            <img
-              src="/assets/images/search.svg"
-              alt=""
-              aria-hidden="true"
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-65"
-            />
-            <input
-              id="project-doc-search"
-              type="search"
-              aria-label="Search"
-              autoFocus
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder="Search"
-              className="h-8 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12"
-            />
-          </div>
+      <div className="mb-4 flex justify-end">
+        <div className="relative w-full max-w-56">
+          <img
+            src="/assets/images/search.svg"
+            alt=""
+            aria-hidden="true"
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-65"
+          />
+          <input
+            id="project-doc-search"
+            type="search"
+            aria-label="Search"
+            autoFocus
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Search"
+            className="h-9 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12"
+          />
         </div>
       </div>
       {loadError ? <Notice tone="error" message={loadError} /> : null}
