@@ -1,6 +1,6 @@
 task:
   - id: "145"
-    url: "https://github.com/sunb256/vibe-task/pull/159"
+    url: "https://github.com/sunb256/vibe-task/pull/160"
     title: "プロジェクト画面にdocsタブとMarkdown viewerを追加"
     action: |
       frontend プロジェクト画面 docsタブにおいて、mermaid対応をしたい
