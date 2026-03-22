@@ -1,4 +1,16 @@
 task:
+  - id: "152"
+    url: "https://github.com/sunb256/vibe-task/pull/167"
+    title: "Runner CLI に --task オプションを追加して task152 に対応"
+    action: |
+      src/runner
+
+      runner コマンドライン引数の改良
+
+
+      npx tsx src/run.ts -c config/config.yml --task プロジェクト名
+
+      で `../../tasks/projects/プロジェクト名/runner.yml` を使用したrunner用タスクを実行できるようにしたい
   - id: "151"
     url: "https://github.com/sunb256/vibe-task/pull/166"
     title: "RUNNERタスク種別とrunner履歴表示を追加してtask151に対応"

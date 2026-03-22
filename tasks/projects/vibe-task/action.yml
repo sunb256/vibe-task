@@ -1,13 +1,1 @@
-task:
-  - id: '152'
-    url: '-'
-    title: '-'
-    action: |
-      src/runner
-
-      runner コマンドライン引数の改良
-
-
-      npx tsx src/run.ts -c config/config.yml --task プロジェクト名
-
-      で `../../tasks/projects/プロジェクト名/runner.yml` を使用したrunner用タスクを実行できるようにしたい
+task: []
