@@ -127,46 +127,6 @@ test("parseRuntimeOptions maps legacy auto_reply to fullauto", () => {
   assert.equal(runtime.replyMode, "fullauto");
 });
 
-test("parseRuntimeOptions enables fullauto with -f", () => {
-  const runtime = parseRuntimeOptions(["-f"], {
-    reply_wanted: { mode: "harfauto" },
-  });
-  assert.equal(runtime.replyMode, "fullauto");
-  assert.equal(runtime.taskFilePath, "task.yml");
-});
-
-test("parseRuntimeOptions enables fullauto with --fullauto", () => {
-  const runtime = parseRuntimeOptions(["--fullauto"], {
-    reply_wanted: { mode: "harfauto" },
-  });
-  assert.equal(runtime.replyMode, "fullauto");
-});
-
-test("parseRuntimeOptions enables harfauto with -h", () => {
-  const runtime = parseRuntimeOptions(["-h"], {
-    reply_wanted: { mode: "fullauto" },
-  });
-  assert.equal(runtime.replyMode, "harfauto");
-});
-
-test("parseRuntimeOptions enables harfauto with --harfauto", () => {
-  const runtime = parseRuntimeOptions(["--harfauto"], {
-    reply_wanted: { mode: "fullauto" },
-  });
-  assert.equal(runtime.replyMode, "harfauto");
-});
-
-test("parseRuntimeOptions prefers harfauto over fullauto when both set", () => {
-  const runtime = parseRuntimeOptions(["-f", "--harfauto"], {});
-  assert.equal(runtime.replyMode, "harfauto");
-});
-
-test("parseRuntimeOptions keeps positional task file with -f", () => {
-  const runtime = parseRuntimeOptions(["-f", "tasks.demo.yml"], {});
-  assert.equal(runtime.replyMode, "fullauto");
-  assert.equal(runtime.taskFilePath, "tasks.demo.yml");
-});
-
 test("parseRuntimeOptions sets max auto reply count from config", () => {
   const runtime = parseRuntimeOptions([], {
     reply_wanted: { max_auto_reply_count: 5 },
@@ -174,25 +134,14 @@ test("parseRuntimeOptions sets max auto reply count from config", () => {
   assert.equal(runtime.maxAutoReplyCount, 5);
 });
 
-test("parseRuntimeOptions sets max auto reply count from long option", () => {
-  const runtime = parseRuntimeOptions(["--max-auto-reply-count=7"], {
-    reply_wanted: { max_auto_reply_count: 3 },
-  });
-  assert.equal(runtime.maxAutoReplyCount, 7);
+test("parseRuntimeOptions enables verbose with --verbose", () => {
+  const runtime = parseRuntimeOptions(["--verbose"], {});
+  assert.equal(runtime.verbose, true);
 });
 
-test("parseRuntimeOptions sets max auto reply count from option with value", () => {
-  const runtime = parseRuntimeOptions(["--max-auto-reply-count", "8"], {
-    reply_wanted: { max_auto_reply_count: 3 },
-  });
-  assert.equal(runtime.maxAutoReplyCount, 8);
-});
-
-test("parseRuntimeOptions sets max auto reply count from short option", () => {
-  const runtime = parseRuntimeOptions(["-r", "9"], {
-    reply_wanted: { max_auto_reply_count: 3 },
-  });
-  assert.equal(runtime.maxAutoReplyCount, 9);
+test("parseRuntimeOptions keeps verbose true from config", () => {
+  const runtime = parseRuntimeOptions([], { verbose: true });
+  assert.equal(runtime.verbose, true);
 });
 
 test("parseRuntimeOptions uses prompts.task_file from config", () => {
@@ -233,16 +182,51 @@ test("parseRuntimeOptions derives task file from --task=project", () => {
   assert.equal(runtime.taskFilePath, "../../tasks/projects/tmux-codex-status/runner.yml");
 });
 
-test("parseRuntimeOptions prefers --task over positional task file", () => {
+test("parseRuntimeOptions derives task file from -t", () => {
   const runtime = parseRuntimeOptions(
-    ["tasks.local.yml", "--task", "tmux-codex-status"],
+    ["-t", "tmux-codex-status"],
     {},
     "/home/yyy/ghq/github.com/xxx/vibe-task/src/runner"
   );
   assert.equal(runtime.taskFilePath, "../../tasks/projects/tmux-codex-status/runner.yml");
 });
 
-test("shouldPromptProjectSelection is true when prompts and positional task file are missing", () => {
+test("parseRuntimeOptions sets showHelp with -h", () => {
+  const runtime = parseRuntimeOptions(["-h"], {});
+  assert.equal(runtime.showHelp, true);
+});
+
+test("parseRuntimeOptions sets showHelp with --help", () => {
+  const runtime = parseRuntimeOptions(["--help"], {});
+  assert.equal(runtime.showHelp, true);
+});
+
+test("parseRuntimeOptions throws on unsupported old option", () => {
+  assert.throws(() => parseRuntimeOptions(["-f"], {}), /Unsupported option: -f/);
+});
+
+test("parseRuntimeOptions throws on unsupported max reply option", () => {
+  assert.throws(
+    () => parseRuntimeOptions(["--max-auto-reply-count", "3"], {}),
+    /Unsupported option: --max-auto-reply-count/
+  );
+});
+
+test("parseRuntimeOptions throws on positional arguments", () => {
+  assert.throws(
+    () => parseRuntimeOptions(["tasks.local.yml"], {}),
+    /Positional arguments are not supported: tasks.local.yml/
+  );
+});
+
+test("parseRuntimeOptions throws when -t value is missing", () => {
+  assert.throws(
+    () => parseRuntimeOptions(["-t"], {}),
+    /-t option requires a project name/
+  );
+});
+
+test("shouldPromptProjectSelection is true when prompts and task option are missing", () => {
   const value = shouldPromptProjectSelection([], {});
   assert.equal(value, true);
 });
@@ -261,13 +245,18 @@ test("shouldPromptProjectSelection is false when task_file exists", () => {
   assert.equal(value, false);
 });
 
-test("shouldPromptProjectSelection is false when positional task file exists", () => {
-  const value = shouldPromptProjectSelection(["tasks.local.yml"], {});
+test("shouldPromptProjectSelection is false when --task exists", () => {
+  const value = shouldPromptProjectSelection(["--task", "vibe-task"], {});
   assert.equal(value, false);
 });
 
-test("shouldPromptProjectSelection is false when --task exists", () => {
-  const value = shouldPromptProjectSelection(["--task", "vibe-task"], {});
+test("shouldPromptProjectSelection is false when -t exists", () => {
+  const value = shouldPromptProjectSelection(["-t", "vibe-task"], {});
+  assert.equal(value, false);
+});
+
+test("shouldPromptProjectSelection is false when help option exists", () => {
+  const value = shouldPromptProjectSelection(["-h"], {});
   assert.equal(value, false);
 });
 
@@ -326,12 +315,23 @@ test("parseConfigPathOption parses long option with equal", () => {
   assert.equal(value, "config/test.yml");
 });
 
-test("parseConfigPathOption falls back when next token is option", () => {
-  const value = parseConfigPathOption(["--config", "--fullauto"]);
-  assert.equal(value, "config/config.yml");
+test("parseConfigPathOption throws when config value is missing", () => {
+  assert.throws(
+    () => parseConfigPathOption(["--config"]),
+    /--config option requires a path/
+  );
 });
 
-test("parseRuntimeOptions ignores config option value as task file", () => {
-  const runtime = parseRuntimeOptions(["-c", "config/dev.yml", "tasks.demo.yml"], {});
-  assert.equal(runtime.taskFilePath, "tasks.demo.yml");
+test("parseConfigPathOption throws on unsupported option", () => {
+  assert.throws(
+    () => parseConfigPathOption(["--fullauto"]),
+    /Unsupported option: --fullauto/
+  );
+});
+
+test("parseConfigPathOption throws on positional arguments", () => {
+  assert.throws(
+    () => parseConfigPathOption(["tasks.demo.yml"]),
+    /Positional arguments are not supported: tasks.demo.yml/
+  );
 });

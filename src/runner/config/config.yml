@@ -15,9 +15,6 @@ prompts:
   # approval_policy: on-request
   approval_policy: never
   sandbox: workspace-write
-  # repository_dir: ../..
-  # task_file が指定されてない場合はrepository_dir のフォルダ名からrunner.ymlを決める
-  # task_file: ../../tasks/projects/vibe-task/runner.yml
   common: |
     1. 最初にカントフォルダのフォルダ名を取得して下さい (@PWDとする)
      また、ベースフォルダは ~/ghq/github.com/sunb256/vibe-task です(@BASE_DIRとする)
@@ -44,7 +41,7 @@ prompts:
 
 
 reply_wanted:
-  mode: harfauto
+  mode: harfauto  # fullauto
   max_auto_reply_count: 4
   suffixes:
     - "?"
