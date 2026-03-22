@@ -1,4 +1,9 @@
 task:
+  - id: "143"
+    url: "https://github.com/sunb256/vibe-task/pull/162"
+    title: "Settingダイアログをスクロール可能にしてtask143をdoneへ移動"
+    action: |
+      frontend setting画面が全部表示されないのでスクロール必要と思われる
   - id: "147"
     url: "https://github.com/sunb256/vibe-task/pull/161"
     title: "プロジェクト画面ヘッダのタブ表示を整理しtask146をdoneへ移動"

@@ -112,7 +112,7 @@ export function ProjectSettingsDialog(props: ProjectSettingsDialogProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/45 px-4 py-8 backdrop-blur-[2px]"
+      className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-black/45 px-4 py-8 backdrop-blur-[2px]"
       onMouseDown={handleBackdropMouseDown}
     >
       <div
