@@ -21,9 +21,6 @@ export function splitFrontMatter(content: string): ParsedFrontMatter {
     return { body: content, rows: [] };
   }
   const rows = parseRows(block.text);
-  if (rows.length === 0) {
-    return { body: content, rows: [] };
-  }
   return { body: trimLeadingBlankLines(block.body), rows };
 }
 
