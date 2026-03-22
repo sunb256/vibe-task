@@ -355,6 +355,10 @@ export function ProjectTasksPage() {
   }
 
   async function handleRunnerExecute() {
+    const confirmed = window.confirm("RUNNERを実行しますか？");
+    if (!confirmed) {
+      return;
+    }
     setRunnerLogError("");
     setIsRunnerStarting(true);
     try {

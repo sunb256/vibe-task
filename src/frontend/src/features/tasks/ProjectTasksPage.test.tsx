@@ -449,6 +449,7 @@ test("switches to docs tab and renders markdown viewer", async () => {
 });
 
 test("starts runner execution and shows runner logs", async () => {
+  const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
   vi.mocked(fetchProjects).mockResolvedValue({
     projects: [
       {
@@ -493,6 +494,7 @@ test("starts runner execution and shows runner logs", async () => {
   fireEvent.click(screen.getByRole("button", { name: "RUNNER実行" }));
 
   await waitFor(() => {
+    expect(confirmSpy).toHaveBeenCalledWith("RUNNERを実行しますか？");
     expect(executeRunner).toHaveBeenCalledWith("project-1");
   });
   fireEvent.click(screen.getByRole("button", { name: "ログ" }));
