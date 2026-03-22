@@ -440,7 +440,7 @@ export function ProjectTasksPage() {
               onClick={() => void handleRunnerExecute()}
               disabled={isRunnerStarting || isRunnerRunning}
             >
-              {isRunnerStarting ? "起動中..." : isRunnerRunning ? "RUNNER実行中..." : "RUNNER実行"}
+              {isRunnerStarting ? "起動中..." : isRunnerRunning ? "Runner実行中..." : "Runner実行"}
             </PrimaryButton>
             <button
               type="button"

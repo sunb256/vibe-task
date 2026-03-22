@@ -491,14 +491,14 @@ test("starts runner execution and shows runner logs", async () => {
   });
 
   fireEvent.click(screen.getByRole("button", { name: "Runner" }));
-  fireEvent.click(screen.getByRole("button", { name: "RUNNER実行" }));
+  fireEvent.click(screen.getByRole("button", { name: "Runner実行" }));
 
   await waitFor(() => {
     expect(confirmSpy).toHaveBeenCalledWith("RUNNERを実行しますか？");
     expect(executeRunner).toHaveBeenCalledWith("project-1");
   });
   fireEvent.click(screen.getByRole("button", { name: "ログ" }));
-  expect(screen.getByRole("button", { name: "RUNNER実行中..." })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Runner実行中..." })).toBeDisabled();
   expect(screen.getByText("RUNNING")).toBeInTheDocument();
   expect(screen.getByText("runner started")).toBeInTheDocument();
 });
