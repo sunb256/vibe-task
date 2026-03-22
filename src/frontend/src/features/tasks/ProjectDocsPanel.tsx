@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect, useMemo, useState } from "react";
+import hljs from "highlight.js/lib/common";
 import ReactMarkdown, { type Components } from "react-markdown";
 
 import { Notice } from "../../components/Notice";
@@ -224,7 +225,7 @@ const MARKDOWN_COMPONENTS: Components = {
   p: ({ children }) => <p className="mb-3 whitespace-pre-wrap">{children}</p>,
   ul: ({ children }) => <ul className="mb-3 list-disc pl-5">{children}</ul>,
   ol: ({ children }) => <ol className="mb-3 list-decimal pl-5">{children}</ol>,
-  li: ({ children }) => <li className="mb-1">{children}</li>,
+  li: ({ children }) => <li>{children}</li>,
   pre: ({ children }) => <>{children}</>,
   code: ({ className, children }) => renderCodeBlock(className, children),
   a: ({ href, children }) => (
@@ -245,9 +246,15 @@ function renderCodeBlock(className: string | undefined, children: ReactNode) {
     return <ProjectMermaidBlock chart={code} />;
   }
   if (isBlockCode(className, code)) {
+    const lang = parseLang(className);
+    const html = highlightCode(code, lang);
     return (
       <pre className="mb-3 overflow-x-auto rounded-md border border-[var(--border)] bg-zinc-50 p-3">
-        <code className={className}>{code}</code>
+        <code
+          className={highlightClass(lang)}
+          data-testid="markdown-code-block"
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
       </pre>
     );
   }
@@ -263,6 +270,22 @@ function isBlockCode(className: string | undefined, code: string) {
     return true;
   }
   return code.includes("\n");
+}
+
+function parseLang(className: string | undefined) {
+  const matched = /language-([a-z0-9_-]+)/i.exec(className ?? "");
+  return matched?.[1] ?? "";
+}
+
+function highlightClass(lang: string) {
+  return lang ? `hljs language-${lang}` : "hljs";
+}
+
+function highlightCode(code: string, lang: string) {
+  if (lang && hljs.getLanguage(lang)) {
+    return hljs.highlight(code, { language: lang, ignoreIllegals: true }).value;
+  }
+  return hljs.highlightAuto(code).value;
 }
 
 function codeText(children: ReactNode) {
