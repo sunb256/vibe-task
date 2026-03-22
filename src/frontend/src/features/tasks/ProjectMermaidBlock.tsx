@@ -12,7 +12,6 @@ import {
 import { Notice } from "../../components/Notice";
 
 const DEFAULT_SCALE = 1;
-const MAX_SCALE = 2.5;
 const MIN_SCALE = 0.5;
 const SCALE_STEP = 0.1;
 
@@ -174,45 +173,47 @@ function MermaidModal(props: MermaidModalProps) {
       role="dialog"
       aria-modal="true"
       aria-label="Mermaid preview"
-      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-[1px]"
+      className="fixed inset-0 z-50 bg-white/90 backdrop-blur-[1px]"
       onClick={props.onClose}
     >
-      <div
-        className="absolute inset-0 flex flex-col bg-white shadow-2xl sm:inset-3 sm:rounded-lg sm:border sm:border-[var(--border)]"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className="pointer-events-none absolute left-3 top-3 z-10 rounded bg-white/95 px-2 py-1 text-xs font-semibold text-[var(--muted)] shadow">
-          {props.view.scale.toFixed(1)}x
-        </div>
-        <div className="absolute right-3 top-3 z-10 flex items-center gap-2 rounded bg-white/95 p-1 shadow">
-          <IconButton
-            label="ドラッグ"
-            active={props.panEnabled}
-            onClick={props.onTogglePan}
-            icon={<DragIcon />}
-          />
-          <IconButton label="拡大" onClick={props.onZoomIn} icon={<ZoomInIcon />} />
-          <IconButton label="縮小" onClick={props.onZoomOut} icon={<ZoomOutIcon />} />
-          <IconButton label="リセット" onClick={props.onReset} icon={<ResetIcon />} />
-          <IconButton label="閉じる" onClick={props.onClose} icon={<CloseIcon />} />
-        </div>
+      <div className="absolute inset-0 flex items-center justify-center p-3 sm:p-6">
         <div
-          data-testid="mermaid-modal-canvas"
-          className={modalCanvasClass(props.panEnabled, props.dragState.active)}
-          onWheel={props.onWheel}
-          onMouseDown={props.onDragStart}
-          onMouseMove={props.onDragMove}
-          onMouseUp={props.onDragStop}
-          onMouseLeave={props.onDragStop}
+          className="relative flex h-full w-full max-h-[94vh] max-w-[1200px] flex-col overflow-hidden rounded-lg border border-[var(--border)] bg-white shadow-2xl"
+          onClick={(event) => event.stopPropagation()}
         >
+          <div className="pointer-events-none absolute left-3 top-3 z-10 rounded bg-white/95 px-2 py-1 text-xs font-semibold text-[var(--muted)] shadow">
+            {props.view.scale.toFixed(1)}x
+          </div>
+          <div className="absolute right-3 top-3 z-10 flex items-center gap-2 rounded bg-white/95 p-1 shadow">
+            <IconButton
+              label="ドラッグ"
+              active={props.panEnabled}
+              onClick={props.onTogglePan}
+              icon={<DragIcon />}
+            />
+            <IconButton label="拡大" onClick={props.onZoomIn} icon={<ZoomInIcon />} />
+            <IconButton label="縮小" onClick={props.onZoomOut} icon={<ZoomOutIcon />} />
+            <IconButton label="リセット" onClick={props.onReset} icon={<ResetIcon />} />
+            <IconButton label="閉じる" onClick={props.onClose} icon={<CloseIcon />} />
+          </div>
           <div
-            data-testid="mermaid-modal-diagram"
-            className="origin-center"
-            style={{
-              transform: `translate(${props.view.x}px, ${props.view.y}px) scale(${props.view.scale})`,
-            }}
-            dangerouslySetInnerHTML={{ __html: props.svg }}
-          />
+            data-testid="mermaid-modal-canvas"
+            className={modalCanvasClass(props.panEnabled, props.dragState.active)}
+            onWheel={props.onWheel}
+            onMouseDown={props.onDragStart}
+            onMouseMove={props.onDragMove}
+            onMouseUp={props.onDragStop}
+            onMouseLeave={props.onDragStop}
+          >
+            <div
+              data-testid="mermaid-modal-diagram"
+              className="w-full origin-center [&_svg]:h-auto [&_svg]:max-w-none [&_svg]:w-full"
+              style={{
+                transform: `translate(${props.view.x}px, ${props.view.y}px) scale(${props.view.scale})`,
+              }}
+              dangerouslySetInnerHTML={{ __html: props.svg }}
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -241,12 +242,12 @@ function IconButton(props: IconButtonProps) {
 
 function modalCanvasClass(panEnabled: boolean, isDragging: boolean) {
   if (!panEnabled) {
-    return "relative flex flex-1 items-center justify-center overflow-hidden bg-zinc-100";
+    return "relative flex flex-1 items-start justify-center overflow-hidden bg-white px-4 pb-4 pt-14";
   }
   if (isDragging) {
-    return "relative flex flex-1 cursor-grabbing items-center justify-center overflow-hidden bg-zinc-100";
+    return "relative flex flex-1 cursor-grabbing items-start justify-center overflow-hidden bg-white px-4 pb-4 pt-14";
   }
-  return "relative flex flex-1 cursor-grab items-center justify-center overflow-hidden bg-zinc-100";
+  return "relative flex flex-1 cursor-grab items-start justify-center overflow-hidden bg-white px-4 pb-4 pt-14";
 }
 
 function iconButtonClass(active: boolean) {
@@ -354,7 +355,7 @@ function zoomOut(current: number) {
 }
 
 function clampScale(value: number) {
-  return Math.min(MAX_SCALE, Math.max(MIN_SCALE, Number(value.toFixed(1))));
+  return Math.max(MIN_SCALE, Number(value.toFixed(1)));
 }
 
 function DragIcon() {
