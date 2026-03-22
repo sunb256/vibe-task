@@ -6,7 +6,7 @@ import { stdin as input, stdout as output } from "node:process";
 import { pathToFileURL } from "node:url";
 import { CodexAppServerClient } from "./app/client.js";
 import { loadRunnerConfig } from "./loader/config-loader.js";
-import { loadTasks } from "./loader/task-loader.js";
+import { appendRunnerHistory, isRunnerTaskFile, loadTasks } from "./loader/task-loader.js";
 import { JsonlTransport } from "./transport/jsonl-transport.js";
 import type { RunnerConfig, TaskDefaults } from "./shared/types.js";
 import { setupRotatingLog } from "./shared/rotating-log.js";
@@ -19,6 +19,8 @@ type RuntimeOptions = {
   verbose: boolean;
   replyMode: ReplyMode;
   maxAutoReplyCount?: number;
+  taskProjectName?: string;
+  hasTaskProjectOption: boolean;
 };
 
 const LOG_FILE_PATH = path.resolve("logs/log.log");
@@ -27,6 +29,7 @@ const LOG_MAX_FILES = 5;
 const DEFAULT_CONFIG_PATH = "config/config.yml";
 const TASKS_PROJECTS_REL_PATH = "../../tasks/projects";
 const REPOSITORY_PARENT_REL_PATH = "../../..";
+const TASK_PROJECT_OPTION_NAME = "--task";
 
 // 設定値から返信モードを決定し、旧設定も後方互換で解釈する。
 function resolveReplyMode(config: RunnerConfig): ReplyMode {
@@ -81,7 +84,39 @@ function resolveTaskFileFromRepositoryDir(
   if (!projectDir || projectDir === "." || projectDir === ".." || projectDir === path.sep) {
     return undefined;
   }
-  return `../../tasks/projects/${projectDir}/action.yml`;
+  return resolveTaskFileFromProjectName(projectDir);
+}
+
+// プロジェクト名から tasks/projects 配下の runner task_file を組み立てる。
+function resolveTaskFileFromProjectName(projectName: string): string {
+  return `../../tasks/projects/${projectName}/runner.yml`;
+}
+
+// `--task` オプションの指定有無と値を抽出する。
+function parseTaskProjectOption(args: string[]): {
+  hasTaskProjectOption: boolean;
+  taskProjectName?: string;
+} {
+  let taskProjectName: string | undefined;
+  let hasTaskProjectOption = false;
+
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (!arg) continue;
+
+    if (arg.startsWith(`${TASK_PROJECT_OPTION_NAME}=`)) {
+      hasTaskProjectOption = true;
+      taskProjectName = getConfigValue(arg.split("=")[1]) ?? taskProjectName;
+      continue;
+    }
+    if (arg === TASK_PROJECT_OPTION_NAME) {
+      hasTaskProjectOption = true;
+      taskProjectName = getConfigValue(args[i + 1]) ?? taskProjectName;
+      i += 1;
+    }
+  }
+
+  return { hasTaskProjectOption, taskProjectName };
 }
 
 // defaults.cwd が相対指定ならrunnerルート基準の絶対パスへ変換する。
@@ -118,6 +153,7 @@ export function parseRuntimeOptions(
 ): RuntimeOptions {
   let taskFileArg: string | undefined;
   let maxAutoReplyCountArg: number | undefined;
+  const taskProjectOption = parseTaskProjectOption(args);
 
   for (let i = 0; i < args.length; i += 1) {
     const arg = args[i];
@@ -140,6 +176,13 @@ export function parseRuntimeOptions(
       i += 1;
       continue;
     }
+    if (arg.startsWith(`${TASK_PROJECT_OPTION_NAME}=`)) {
+      continue;
+    }
+    if (arg === TASK_PROJECT_OPTION_NAME) {
+      i += 1;
+      continue;
+    }
     if (arg.startsWith("-")) {
       continue;
     }
@@ -155,10 +198,18 @@ export function parseRuntimeOptions(
     config.prompts?.task_file ??
     resolveTaskFileFromRepositoryDir(config.prompts?.repository_dir, runnerRoot);
   return {
-    taskFilePath: taskFileArg ?? configTaskFile ?? "task.yml",
+    taskFilePath:
+      (taskProjectOption.taskProjectName
+        ? resolveTaskFileFromProjectName(taskProjectOption.taskProjectName)
+        : undefined) ??
+      taskFileArg ??
+      configTaskFile ??
+      "task.yml",
     verbose: args.includes("--verbose") || config.verbose === true,
     replyMode,
     maxAutoReplyCount: maxAutoReplyCountArg ?? config.reply_wanted?.max_auto_reply_count,
+    taskProjectName: taskProjectOption.taskProjectName,
+    hasTaskProjectOption: taskProjectOption.hasTaskProjectOption,
   };
 }
 
@@ -177,6 +228,11 @@ function hasPositionalTaskFileArg(args: string[]): boolean {
       i += 1;
       continue;
     }
+    if (arg.startsWith(`${TASK_PROJECT_OPTION_NAME}=`)) continue;
+    if (arg === TASK_PROJECT_OPTION_NAME) {
+      i += 1;
+      continue;
+    }
     if (arg.startsWith("-")) continue;
     return true;
   }
@@ -185,6 +241,7 @@ function hasPositionalTaskFileArg(args: string[]): boolean {
 
 // repository_dir/task_file 未指定かつ位置引数なしのときだけ選択UIを出す。
 export function shouldPromptProjectSelection(args: string[], config: RunnerConfig): boolean {
+  if (parseTaskProjectOption(args).hasTaskProjectOption) return false;
   if (hasPositionalTaskFileArg(args)) return false;
   if (config.prompts?.task_file) return false;
   if (config.prompts?.repository_dir) return false;
@@ -212,6 +269,21 @@ export async function listTaskProjectNames(runnerRoot: string): Promise<string[]
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
     .sort((a, b) => a.localeCompare(b));
+}
+
+// --task 指定時に project の存在を検証し、task/repository 解決結果を返す。
+export function resolveTaskProjectSelection(
+  runnerRoot: string,
+  taskProjectName: string,
+  projectNames: string[]
+): { taskFilePath: string; repositoryDir: string } {
+  if (!projectNames.includes(taskProjectName)) {
+    throw new Error(`Project not found for --task: ${taskProjectName}`);
+  }
+  return {
+    taskFilePath: resolveTaskFileFromProjectName(taskProjectName),
+    repositoryDir: resolveRepositoryDirFromProjectName(runnerRoot, taskProjectName),
+  };
 }
 
 // 番号入力またはフォルダ名入力を選択値へ変換する。
@@ -282,6 +354,21 @@ export function buildTaskPrompt(action: string, commonPrompt?: string): string {
   return `${common}\n\n${action}`;
 }
 
+function runnerErrorHistoryIds(
+  completedTaskIds: string[],
+  currentTaskId: string | null,
+  fallbackTaskIds: string[]
+): string[] {
+  const ids = [...completedTaskIds];
+  if (currentTaskId && !ids.includes(currentTaskId)) {
+    ids.push(currentTaskId);
+  }
+  if (ids.length > 0) {
+    return ids;
+  }
+  return fallbackTaskIds;
+}
+
 // task.ymlと設定ファイル由来のdefaultsを統合し設定側を優先する。
 export function mergeTaskDefaults(
   taskDefaults: TaskDefaults,
@@ -325,6 +412,20 @@ async function main(): Promise<void> {
   let runtime = parseRuntimeOptions(args, config, runnerRoot);
   let selectedRepositoryDir: string | undefined;
 
+  if (runtime.hasTaskProjectOption) {
+    if (!runtime.taskProjectName) {
+      throw new Error(`${TASK_PROJECT_OPTION_NAME} option requires a project name`);
+    }
+    const projectNames = await listTaskProjectNames(runnerRoot);
+    const selected = resolveTaskProjectSelection(
+      runnerRoot,
+      runtime.taskProjectName,
+      projectNames
+    );
+    selectedRepositoryDir = selected.repositoryDir;
+    runtime = { ...runtime, taskFilePath: selected.taskFilePath };
+  }
+
   if (shouldPromptProjectSelection(args, config)) {
     const projectNames = await listTaskProjectNames(runnerRoot);
     if (projectNames.length === 0) {
@@ -341,8 +442,13 @@ async function main(): Promise<void> {
 
   const absTaskFilePath = resolveRunnerPath(runnerRoot, runtime.taskFilePath);
   const { tasks, defaults } = await loadTasks(absTaskFilePath);
+  const taskIds = tasks.map((task) => String(task.id));
+  const shouldWriteRunnerHistory = isRunnerTaskFile(absTaskFilePath);
+  const promptDefaults = selectedRepositoryDir
+    ? { ...promptConfigToDefaults(config), cwd: selectedRepositoryDir }
+    : promptConfigToDefaults(config, selectedRepositoryDir);
   const mergedDefaults = resolveDefaultsCwd(
-    mergeTaskDefaults(defaults, promptConfigToDefaults(config, selectedRepositoryDir)),
+    mergeTaskDefaults(defaults, promptDefaults),
     runnerRoot
   );
 
@@ -361,6 +467,8 @@ async function main(): Promise<void> {
     maxAutoReplyCount: runtime.maxAutoReplyCount,
   });
 
+  const completedTaskIds: string[] = [];
+  let currentTaskId: string | null = null;
   try {
     await client.initialize();
 
@@ -379,6 +487,7 @@ async function main(): Promise<void> {
     // console.log(`\nStarted thread: ${threadId}`);
 
     for (const [index, task] of tasks.entries()) {
+      currentTaskId = String(task.id);
       if (index > 0) {
         console.log("");
       }
@@ -414,10 +523,34 @@ async function main(): Promise<void> {
 
       // 連続 task の区切りを安定させるため少し待つ
       await sleep(100);
+      if (currentTaskId) {
+        completedTaskIds.push(currentTaskId);
+      }
+      currentTaskId = null;
     }
 
     const completedAt = formatCompletedAt(new Date());
+    if (shouldWriteRunnerHistory) {
+      await appendRunnerHistory(absTaskFilePath, {
+        id: taskIds,
+        datetime: completedAt,
+        status: "done",
+      });
+    }
     console.log(`\n\nAll tasks completed. [${completedAt}]`);
+  } catch (error) {
+    if (shouldWriteRunnerHistory) {
+      try {
+        await appendRunnerHistory(absTaskFilePath, {
+          id: runnerErrorHistoryIds(completedTaskIds, currentTaskId, taskIds),
+          datetime: formatCompletedAt(new Date()),
+          status: "error",
+        });
+      } catch (historyError) {
+        console.error("[runner history] failed to append history", historyError);
+      }
+    }
+    throw error;
   } finally {
     client.close();
   }

@@ -55,14 +55,17 @@ def test_creates_project_task_files_on_create(
 
     assert response.status_code == 201
     action_file = project_tasks_root / "impl" / "action.yml"
+    runner_file = project_tasks_root / "impl" / "runner.yml"
     pending_file = project_tasks_root / "impl" / "pending.yml"
     done_file = project_tasks_root / "impl" / "done.yml"
     cancel_file = project_tasks_root / "impl" / "cancel.yml"
     assert action_file.exists()
+    assert runner_file.exists()
     assert pending_file.exists()
     assert done_file.exists()
     assert cancel_file.exists()
     assert action_file.read_text(encoding="utf-8") == "task: []\n"
+    assert runner_file.read_text(encoding="utf-8") == "task: []\nhistory: []\n"
     assert pending_file.read_text(encoding="utf-8") == "task: []\n"
     assert done_file.read_text(encoding="utf-8") == "task: []\n"
     assert cancel_file.read_text(encoding="utf-8") == "task: []\n"
@@ -120,6 +123,7 @@ def test_updates_project(
     assert updated["repositoryPath"] == str(next_repo.resolve())
     assert not (project_tasks_root / "impl").exists()
     assert (project_tasks_root / "impl-updated" / "action.yml").exists()
+    assert (project_tasks_root / "impl-updated" / "runner.yml").exists()
     assert (project_tasks_root / "impl-updated" / "pending.yml").exists()
     assert (project_tasks_root / "impl-updated" / "done.yml").exists()
     assert (project_tasks_root / "impl-updated" / "cancel.yml").exists()

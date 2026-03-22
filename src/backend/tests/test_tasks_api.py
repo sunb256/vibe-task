@@ -39,11 +39,25 @@ SAMPLE_CANCEL = (
     "      cancel task\n"
 )
 
+SAMPLE_RUNNER = (
+    "task:\n"
+    "  - id: 5\n"
+    "    url: runner-url\n"
+    "    title: runner-title\n"
+    "    action: |\n"
+    "      runner task\n"
+    "history:\n"
+    "  - id: [1, 2, 3]\n"
+    "    datetime: \"2026-03-22 09:00:00\"\n"
+    "    status: done\n"
+)
+
 
 def seed_project_tasks(project_tasks_root: Path, project_name: str = "impl") -> None:
     project_dir = project_tasks_root / project_name
     project_dir.mkdir(parents=True, exist_ok=True)
     (project_dir / "action.yml").write_text(SAMPLE_ACTION, encoding="utf-8")
+    (project_dir / "runner.yml").write_text(SAMPLE_RUNNER, encoding="utf-8")
     (project_dir / "pending.yml").write_text(SAMPLE_PENDING, encoding="utf-8")
     (project_dir / "done.yml").write_text(SAMPLE_DONE, encoding="utf-8")
     (project_dir / "cancel.yml").write_text(SAMPLE_CANCEL, encoding="utf-8")
@@ -77,8 +91,15 @@ def test_lists_tasks_from_all_sources(client, project_repo: Path, project_tasks_
 
     assert response.status_code == 200
     payload = response.get_json()
-    assert {task["source"] for task in payload["tasks"]} == {"action", "pending", "done", "cancel"}
-    assert [task["id"] for task in payload["tasks"]] == ["1", "3", "2", "4"]
+    assert {task["source"] for task in payload["tasks"]} == {"action", "runner", "pending", "done", "cancel"}
+    assert [task["id"] for task in payload["tasks"]] == ["1", "3", "2", "4", "5"]
+    assert payload["runnerHistory"] == [
+        {
+            "id": ["1", "2", "3"],
+            "datetime": "2026-03-22 09:00:00",
+            "status": "done",
+        }
+    ]
 
 
 def test_creates_missing_status_files_when_listing_tasks(
@@ -89,16 +110,20 @@ def test_creates_missing_status_files_when_listing_tasks(
     project_id = create_project(client, project_repo, project_tasks_root)
     pending_file = project_tasks_root / "impl" / "pending.yml"
     cancel_file = project_tasks_root / "impl" / "cancel.yml"
+    runner_file = project_tasks_root / "impl" / "runner.yml"
     pending_file.unlink()
     cancel_file.unlink()
+    runner_file.unlink()
 
     response = client.get(f"/api/projects/{project_id}/tasks")
 
     assert response.status_code == 200
     assert pending_file.exists()
     assert cancel_file.exists()
+    assert runner_file.exists()
     assert pending_file.read_text(encoding="utf-8") == "task: []\n"
     assert cancel_file.read_text(encoding="utf-8") == "task: []\n"
+    assert runner_file.read_text(encoding="utf-8") == "task: []\nhistory: []\n"
 
 
 def test_updates_action_text(client, project_repo: Path, project_tasks_root: Path):
@@ -158,6 +183,7 @@ def test_creates_action_task_after_done_max_when_action_is_empty(
     pending_file = project_tasks_root / "impl" / "pending.yml"
     done_file = project_tasks_root / "impl" / "done.yml"
     cancel_file = project_tasks_root / "impl" / "cancel.yml"
+    runner_file = project_tasks_root / "impl" / "runner.yml"
     action_file.write_text("impl_rule: |\n  sample\n\ntask: []\n", encoding="utf-8")
     pending_file.write_text(
         "task:\n  - id: 16\n    url: pending-url\n    title: pending-title\n    action: |\n      pending task\n",
@@ -168,6 +194,7 @@ def test_creates_action_task_after_done_max_when_action_is_empty(
         encoding="utf-8",
     )
     cancel_file.write_text("task: []\n", encoding="utf-8")
+    runner_file.write_text("task: []\nhistory: []\n", encoding="utf-8")
 
     response = client.post(f"/api/projects/{project_id}/tasks/action")
 
@@ -185,7 +212,7 @@ def test_deletes_task(client, project_repo: Path, project_tasks_root: Path):
     assert response.status_code == 204
     tasks_response = client.get(f"/api/projects/{project_id}/tasks")
     payload = tasks_response.get_json()
-    assert [task["id"] for task in payload["tasks"]] == ["1", "3", "4"]
+    assert [task["id"] for task in payload["tasks"]] == ["1", "3", "4", "5"]
 
 
 def test_moves_task_to_pending_source(client, project_repo: Path, project_tasks_root: Path):
@@ -242,7 +269,23 @@ def test_expands_env_var_in_repository_path_when_loading_tasks(
     assert created.status_code == 201
     assert listed.status_code == 200
     payload = listed.get_json()
-    assert [task["id"] for task in payload["tasks"]] == ["1", "3", "2", "4"]
+    assert [task["id"] for task in payload["tasks"]] == ["1", "3", "2", "4", "5"]
+
+
+def test_creates_runner_task(client, project_repo: Path, project_tasks_root: Path):
+    project_id = create_project(client, project_repo, project_tasks_root)
+
+    response = client.post(f"/api/projects/{project_id}/tasks/runner")
+
+    assert response.status_code == 201
+    created = response.get_json()
+    assert created["source"] == "runner"
+    assert created["id"] == "6"
+    assert created["title"] == "-"
+    assert created["url"] == "-"
+    assert created["action"] == "TODO\n"
+    runner_text = (project_tasks_root / "impl" / "runner.yml").read_text(encoding="utf-8")
+    assert "history:" in runner_text
 
 
 def test_swaps_task_ids(client, project_repo: Path, project_tasks_root: Path):

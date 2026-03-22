@@ -100,13 +100,14 @@ def update_settings():
 def list_tasks(project_id: str):
     service = TaskService(_project_repository())
     tasks = [task.to_dict() for task in service.list_tasks(project_id)]
-    return jsonify({"tasks": tasks})
+    runner_history = [item.to_dict() for item in service.list_runner_history(project_id)]
+    return jsonify({"tasks": tasks, "runnerHistory": runner_history})
 
 
-@api_bp.post("/projects/<project_id>/tasks/action")
-def create_action_task(project_id: str):
+@api_bp.post("/projects/<project_id>/tasks/<source>")
+def create_task(project_id: str, source: str):
     service = TaskService(_project_repository())
-    task = service.create_action_task(project_id)
+    task = service.create_task(project_id, source)
     return jsonify(task.to_dict()), 201
 
 

@@ -1,4 +1,4 @@
-export type TaskSource = "action" | "pending" | "done" | "cancel";
+export type TaskSource = "action" | "runner" | "pending" | "done" | "cancel";
 
 export type TaskRecord = {
   projectId: string;
@@ -7,6 +7,12 @@ export type TaskRecord = {
   title: string;
   url: string;
   action: string;
+};
+
+export type RunnerHistoryRecord = {
+  id: string[];
+  datetime: string;
+  status: "done" | "error";
 };
 
 export type ProjectDocSummary = {

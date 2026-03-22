@@ -11,6 +11,7 @@ import {
   promptConfigToDefaults,
   resolveRepositoryDirFromProjectName,
   resolveDefaultsCwd,
+  resolveTaskProjectSelection,
   resolveRunnerPath,
   resolveRunnerRoot,
   shouldPromptProjectSelection,
@@ -209,7 +210,36 @@ test("parseRuntimeOptions derives task file from prompts.repository_dir", () => 
     },
     "/home/yyy/ghq/github.com/xxx/vibe-task/src/runner"
   );
-  assert.equal(runtime.taskFilePath, "../../tasks/projects/tmux-codex-status/action.yml");
+  assert.equal(runtime.taskFilePath, "../../tasks/projects/tmux-codex-status/runner.yml");
+});
+
+test("parseRuntimeOptions derives task file from --task", () => {
+  const runtime = parseRuntimeOptions(
+    ["--task", "tmux-codex-status"],
+    {
+      prompts: { task_file: "tasks.local.yml" },
+    },
+    "/home/yyy/ghq/github.com/xxx/vibe-task/src/runner"
+  );
+  assert.equal(runtime.taskFilePath, "../../tasks/projects/tmux-codex-status/runner.yml");
+});
+
+test("parseRuntimeOptions derives task file from --task=project", () => {
+  const runtime = parseRuntimeOptions(
+    ["--task=tmux-codex-status"],
+    {},
+    "/home/yyy/ghq/github.com/xxx/vibe-task/src/runner"
+  );
+  assert.equal(runtime.taskFilePath, "../../tasks/projects/tmux-codex-status/runner.yml");
+});
+
+test("parseRuntimeOptions prefers --task over positional task file", () => {
+  const runtime = parseRuntimeOptions(
+    ["tasks.local.yml", "--task", "tmux-codex-status"],
+    {},
+    "/home/yyy/ghq/github.com/xxx/vibe-task/src/runner"
+  );
+  assert.equal(runtime.taskFilePath, "../../tasks/projects/tmux-codex-status/runner.yml");
 });
 
 test("shouldPromptProjectSelection is true when prompts and positional task file are missing", () => {
@@ -236,6 +266,11 @@ test("shouldPromptProjectSelection is false when positional task file exists", (
   assert.equal(value, false);
 });
 
+test("shouldPromptProjectSelection is false when --task exists", () => {
+  const value = shouldPromptProjectSelection(["--task", "vibe-task"], {});
+  assert.equal(value, false);
+});
+
 test("parseProjectSelectionInput accepts numeric selection", () => {
   const value = parseProjectSelectionInput("2", ["vibe-task", "tmux-codex-status"]);
   assert.equal(value, "tmux-codex-status");
@@ -257,6 +292,18 @@ test("resolveRepositoryDirFromProjectName resolves sibling repository path", () 
     "tmux-codex-status"
   );
   assert.equal(value, "/home/sunb/ghq/github.com/sunb256/tmux-codex-status");
+});
+
+test("resolveTaskProjectSelection throws on invalid project name", () => {
+  assert.throws(
+    () =>
+      resolveTaskProjectSelection(
+        "/home/sunb/ghq/github.com/sunb256/vibe-task/src/runner",
+        "unknown-project",
+        ["vibe-task", "tmux-codex-status"]
+      ),
+    /Project not found for --task: unknown-project/
+  );
 });
 
 test("parseConfigPathOption uses default path without args", () => {

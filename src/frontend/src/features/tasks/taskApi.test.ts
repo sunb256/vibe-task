@@ -1,6 +1,7 @@
 import { afterEach, vi } from "vitest";
 
 import {
+  createTask,
   deleteTask,
   fetchProjectDoc,
   fetchProjectDocs,
@@ -27,6 +28,13 @@ test("fetchTasks requests the project task list", async () => {
             action: "first task",
           },
         ],
+        runnerHistory: [
+          {
+            id: ["1", "2"],
+            datetime: "2026-03-22 09:00:00",
+            status: "done",
+          },
+        ],
       }),
     ),
   );
@@ -38,11 +46,24 @@ test("fetchTasks requests the project task list", async () => {
     expect.objectContaining({ body: undefined }),
   );
   expect(response.tasks[0].id).toBe("1");
+  expect(response.runnerHistory?.[0]?.status).toBe("done");
 });
 
-test("updateTask, deleteTask, and swapTaskId use the scoped task endpoint", async () => {
+test("createTask, updateTask, deleteTask, and swapTaskId use the scoped task endpoint", async () => {
   const fetchMock = vi
     .spyOn(globalThis, "fetch")
+    .mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          projectId: "project-1",
+          source: "runner",
+          id: "3",
+          title: "-",
+          url: "-",
+          action: "TODO\n",
+        }),
+      ),
+    )
     .mockResolvedValueOnce(
       new Response(
         JSON.stringify({
@@ -58,12 +79,20 @@ test("updateTask, deleteTask, and swapTaskId use the scoped task endpoint", asyn
     .mockResolvedValueOnce(new Response(null, { status: 204 }))
     .mockResolvedValueOnce(new Response(null, { status: 204 }));
 
+  await createTask("project-1", "runner");
   await updateTask("project-1", "action", "1", "updated", "pending");
   await deleteTask("project-1", "done", "2");
   await swapTaskId("project-1", "action", "1", "2");
 
   expect(fetchMock).toHaveBeenNthCalledWith(
     1,
+    "/api/projects/project-1/tasks/runner",
+    expect.objectContaining({
+      method: "POST",
+    }),
+  );
+  expect(fetchMock).toHaveBeenNthCalledWith(
+    2,
     "/api/projects/project-1/tasks/action/1",
     expect.objectContaining({
       method: "PATCH",
@@ -71,12 +100,12 @@ test("updateTask, deleteTask, and swapTaskId use the scoped task endpoint", asyn
     }),
   );
   expect(fetchMock).toHaveBeenNthCalledWith(
-    2,
+    3,
     "/api/projects/project-1/tasks/done/2",
     expect.objectContaining({ method: "DELETE" }),
   );
   expect(fetchMock).toHaveBeenNthCalledWith(
-    3,
+    4,
     "/api/projects/project-1/tasks/action/1/swap",
     expect.objectContaining({
       method: "PATCH",
