@@ -4,6 +4,10 @@
 自動実行
 
 ```bash
+# リポジトリルートから実行
+npx tsx src/runner/src/run.ts --task vibe-task
+
+# runnerから実行
 cd src/runner
 npx tsx src/run.ts
  # or
