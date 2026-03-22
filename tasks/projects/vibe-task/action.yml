@@ -6,8 +6,3 @@ task:
       frontend プロジェクト画面
 
       markdownでyamlフロントマターがあるときに表示が崩れる。githubで表示しているようにテーブル表示などでうまく対応してほしい
-  - id: '143'
-    url: '-'
-    title: '-'
-    action: |
-      frontend setting画面が全部表示されないのでスクロール必要と思われる

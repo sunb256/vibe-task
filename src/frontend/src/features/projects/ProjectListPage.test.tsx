@@ -186,6 +186,7 @@ test("renders project list", async () => {
   if (!settingsDialogOverlay) {
     throw new Error("settings dialog overlay is missing");
   }
+  expect(settingsDialogOverlay).toHaveClass("items-start", "overflow-y-auto");
   fireEvent.mouseDown(settingsDialogOverlay);
   expect(screen.queryByRole("dialog", { name: "Setting" })).not.toBeInTheDocument();
 
