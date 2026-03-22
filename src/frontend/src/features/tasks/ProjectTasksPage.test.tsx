@@ -353,7 +353,7 @@ test("switches to docs tab and renders markdown viewer", async () => {
   fireEvent.mouseMove(screen.getByTestId("mermaid-modal-canvas"), { clientX: 120, clientY: 115 });
   fireEvent.mouseUp(screen.getByTestId("mermaid-modal-canvas"));
   expect(modalDiagram.getAttribute("style")).not.toBe(initialTransform);
-  fireEvent.doubleClick(screen.getByTestId("mermaid-modal-canvas"));
+  fireEvent.contextMenu(screen.getByTestId("mermaid-modal-canvas"));
   expect(modalDiagram.getAttribute("style")).toContain("translate(0px, 0px) scale(1)");
   fireEvent.click(screen.getByRole("button", { name: "リセット" }));
   expect(modalDiagram.getAttribute("style")).toContain("translate(0px, 0px) scale(1)");

@@ -55,7 +55,7 @@ type MermaidModalProps = {
   onZoomOut: () => void;
   onTogglePan: () => void;
   onWheel: (event: ReactWheelEvent<HTMLDivElement>) => void;
-  onDoubleClick: () => void;
+  onRightClick: (event: ReactMouseEvent<HTMLDivElement>) => void;
   onDragStart: (event: ReactMouseEvent<HTMLDivElement>) => void;
   onDragMove: (event: ReactMouseEvent<HTMLDivElement>) => void;
   onDragStop: () => void;
@@ -160,7 +160,7 @@ export function ProjectMermaidBlock(props: ProjectMermaidBlockProps) {
           onZoomOut={() => setView((current) => ({ ...current, scale: zoomOut(current.scale) }))}
           onTogglePan={() => setPanEnabled((current) => !current)}
           onWheel={(event) => handleWheelZoom(event, setView)}
-          onDoubleClick={() => resetView(setView, setDragState)}
+          onRightClick={(event) => handleRightClick(event, setView, setDragState)}
           onDragStart={(event) => startDrag(event, panEnabled, view, setDragState)}
           onDragMove={(event) => moveDrag(event, dragState, setView)}
           onDragStop={() => setDragState((current) => ({ ...current, active: false }))}
@@ -200,7 +200,7 @@ function MermaidModal(props: MermaidModalProps) {
             data-testid="mermaid-modal-canvas"
             className={modalCanvasClass(props.panEnabled, props.dragState.active)}
             onWheel={props.onWheel}
-            onDoubleClick={props.onDoubleClick}
+            onContextMenu={props.onRightClick}
             onMouseDown={props.onDragStart}
             onMouseMove={props.onDragMove}
             onMouseUp={props.onDragStop}
@@ -298,6 +298,15 @@ function handleWheelZoom(
   event.preventDefault();
   const delta = event.deltaY < 0 ? WHEEL_SCALE_STEP : -WHEEL_SCALE_STEP;
   setView((current) => ({ ...current, scale: clampScale(current.scale + delta) }));
+}
+
+function handleRightClick(
+  event: ReactMouseEvent<HTMLDivElement>,
+  setView: Dispatch<SetStateAction<MermaidView>>,
+  setDragState: Dispatch<SetStateAction<DragState>>,
+) {
+  event.preventDefault();
+  resetView(setView, setDragState);
 }
 
 function resetView(
