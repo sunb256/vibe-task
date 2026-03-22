@@ -178,7 +178,7 @@ function MermaidModal(props: MermaidModalProps) {
     >
       <div className="absolute inset-0 flex items-center justify-center p-3 sm:p-6">
         <div
-          className="relative flex h-full w-full max-h-[94vh] max-w-[1200px] flex-col overflow-hidden rounded-lg border border-[var(--border)] bg-white shadow-2xl"
+          className="relative flex h-full w-full max-h-[94vh] max-w-[1400px] flex-col overflow-hidden rounded-lg border border-[var(--border)] bg-white shadow-2xl"
           onClick={(event) => event.stopPropagation()}
         >
           <div className="pointer-events-none absolute left-3 top-3 z-10 rounded bg-white/95 px-2 py-1 text-xs font-semibold text-[var(--muted)] shadow">
