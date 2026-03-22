@@ -543,7 +543,7 @@ function ProjectHeaderActions(props: ProjectHeaderActionsProps) {
 
 function projectTabClass(isActive: boolean) {
   if (isActive) {
-    return "rounded-md border border-zinc-300 bg-zinc-900 px-3 py-1 text-base font-semibold text-white shadow-sm";
+    return "rounded-md border border-zinc-300 bg-zinc-200 px-3 py-1 text-base font-semibold text-zinc-900";
   }
   return "rounded-md border border-transparent px-3 py-1 text-base text-[var(--muted)] hover:bg-zinc-100";
 }
