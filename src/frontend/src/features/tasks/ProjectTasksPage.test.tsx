@@ -399,22 +399,24 @@ test("switches to docs tab and renders markdown viewer", async () => {
   await waitFor(() => {
     expect(screen.getByTestId("mermaid-modal-diagram")).toBeInTheDocument();
   });
+  const modalCanvas = screen.getByTestId("mermaid-modal-canvas");
+  expect(modalCanvas.parentElement).toHaveClass("max-w-[1600px]");
   const modalDiagram = screen.getByTestId("mermaid-modal-diagram");
   expect(modalDiagram.getAttribute("style")).toContain("scale(1)");
   fireEvent.click(screen.getByRole("button", { name: "拡大" }));
   expect(modalDiagram.getAttribute("style")).toContain("scale(1.1)");
-  fireEvent.wheel(screen.getByTestId("mermaid-modal-canvas"), { deltaY: 100 });
+  fireEvent.wheel(modalCanvas, { deltaY: 100 });
   expect(modalDiagram.getAttribute("style")).toContain("scale(0.9)");
   for (let i = 0; i < 20; i += 1) {
     fireEvent.click(screen.getByRole("button", { name: "拡大" }));
   }
   expect(modalDiagram.getAttribute("style")).toContain("scale(2.9)");
   const initialTransform = modalDiagram.getAttribute("style");
-  fireEvent.mouseDown(screen.getByTestId("mermaid-modal-canvas"), { clientX: 100, clientY: 100 });
-  fireEvent.mouseMove(screen.getByTestId("mermaid-modal-canvas"), { clientX: 120, clientY: 115 });
-  fireEvent.mouseUp(screen.getByTestId("mermaid-modal-canvas"));
+  fireEvent.mouseDown(modalCanvas, { clientX: 100, clientY: 100 });
+  fireEvent.mouseMove(modalCanvas, { clientX: 120, clientY: 115 });
+  fireEvent.mouseUp(modalCanvas);
   expect(modalDiagram.getAttribute("style")).not.toBe(initialTransform);
-  fireEvent.contextMenu(screen.getByTestId("mermaid-modal-canvas"));
+  fireEvent.contextMenu(modalCanvas);
   expect(modalDiagram.getAttribute("style")).toContain("translate(0px, 0px) scale(1)");
   fireEvent.click(screen.getByRole("button", { name: "リセット" }));
   expect(modalDiagram.getAttribute("style")).toContain("translate(0px, 0px) scale(1)");
