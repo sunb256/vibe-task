@@ -311,7 +311,7 @@ test("switches to docs tab and renders markdown viewer", async () => {
     name: "README.md",
     path: "README.md",
     content:
-      "---\ntitle: Hello Doc\ntags:\n  - guide\n  - mermaid\npublished: true\n---\n# Hello\n\n```mermaid\ngraph TD\n  A --> B\n```",
+      "---\ntitle: Hello Doc\ntags:\n  - guide\n  - mermaid\npublished: true\n---\n# Hello\n\n```ts\nconst answer = 42;\n```\n\n```mermaid\ngraph TD\n  A --> B\n```",
   });
 
   render(
@@ -360,6 +360,10 @@ test("switches to docs tab and renders markdown viewer", async () => {
   expect(screen.getByText("guide, mermaid")).toBeInTheDocument();
   expect(screen.getByText("published")).toBeInTheDocument();
   expect(screen.getByText("true")).toBeInTheDocument();
+  const highlighted = screen.getByTestId("markdown-code-block");
+  expect(highlighted).toHaveClass("hljs", "language-ts");
+  expect(highlighted).toHaveTextContent("const answer = 42;");
+  expect(highlighted.querySelector("span[class^='hljs-']")).not.toBeNull();
   expect(screen.getByRole("heading", { level: 1, name: "Hello" })).toBeInTheDocument();
   await waitFor(() => {
     expect(screen.getByTestId("mermaid-preview-diagram")).toBeInTheDocument();

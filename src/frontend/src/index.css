@@ -36,3 +36,52 @@ body {
 button:not(:disabled) {
   cursor: pointer;
 }
+
+.hljs {
+  display: block;
+  overflow-x: auto;
+  color: #24292f;
+  background: transparent;
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: #6e7781;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-subst {
+  color: #cf222e;
+}
+
+.hljs-number,
+.hljs-literal,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag .hljs-attr {
+  color: #0550ae;
+}
+
+.hljs-string,
+.hljs-doctag {
+  color: #0a3069;
+}
+
+.hljs-title,
+.hljs-section,
+.hljs-selector-id {
+  color: #8250df;
+}
+
+.hljs-built_in,
+.hljs-type,
+.hljs-class .hljs-title {
+  color: #953800;
+}
+
+.hljs-tag,
+.hljs-name,
+.hljs-attribute {
+  color: #116329;
+}
