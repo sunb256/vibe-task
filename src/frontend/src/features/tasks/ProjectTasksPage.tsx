@@ -39,6 +39,7 @@ export function ProjectTasksPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<TaskRecord[]>([]);
   const [activeTab, setActiveTab] = useState<ProjectTab>("tasks");
+  const [docsQuery, setDocsQuery] = useState("");
   const [error, setError] = useState("");
   const [createError, setCreateError] = useState("");
   const [editError, setEditError] = useState("");
@@ -57,6 +58,7 @@ export function ProjectTasksPage() {
 
   useEffect(() => {
     setActiveTab("tasks");
+    setDocsQuery("");
   }, [projectId]);
 
   useEffect(() => {
@@ -283,11 +285,12 @@ export function ProjectTasksPage() {
       title={<ProjectTabs repositoryName={project?.name ?? "Project"} activeTab={activeTab} onChange={setActiveTab} />}
       actions={
         project?.repositoryPath ? (
-          <div className="flex h-10 items-center justify-end pr-1">
-            <span aria-hidden="true" className="text-sm font-normal leading-5 text-[var(--muted)]">
-              {project.repositoryPath}
-            </span>
-          </div>
+          <ProjectHeaderActions
+            activeTab={activeTab}
+            repositoryPath={project.repositoryPath}
+            docsQuery={docsQuery}
+            onDocsQueryChange={setDocsQuery}
+          />
         ) : undefined
       }
       onImported={handleImported}
@@ -421,6 +424,7 @@ export function ProjectTasksPage() {
           isActive={activeTab === "docs"}
           projectId={projectId}
           repositoryPath={project.repositoryPath}
+          searchQuery={docsQuery}
         />
       ) : null}
       {activeTab === "tasks" ? (
@@ -509,6 +513,18 @@ type ProjectTabsProps = {
   onChange: (nextTab: ProjectTab) => void;
 };
 
+type ProjectHeaderActionsProps = {
+  activeTab: ProjectTab;
+  repositoryPath: string;
+  docsQuery: string;
+  onDocsQueryChange: (query: string) => void;
+};
+
+type DocsSearchInputProps = {
+  docsQuery: string;
+  onDocsQueryChange: (query: string) => void;
+};
+
 function ProjectTabs(props: ProjectTabsProps) {
   return (
     <div className="flex h-10 items-center justify-start pr-1">
@@ -528,6 +544,53 @@ function ProjectTabs(props: ProjectTabsProps) {
           docs
         </button>
       </div>
+    </div>
+  );
+}
+
+function ProjectHeaderActions(props: ProjectHeaderActionsProps) {
+  if (props.activeTab !== "docs") {
+    return (
+      <div className="flex h-10 items-center justify-end pr-1">
+        <span aria-hidden="true" className="text-sm font-normal leading-5 text-[var(--muted)]">
+          {props.repositoryPath}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-10 w-full items-center justify-end gap-3">
+      <DocsSearchInput
+        docsQuery={props.docsQuery}
+        onDocsQueryChange={props.onDocsQueryChange}
+      />
+      <span aria-hidden="true" className="text-sm font-normal leading-5 text-[var(--muted)]">
+        {props.repositoryPath}
+      </span>
+    </div>
+  );
+}
+
+function DocsSearchInput(props: DocsSearchInputProps) {
+  return (
+    <div className="relative w-full max-w-56">
+      <img
+        src="/assets/images/search.svg"
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-65"
+      />
+      <input
+        id="project-doc-search"
+        type="search"
+        aria-label="Search"
+        autoFocus
+        value={props.docsQuery}
+        onChange={(event) => props.onDocsQueryChange(event.target.value)}
+        placeholder="Search"
+        className="h-9 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12"
+      />
     </div>
   );
 }
