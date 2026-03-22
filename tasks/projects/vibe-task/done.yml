@@ -1,4 +1,10 @@
 task:
+  - id: "158"
+    url: "https://github.com/sunb256/vibe-task/pull/172"
+    title: "frontend プロジェクト画面にRunnerタブと一覧/ログ/履歴タブを追加"
+    action: |
+      frontend Runner実行したときのRunnerのキャンセル機能が欲しい
+      今はないので、見ているしかできない
   - id: "157"
     url: "https://github.com/sunb256/vibe-task/pull/172"
     title: "frontend プロジェクト画面にRunnerタブと一覧/ログ/履歴タブを追加"
