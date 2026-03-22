@@ -543,9 +543,9 @@ function ProjectHeaderActions(props: ProjectHeaderActionsProps) {
 
 function projectTabClass(isActive: boolean) {
   if (isActive) {
-    return "rounded px-3 py-1 text-base font-semibold text-[var(--ink)]";
+    return "rounded-md border border-zinc-300 bg-zinc-900 px-3 py-1 text-base font-semibold text-white shadow-sm";
   }
-  return "rounded px-3 py-1 text-base text-[var(--muted)] hover:bg-zinc-100";
+  return "rounded-md border border-transparent px-3 py-1 text-base text-[var(--muted)] hover:bg-zinc-100";
 }
 
 type TaskPrLinkProps = {

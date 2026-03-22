@@ -225,7 +225,7 @@ const MARKDOWN_COMPONENTS: Components = {
   p: ({ children }) => <p className="mb-3 whitespace-pre-wrap">{children}</p>,
   ul: ({ children }) => <ul className="mb-3 list-disc pl-5">{children}</ul>,
   ol: ({ children }) => <ol className="mb-3 list-decimal pl-5">{children}</ol>,
-  li: ({ children }) => <li className="mb-1">{children}</li>,
+  li: ({ children }) => <li>{children}</li>,
   pre: ({ children }) => <>{children}</>,
   code: ({ className, children }) => renderCodeBlock(className, children),
   a: ({ href, children }) => (
