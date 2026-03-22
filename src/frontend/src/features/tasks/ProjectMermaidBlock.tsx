@@ -138,7 +138,7 @@ export function ProjectMermaidBlock(props: ProjectMermaidBlockProps) {
           type="button"
           onClick={openModal}
           aria-label="Mermaidを拡大表示"
-          className="mb-3 block w-full overflow-hidden rounded border border-[var(--border)] bg-white p-2 text-left hover:border-sky-300 focus:outline-none focus-visible:outline-none"
+          className="mb-3 block w-full overflow-hidden rounded border border-[var(--border)] bg-white p-2 text-left focus:border-[var(--border)] focus:outline-none focus:ring-0 focus-visible:border-[var(--border)] focus-visible:outline-none focus-visible:ring-0"
         >
           <p className="mb-2 text-xs font-semibold text-[var(--muted)]">クリックで拡大表示</p>
           <div
