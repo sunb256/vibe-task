@@ -9,12 +9,21 @@ class FakeProcess:
     def __init__(self, return_code: int | None) -> None:
         self.return_code = return_code
         self.terminated = False
+        self.killed = False
 
     def poll(self) -> int | None:
         return self.return_code
 
     def terminate(self) -> None:
         self.terminated = True
+        self.return_code = 0
+
+    def wait(self, timeout: int | None = None) -> int:
+        _ = timeout
+        return 0
+
+    def kill(self) -> None:
+        self.killed = True
         self.return_code = 0
 
 

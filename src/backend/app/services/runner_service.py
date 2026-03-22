@@ -43,7 +43,13 @@ class RunnerProcessStore:
                 self._processes.pop(project_id, None)
                 raise AppError("runner is not running", 409)
             process.terminate()
-            self._processes.pop(project_id, None)
+            try:
+                process.wait(timeout=3)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait(timeout=3)
+            finally:
+                self._processes.pop(project_id, None)
 
     def clear(self) -> None:
         with self._lock:
