@@ -338,26 +338,25 @@ test("switches to docs tab and renders markdown viewer", async () => {
   await waitFor(() => {
     expect(screen.getByTestId("mermaid-modal-diagram")).toBeInTheDocument();
   });
-  expect(screen.getByText("1.0x")).toBeInTheDocument();
+  const modalDiagram = screen.getByTestId("mermaid-modal-diagram");
+  expect(modalDiagram.getAttribute("style")).toContain("scale(1)");
   fireEvent.click(screen.getByRole("button", { name: "拡大" }));
-  expect(screen.getByText("1.1x")).toBeInTheDocument();
+  expect(modalDiagram.getAttribute("style")).toContain("scale(1.1)");
   fireEvent.wheel(screen.getByTestId("mermaid-modal-canvas"), { deltaY: 100 });
-  expect(screen.getByText("0.85x")).toBeInTheDocument();
+  expect(modalDiagram.getAttribute("style")).toContain("scale(0.9)");
   for (let i = 0; i < 20; i += 1) {
     fireEvent.click(screen.getByRole("button", { name: "拡大" }));
   }
-  expect(screen.getByText("2.85x")).toBeInTheDocument();
-  const modalDiagram = screen.getByTestId("mermaid-modal-diagram");
+  expect(modalDiagram.getAttribute("style")).toContain("scale(2.9)");
   const initialTransform = modalDiagram.getAttribute("style");
   fireEvent.mouseDown(screen.getByTestId("mermaid-modal-canvas"), { clientX: 100, clientY: 100 });
   fireEvent.mouseMove(screen.getByTestId("mermaid-modal-canvas"), { clientX: 120, clientY: 115 });
   fireEvent.mouseUp(screen.getByTestId("mermaid-modal-canvas"));
   expect(modalDiagram.getAttribute("style")).not.toBe(initialTransform);
   fireEvent.doubleClick(screen.getByTestId("mermaid-modal-canvas"));
-  expect(screen.getByText("1.0x")).toBeInTheDocument();
   expect(modalDiagram.getAttribute("style")).toContain("translate(0px, 0px) scale(1)");
   fireEvent.click(screen.getByRole("button", { name: "リセット" }));
-  expect(screen.getByText("1.0x")).toBeInTheDocument();
+  expect(modalDiagram.getAttribute("style")).toContain("translate(0px, 0px) scale(1)");
   fireEvent.click(screen.getByRole("button", { name: "閉じる" }));
   expect(screen.queryByRole("dialog", { name: "Mermaid preview" })).not.toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "新規タスク(N)" })).not.toBeInTheDocument();

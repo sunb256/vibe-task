@@ -14,7 +14,7 @@ import { Notice } from "../../components/Notice";
 const DEFAULT_SCALE = 1;
 const MIN_SCALE = 0.5;
 const BUTTON_SCALE_STEP = 0.1;
-const WHEEL_SCALE_STEP = 0.25;
+const WHEEL_SCALE_STEP = 0.2;
 
 type MermaidApi = {
   initialize: (config: MermaidConfig) => void;
@@ -184,9 +184,6 @@ function MermaidModal(props: MermaidModalProps) {
           className="relative flex h-full w-full max-h-[94vh] max-w-[1400px] flex-col overflow-hidden rounded-lg border border-[var(--border)] bg-white shadow-2xl"
           onClick={(event) => event.stopPropagation()}
         >
-          <div className="pointer-events-none absolute left-3 top-3 z-10 rounded bg-white/95 px-2 py-1 text-xs font-semibold text-[var(--muted)] shadow">
-            {formatScale(props.view.scale)}x
-          </div>
           <div className="absolute right-3 top-3 z-10 flex items-center gap-2 rounded bg-white/95 p-1 shadow">
             <IconButton
               label="ドラッグ"
@@ -360,10 +357,6 @@ function zoomOut(current: number) {
 
 function clampScale(value: number) {
   return Math.max(MIN_SCALE, Number(value.toFixed(2)));
-}
-
-function formatScale(value: number) {
-  return value.toFixed(2).replace(/0$/, "").replace(/\.0$/, ".0");
 }
 
 function DragIcon() {
