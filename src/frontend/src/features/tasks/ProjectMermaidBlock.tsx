@@ -54,6 +54,7 @@ type MermaidModalProps = {
   onZoomOut: () => void;
   onTogglePan: () => void;
   onWheel: (event: ReactWheelEvent<HTMLDivElement>) => void;
+  onDoubleClick: () => void;
   onDragStart: (event: ReactMouseEvent<HTMLDivElement>) => void;
   onDragMove: (event: ReactMouseEvent<HTMLDivElement>) => void;
   onDragStop: () => void;
@@ -158,6 +159,7 @@ export function ProjectMermaidBlock(props: ProjectMermaidBlockProps) {
           onZoomOut={() => setView((current) => ({ ...current, scale: zoomOut(current.scale) }))}
           onTogglePan={() => setPanEnabled((current) => !current)}
           onWheel={(event) => handleWheelZoom(event, setView)}
+          onDoubleClick={() => resetView(setView, setDragState)}
           onDragStart={(event) => startDrag(event, panEnabled, view, setDragState)}
           onDragMove={(event) => moveDrag(event, dragState, setView)}
           onDragStop={() => setDragState((current) => ({ ...current, active: false }))}
@@ -200,6 +202,7 @@ function MermaidModal(props: MermaidModalProps) {
             data-testid="mermaid-modal-canvas"
             className={modalCanvasClass(props.panEnabled, props.dragState.active)}
             onWheel={props.onWheel}
+            onDoubleClick={props.onDoubleClick}
             onMouseDown={props.onDragStart}
             onMouseMove={props.onDragMove}
             onMouseUp={props.onDragStop}
