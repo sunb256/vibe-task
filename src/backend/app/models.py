@@ -49,6 +49,32 @@ class TaskRecord:
 
 
 @dataclass(slots=True)
+class ProjectDocSummary:
+    name: str
+    path: str
+
+    def to_dict(self) -> dict[str, str]:
+        return {
+            "name": self.name,
+            "path": self.path,
+        }
+
+
+@dataclass(slots=True)
+class ProjectDocFile:
+    name: str
+    path: str
+    content: str
+
+    def to_dict(self) -> dict[str, str]:
+        return {
+            "name": self.name,
+            "path": self.path,
+            "content": self.content,
+        }
+
+
+@dataclass(slots=True)
 class PromptRecord:
     name: str
     path: str

@@ -15,7 +15,7 @@ prompts:
   # approval_policy: on-request
   approval_policy: never
   sandbox: workspace-write
-  repository_dir: ../..
+  # repository_dir: ../..
   # task_file が指定されてない場合はrepository_dir のフォルダ名からaction.ymlを決める
   # task_file: ../../tasks/projects/vibe-task/action.yml
   common: |
@@ -36,7 +36,7 @@ prompts:
     7. 最後に AGENTS.md に記載の レビュー方法を行い、PR して下さい
 
     8. タスクが完了したら、'id'と同じコードに 'title' と 'url' を追加して PR のタイトルと URL を追加し、
-       @BASE_DIR/tasks/projects/@PHD/done.yml へ作業タスク1つを移動して下さい
+       @BASE_DIR/tasks/projects/@PWD/done.yml へ作業タスク1つを移動して下さい
 
     9. 完了後、PR のタイトルと URL を提示して下さい
 

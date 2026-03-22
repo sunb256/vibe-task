@@ -7,6 +7,7 @@ import { PrimaryButton } from "../../components/PrimaryButton";
 import { readErrorMessage } from "../../lib/readErrorMessage";
 import { fetchProjects } from "../projects/projectApi";
 import { NewTaskDialog } from "./NewTaskDialog";
+import { ProjectDocsPanel } from "./ProjectDocsPanel";
 import type { Project } from "../projects/types";
 import {
   readCachedProject,
@@ -25,6 +26,7 @@ import type { TaskRecord, TaskSource } from "./types";
 
 const defaultTaskAction = "";
 const AUTO_REFRESH_MS = 60_000;
+type ProjectTab = "tasks" | "docs";
 const defaultVisibleSources: Record<TaskSource, boolean> = {
   action: true,
   pending: true,
@@ -36,6 +38,7 @@ export function ProjectTasksPage() {
   const { projectId = "" } = useParams();
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<TaskRecord[]>([]);
+  const [activeTab, setActiveTab] = useState<ProjectTab>("tasks");
   const [error, setError] = useState("");
   const [createError, setCreateError] = useState("");
   const [editError, setEditError] = useState("");
@@ -51,6 +54,10 @@ export function ProjectTasksPage() {
   const [editTaskSource, setEditTaskSource] = useState<TaskSource>("action");
   const [visibleSources, setVisibleSources] = useState(defaultVisibleSources);
   const createButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    setActiveTab("tasks");
+  }, [projectId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -92,7 +99,15 @@ export function ProjectTasksPage() {
   }, [projectId]);
 
   useEffect(() => {
-    if (!projectId || isLoading || isCreateOpen || isEditOpen || isCreating || isEditing) {
+    if (
+      !projectId ||
+      activeTab !== "tasks" ||
+      isLoading ||
+      isCreateOpen ||
+      isEditOpen ||
+      isCreating ||
+      isEditing
+    ) {
       return;
     }
 
@@ -105,7 +120,7 @@ export function ProjectTasksPage() {
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [projectId, isCreateOpen, isEditOpen, isCreating, isEditing, isLoading]);
+  }, [activeTab, projectId, isCreateOpen, isEditOpen, isCreating, isEditing, isLoading]);
 
   async function handleDelete(task: TaskRecord) {
     const ok = window.confirm(`task ${task.id} を削除しますか？`);
@@ -147,6 +162,9 @@ export function ProjectTasksPage() {
       if (event.repeat || !isCreateShortcut(event)) {
         return;
       }
+      if (activeTab !== "tasks") {
+        return;
+      }
       if (isCreateOpen || isEditOpen || isCreating || isEditing) {
         return;
       }
@@ -163,7 +181,7 @@ export function ProjectTasksPage() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isCreateOpen, isEditOpen, isCreating, isEditing]);
+  }, [activeTab, isCreateOpen, isEditOpen, isCreating, isEditing]);
 
   function closeCreateDialog() {
     if (isCreating) {
@@ -269,170 +287,183 @@ export function ProjectTasksPage() {
       )}
       actions={
         project?.repositoryPath ? (
-          <div className="flex h-9 items-end justify-end pr-1">
-            <span aria-hidden="true" className="text-xs font-normal leading-none text-[var(--muted)]">
-              {project.repositoryPath}
-            </span>
-          </div>
+          <ProjectTabs
+            repositoryPath={project.repositoryPath}
+            activeTab={activeTab}
+            onChange={setActiveTab}
+          />
         ) : undefined
       }
       onImported={handleImported}
     >
-      <section className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
-        <div className="mb-4 flex w-full items-center justify-start gap-2 pl-2">
-          <PrimaryButton
-            ref={createButtonRef}
-            type="button"
-            onClick={openCreateDialog}
-            disabled={isCreating}
-          >
-            新規タスク(N)
-          </PrimaryButton>
-          {TASK_FILTER_ORDER.map((source, index) => (
-            <button
-              key={source}
+      {activeTab === "tasks" ? (
+        <section className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
+          <div className="mb-4 flex w-full items-center justify-start gap-2 pl-2">
+            <PrimaryButton
+              ref={createButtonRef}
               type="button"
-              aria-pressed={visibleSources[source]}
-              onClick={() => toggleSourceFilter(source, setVisibleSources)}
-              className={`${sourceFilterClass(source, visibleSources[source])} ${index === 0 ? "ml-2" : ""}`}
+              onClick={openCreateDialog}
+              disabled={isCreating}
             >
-              {`${sourceLabel(source)}(${countTasks(tasks, source)})`}
-            </button>
-          ))}
-        </div>
-        {error ? <Notice tone="error" message={error} /> : null}
-        {isLoading ? <Notice tone="neutral" message="Loading tasks..." /> : null}
-        {!error && !isLoading && visibleTasks.length === 0 ? (
-          <Notice tone="neutral" message="task はありません" />
-        ) : null}
-        {!isLoading && visibleTasks.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full border-separate border-spacing-y-1 text-left text-sm">
-              <thead>
-                <tr className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
-                  <th className="px-3 whitespace-nowrap">id</th>
-                  <th className="px-3 w-full">task</th>
-                  <th className="pl-1 pr-3 w-[13rem] whitespace-nowrap">actions</th>
-                  <th className="px-3 text-center">url</th>
-                </tr>
-              </thead>
-              <tbody>
-                {visibleTasks.map((task) => {
-                  const upTargetId = swapTargetId(orderedTasks, task, "up");
-                  const downTargetId = swapTargetId(orderedTasks, task, "down");
-                  return (
-                    <tr
-                      key={`${task.source}-${task.id}`}
-                      onClick={() => openEditDialog(task)}
-                      className="group cursor-pointer"
-                    >
-                      <td className="rounded-l-md border-y border-l border-[var(--border)] bg-[var(--panel-strong)] px-3 py-2 text-[var(--muted)] whitespace-nowrap transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
-                        <span
-                          className={`rounded-md px-3 py-1 text-xs font-semibold uppercase ${sourceBadgeTone(task.source)}`}
-                        >
-                          {sourceTag(task)}
-                        </span>
-                      </td>
-                      <td className="w-full min-w-[34rem] border-y border-[var(--border)] bg-[var(--panel-strong)] transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
-                        <button
-                          type="button"
-                          aria-label={`task ${task.id} を編集`}
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            openEditDialog(task);
-                          }}
-                          className="block h-full w-full px-3 py-2 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
-                        >
-                          <div className="space-y-1">
-                            {showTaskTitle(task.title) ? (
-                              <p className="font-semibold text-[var(--ink)]">{task.title}</p>
-                            ) : null}
-                            <p className="line-clamp-6 max-w-[56rem] whitespace-pre-wrap break-all text-black">
-                              {task.action}
-                            </p>
-                          </div>
-                        </button>
-                      </td>
-                      <td className="w-[13rem] whitespace-nowrap border-y border-[var(--border)] bg-[var(--panel-strong)] pl-1 pr-3 py-2 transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
-                        <div className="flex items-center gap-1">
+              新規タスク(N)
+            </PrimaryButton>
+            {TASK_FILTER_ORDER.map((source, index) => (
+              <button
+                key={source}
+                type="button"
+                aria-pressed={visibleSources[source]}
+                onClick={() => toggleSourceFilter(source, setVisibleSources)}
+                className={`${sourceFilterClass(source, visibleSources[source])} ${index === 0 ? "ml-2" : ""}`}
+              >
+                {`${sourceLabel(source)}(${countTasks(tasks, source)})`}
+              </button>
+            ))}
+          </div>
+          {error ? <Notice tone="error" message={error} /> : null}
+          {isLoading ? <Notice tone="neutral" message="Loading tasks..." /> : null}
+          {!error && !isLoading && visibleTasks.length === 0 ? (
+            <Notice tone="neutral" message="task はありません" />
+          ) : null}
+          {!isLoading && visibleTasks.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="min-w-full border-separate border-spacing-y-1 text-left text-sm">
+                <thead>
+                  <tr className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
+                    <th className="px-3 whitespace-nowrap">id</th>
+                    <th className="px-3 w-full">task</th>
+                    <th className="pl-1 pr-3 w-[13rem] whitespace-nowrap">actions</th>
+                    <th className="px-3 text-center">url</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visibleTasks.map((task) => {
+                    const upTargetId = swapTargetId(orderedTasks, task, "up");
+                    const downTargetId = swapTargetId(orderedTasks, task, "down");
+                    return (
+                      <tr
+                        key={`${task.source}-${task.id}`}
+                        onClick={() => openEditDialog(task)}
+                        className="group cursor-pointer"
+                      >
+                        <td className="rounded-l-md border-y border-l border-[var(--border)] bg-[var(--panel-strong)] px-3 py-2 text-[var(--muted)] whitespace-nowrap transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
+                          <span
+                            className={`rounded-md px-3 py-1 text-xs font-semibold uppercase ${sourceBadgeTone(task.source)}`}
+                          >
+                            {sourceTag(task)}
+                          </span>
+                        </td>
+                        <td className="w-full min-w-[34rem] border-y border-[var(--border)] bg-[var(--panel-strong)] transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
                           <button
                             type="button"
+                            aria-label={`task ${task.id} を編集`}
                             onClick={(event) => {
                               event.stopPropagation();
                               openEditDialog(task);
                             }}
-                            className="inline-flex w-[4.5rem] items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 py-2 font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
+                            className="block h-full w-full px-3 py-2 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
                           >
-                            編集
+                            <div className="space-y-1">
+                              {showTaskTitle(task.title) ? (
+                                <p className="font-semibold text-[var(--ink)]">{task.title}</p>
+                              ) : null}
+                              <p className="line-clamp-6 max-w-[56rem] whitespace-pre-wrap break-all text-black">
+                                {task.action}
+                              </p>
+                            </div>
                           </button>
-                          <PrimaryButton
-                            type="button"
-                            className="w-[4.5rem] border border-rose-200 bg-white !text-rose-700 hover:border-rose-300 hover:bg-rose-50 focus-visible:outline-rose-300"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              void handleDelete(task);
-                            }}
-                          >
-                            削除
-                          </PrimaryButton>
-                          <SwapButton
-                            label="↑"
-                            ariaLabel={`task ${task.id} を上へ`}
-                            disabled={isSwapping || !upTargetId}
-                            onClick={() => void handleSwap(task, upTargetId)}
-                          />
-                          <SwapButton
-                            label="↓"
-                            ariaLabel={`task ${task.id} を下へ`}
-                            disabled={isSwapping || !downTargetId}
-                            onClick={() => void handleSwap(task, downTargetId)}
-                          />
-                        </div>
-                      </td>
-                      <td className="rounded-r-md border-y border-r border-[var(--border)] bg-[var(--panel-strong)] px-3 py-2 text-center transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
-                        <TaskPrLink url={task.url} />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        ) : null}
-      </section>
-      <NewTaskDialog
-        isOpen={isCreateOpen}
-        isSaving={isCreating}
-        error={createError}
-        action={newTaskAction}
-        title="新規タスク"
-        titleIconSrc="/assets/images/square-check-big.svg"
-        description=""
-        submitLabel="新規作成"
-        submittingLabel="作成中..."
-        enableShortcut
-        onActionChange={setNewTaskAction}
-        onClose={closeCreateDialog}
-        onSubmit={handleCreate}
-      />
-      <NewTaskDialog
-        isOpen={isEditOpen}
-        isSaving={isEditing}
-        error={editError}
-        action={editTaskAction}
-        title={editTask ? `編集 - #${editTask.id}` : "編集"}
-        titleIconSrc="/assets/images/square-check-big.svg"
-        description=""
-        submitLabel="更新"
-        submittingLabel="更新中..."
-        enableShortcut
-        statusValue={editTaskSource}
-        statusOptions={TASK_STATUS_OPTIONS}
-        onActionChange={setEditTaskAction}
-        onStatusChange={handleEditTaskSource}
-        onClose={closeEditDialog}
-        onSubmit={handleEdit}
-      />
+                        </td>
+                        <td className="w-[13rem] whitespace-nowrap border-y border-[var(--border)] bg-[var(--panel-strong)] pl-1 pr-3 py-2 transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                openEditDialog(task);
+                              }}
+                              className="inline-flex w-[4.5rem] items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 py-2 font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
+                            >
+                              編集
+                            </button>
+                            <PrimaryButton
+                              type="button"
+                              className="w-[4.5rem] border border-rose-200 bg-white !text-rose-700 hover:border-rose-300 hover:bg-rose-50 focus-visible:outline-rose-300"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                void handleDelete(task);
+                              }}
+                            >
+                              削除
+                            </PrimaryButton>
+                            <SwapButton
+                              label="↑"
+                              ariaLabel={`task ${task.id} を上へ`}
+                              disabled={isSwapping || !upTargetId}
+                              onClick={() => void handleSwap(task, upTargetId)}
+                            />
+                            <SwapButton
+                              label="↓"
+                              ariaLabel={`task ${task.id} を下へ`}
+                              disabled={isSwapping || !downTargetId}
+                              onClick={() => void handleSwap(task, downTargetId)}
+                            />
+                          </div>
+                        </td>
+                        <td className="rounded-r-md border-y border-r border-[var(--border)] bg-[var(--panel-strong)] px-3 py-2 text-center transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
+                          <TaskPrLink url={task.url} />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+      {activeTab === "docs" && project?.repositoryPath ? (
+        <ProjectDocsPanel
+          isActive={activeTab === "docs"}
+          projectId={projectId}
+          repositoryPath={project.repositoryPath}
+        />
+      ) : null}
+      {activeTab === "tasks" ? (
+        <NewTaskDialog
+          isOpen={isCreateOpen}
+          isSaving={isCreating}
+          error={createError}
+          action={newTaskAction}
+          title="新規タスク"
+          titleIconSrc="/assets/images/square-check-big.svg"
+          description=""
+          submitLabel="新規作成"
+          submittingLabel="作成中..."
+          enableShortcut
+          onActionChange={setNewTaskAction}
+          onClose={closeCreateDialog}
+          onSubmit={handleCreate}
+        />
+      ) : null}
+      {activeTab === "tasks" ? (
+        <NewTaskDialog
+          isOpen={isEditOpen}
+          isSaving={isEditing}
+          error={editError}
+          action={editTaskAction}
+          title={editTask ? `編集 - #${editTask.id}` : "編集"}
+          titleIconSrc="/assets/images/square-check-big.svg"
+          description=""
+          submitLabel="更新"
+          submittingLabel="更新中..."
+          enableShortcut
+          statusValue={editTaskSource}
+          statusOptions={TASK_STATUS_OPTIONS}
+          onActionChange={setEditTaskAction}
+          onStatusChange={handleEditTaskSource}
+          onClose={closeEditDialog}
+          onSubmit={handleEdit}
+        />
+      ) : null}
     </PageFrame>
   );
 }
@@ -474,6 +505,42 @@ function applyCache(
   } else {
     setProject(null);
   }
+}
+
+type ProjectTabsProps = {
+  repositoryPath: string;
+  activeTab: ProjectTab;
+  onChange: (nextTab: ProjectTab) => void;
+};
+
+function ProjectTabs(props: ProjectTabsProps) {
+  return (
+    <div className="flex h-9 items-end justify-start pr-1">
+      <div className="inline-flex items-center rounded-md border border-[var(--border)] bg-white p-1">
+        <button
+          type="button"
+          onClick={() => props.onChange("tasks")}
+          className={projectTabClass(props.activeTab === "tasks")}
+        >
+          {props.repositoryPath}
+        </button>
+        <button
+          type="button"
+          onClick={() => props.onChange("docs")}
+          className={projectTabClass(props.activeTab === "docs")}
+        >
+          docs
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function projectTabClass(isActive: boolean) {
+  if (isActive) {
+    return "rounded px-3 py-1 text-xs font-semibold text-[var(--ink)]";
+  }
+  return "rounded px-3 py-1 text-xs text-[var(--muted)] hover:bg-zinc-100";
 }
 
 type TaskPrLinkProps = {
