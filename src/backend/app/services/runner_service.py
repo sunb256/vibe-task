@@ -1,3 +1,5 @@
+import os
+import signal
 import subprocess
 from pathlib import Path
 from threading import Lock
@@ -27,6 +29,7 @@ class RunnerProcessStore:
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                     text=True,
+                    start_new_session=True,
                 )
             except OSError as error:
                 raise AppError("failed to start runner", 500) from error
@@ -42,14 +45,8 @@ class RunnerProcessStore:
             if process is None or process.poll() is not None:
                 self._processes.pop(project_id, None)
                 raise AppError("runner is not running", 409)
-            process.terminate()
-            try:
-                process.wait(timeout=3)
-            except subprocess.TimeoutExpired:
-                process.kill()
-                process.wait(timeout=3)
-            finally:
-                self._processes.pop(project_id, None)
+            self._stop_process(process)
+            self._processes.pop(project_id, None)
 
     def clear(self) -> None:
         with self._lock:
@@ -63,6 +60,35 @@ class RunnerProcessStore:
             return True
         self._processes.pop(project_id, None)
         return False
+
+    def _stop_process(self, process: subprocess.Popen) -> None:
+        pid = getattr(process, "pid", None)
+        if isinstance(pid, int) and pid > 0:
+            self._stop_process_group(process, pid)
+            return
+        self._stop_single_process(process)
+
+    def _stop_process_group(self, process: subprocess.Popen, pid: int) -> None:
+        try:
+            os.killpg(pid, signal.SIGTERM)
+        except ProcessLookupError:
+            return
+        try:
+            process.wait(timeout=3)
+        except subprocess.TimeoutExpired:
+            try:
+                os.killpg(pid, signal.SIGKILL)
+            except ProcessLookupError:
+                return
+            process.wait(timeout=3)
+
+    def _stop_single_process(self, process: subprocess.Popen) -> None:
+        process.terminate()
+        try:
+            process.wait(timeout=3)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait(timeout=3)
 
 
 runner_process_store = RunnerProcessStore()

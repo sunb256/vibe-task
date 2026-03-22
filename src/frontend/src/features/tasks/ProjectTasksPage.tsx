@@ -398,6 +398,9 @@ export function ProjectTasksPage() {
     setIsRunnerCanceling(true);
     try {
       await cancelRunner(projectId);
+      setIsRunnerRunning(false);
+      runnerRunningRef.current = false;
+      setActiveRunnerTab("log");
       const log = await readRunnerLog(projectId);
       setRunnerLog(log.log);
       setIsRunnerRunning(log.running);
