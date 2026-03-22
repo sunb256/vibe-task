@@ -1,6 +1,7 @@
 import { afterEach, vi } from "vitest";
 
 import {
+  cancelRunner,
   createTask,
   deleteTask,
   executeRunner,
@@ -145,13 +146,15 @@ test("fetchProjectDocs and fetchProjectDoc request docs endpoints without cache"
   );
 });
 
-test("executeRunner and fetchRunnerLogs call runner endpoints", async () => {
+test("executeRunner, cancelRunner and fetchRunnerLogs call runner endpoints", async () => {
   const fetchMock = vi
     .spyOn(globalThis, "fetch")
     .mockResolvedValueOnce(new Response(JSON.stringify({ running: true })))
+    .mockResolvedValueOnce(new Response(JSON.stringify({ running: false })))
     .mockResolvedValueOnce(new Response(JSON.stringify({ running: false, log: "done" })));
 
   await executeRunner("project-1");
+  await cancelRunner("project-1");
   await fetchRunnerLogs("project-1", 123);
 
   expect(fetchMock).toHaveBeenNthCalledWith(
@@ -161,6 +164,11 @@ test("executeRunner and fetchRunnerLogs call runner endpoints", async () => {
   );
   expect(fetchMock).toHaveBeenNthCalledWith(
     2,
+    "/api/projects/project-1/runner/cancel",
+    expect.objectContaining({ method: "POST" }),
+  );
+  expect(fetchMock).toHaveBeenNthCalledWith(
+    3,
     "/api/projects/project-1/runner/logs?lines=123",
     expect.objectContaining({ cache: "no-store" }),
   );

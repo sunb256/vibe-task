@@ -58,6 +58,7 @@ vi.mock("../projects/projectApi", () => ({
 }));
 
 vi.mock("./taskApi", () => ({
+  cancelRunner: vi.fn(),
   createTask: vi.fn(),
   deleteTask: vi.fn(),
   executeRunner: vi.fn(),
@@ -71,6 +72,7 @@ vi.mock("./taskApi", () => ({
 
 import { fetchProjects } from "../projects/projectApi";
 import {
+  cancelRunner,
   createTask,
   executeRunner,
   fetchProjectDoc,
@@ -91,6 +93,9 @@ beforeEach(() => {
   });
   vi.mocked(executeRunner).mockResolvedValue({
     running: true,
+  });
+  vi.mocked(cancelRunner).mockResolvedValue({
+    running: false,
   });
 });
 
@@ -171,10 +176,13 @@ test("does not render the removed project subtitle", async () => {
   expect(screen.queryByText("VIBE TASK")).not.toBeInTheDocument();
   expect(screen.getByRole("heading", { level: 1, name: /impl/i })).toBeInTheDocument();
   const tasksTab = screen.getByRole("button", { name: "impl" });
+  const runnerTab = screen.getByRole("button", { name: "Runner" });
   const docsTab = screen.getByRole("button", { name: "docs" });
   expect(tasksTab).toBeInTheDocument();
+  expect(runnerTab).toBeInTheDocument();
   expect(docsTab).toBeInTheDocument();
   expect(tasksTab).toHaveClass("text-base");
+  expect(runnerTab).toHaveClass("text-base");
   expect(docsTab).toHaveClass("text-base");
   expect(tasksTab.parentElement).toHaveClass("inline-flex", "items-center", "gap-2");
   expect(tasksTab.parentElement).not.toHaveClass("border");
@@ -208,26 +216,18 @@ test("does not render the removed project subtitle", async () => {
   expect(taskTable).toHaveClass("border-spacing-y-1");
   expect(createButton.compareDocumentPosition(taskTable) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   const todoToggle = screen.getByRole("button", { name: "TODO(1)" });
-  const runnerToggle = screen.getByRole("button", { name: "RUNNER(0)" });
   const pendingToggle = screen.getByRole("button", { name: "PENDING(0)" });
   const doneToggle = screen.getByRole("button", { name: "DONE(2)" });
   const cancelToggle = screen.getByRole("button", { name: "CANCEL(0)" });
   expect(todoToggle).toHaveAttribute("aria-pressed", "true");
-  expect(runnerToggle).toHaveAttribute("aria-pressed", "false");
   expect(pendingToggle).toHaveAttribute("aria-pressed", "true");
   expect(doneToggle).toHaveAttribute("aria-pressed", "false");
   expect(cancelToggle).toHaveAttribute("aria-pressed", "false");
   expect(todoToggle).toHaveClass("bg-blue-100", "text-blue-700", "rounded-full");
-  expect(runnerToggle).toHaveClass("rounded-full");
   expect(pendingToggle).toHaveClass("bg-amber-100", "text-amber-700", "rounded-full");
   expect(doneToggle).toHaveClass("rounded-full");
   expect(cancelToggle).toHaveClass("rounded-full");
   expect(screen.queryByRole("heading", { level: 2, name: "RUNNER履歴" })).not.toBeInTheDocument();
-  fireEvent.click(runnerToggle);
-  expect(runnerToggle).toHaveAttribute("aria-pressed", "true");
-  expect(screen.getByRole("heading", { level: 2, name: "RUNNER履歴" })).toBeInTheDocument();
-  expect(screen.getByText("1, 2, 3")).toBeInTheDocument();
-  expect(screen.getByText("2026-03-22 09:00:00")).toBeInTheDocument();
   expect(within(taskTable).getByRole("columnheader", { name: "id" })).toHaveClass("whitespace-nowrap");
   expect(within(taskTable).getByRole("columnheader", { name: "task" })).toHaveClass("w-full");
   expect(within(taskTable).getByRole("columnheader", { name: "actions" })).toHaveClass("pl-1", "pr-3");
@@ -297,12 +297,25 @@ test("does not render the removed project subtitle", async () => {
   );
   expect(screen.queryByText("DONE #10", { selector: "span" })).not.toBeInTheDocument();
 
-  fireEvent.click(doneToggle);
+  fireEvent.click(runnerTab);
+  expect(screen.getAllByRole("button", { name: "Runner" })).toHaveLength(2);
+  expect(screen.getByRole("button", { name: "ログ" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "履歴" })).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "履歴" }));
+  expect(screen.getByRole("heading", { level: 2, name: "RUNNER履歴" })).toBeInTheDocument();
+  expect(screen.getByText("1, 2, 3")).toBeInTheDocument();
+  expect(screen.getByText("2026-03-22 09:00:00")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "ログ" }));
+  expect(screen.getByRole("heading", { level: 2, name: "ログ" })).toBeInTheDocument();
+  fireEvent.click(tasksTab);
+
+  const doneToggleAfterRunner = screen.getByRole("button", { name: "DONE(2)" });
+  fireEvent.click(doneToggleAfterRunner);
 
   await waitFor(() => {
     expect(screen.getAllByRole("button", { name: "編集" })).toHaveLength(3);
   });
-  expect(doneToggle).toHaveAttribute("aria-pressed", "true");
+  expect(doneToggleAfterRunner).toHaveAttribute("aria-pressed", "true");
   expect(screen.getByText("done-title-10")).toBeInTheDocument();
   expect(screen.getByText("done-title-2")).toBeInTheDocument();
   expect(screen.getByText("DONE #10", { selector: "span" })).toHaveClass(
@@ -441,6 +454,7 @@ test("switches to docs tab and renders markdown viewer", async () => {
 });
 
 test("starts runner execution and shows runner logs", async () => {
+  const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
   vi.mocked(fetchProjects).mockResolvedValue({
     projects: [
       {
@@ -465,7 +479,9 @@ test("starts runner execution and shows runner logs", async () => {
   });
   vi.mocked(fetchRunnerLogs)
     .mockResolvedValueOnce({ running: false, log: "" })
-    .mockResolvedValueOnce({ running: true, log: "runner started" });
+    .mockResolvedValueOnce({ running: false, log: "" })
+    .mockResolvedValueOnce({ running: true, log: "runner started" })
+    .mockResolvedValue({ running: true, log: "runner started" });
 
   render(
     <MemoryRouter initialEntries={["/projects/project-1"]}>
@@ -476,18 +492,82 @@ test("starts runner execution and shows runner logs", async () => {
   );
 
   await waitFor(() => {
-    expect(screen.getByRole("button", { name: "RUNNER実行" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Runner" })).toBeInTheDocument();
   });
 
-  fireEvent.click(screen.getByRole("button", { name: "RUNNER実行" }));
+  fireEvent.click(screen.getByRole("button", { name: "Runner" }));
+  fireEvent.click(screen.getByRole("button", { name: "Runner実行" }));
 
   await waitFor(() => {
+    expect(confirmSpy).toHaveBeenCalledWith("RUNNERを実行しますか？");
     expect(executeRunner).toHaveBeenCalledWith("project-1");
-    expect(screen.getByRole("heading", { level: 2, name: "RUNNER履歴" })).toBeInTheDocument();
   });
-  expect(screen.getByRole("button", { name: "RUNNER実行中..." })).toBeDisabled();
+  expect(screen.getByRole("heading", { level: 2, name: "ログ" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Runnerキャンセル" })).toBeEnabled();
   expect(screen.getByText("RUNNING")).toBeInTheDocument();
   expect(screen.getByText("runner started")).toBeInTheDocument();
+});
+
+test("cancels running runner from runner tab", async () => {
+  const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+  vi.mocked(fetchProjects).mockResolvedValue({
+    projects: [
+      {
+        id: "project-1",
+        name: "impl",
+        repositoryPath: "/tmp/impl",
+      },
+    ],
+  });
+  vi.mocked(fetchTasks).mockResolvedValue({
+    tasks: [
+      {
+        projectId: "project-1",
+        source: "runner",
+        id: "1",
+        title: "-",
+        url: "-",
+        action: "task body",
+      },
+    ],
+    runnerHistory: [],
+  });
+  vi.mocked(fetchRunnerLogs)
+    .mockResolvedValueOnce({ running: false, log: "" })
+    .mockResolvedValueOnce({ running: false, log: "" })
+    .mockResolvedValueOnce({ running: true, log: "running..." })
+    .mockResolvedValueOnce({ running: false, log: "cancelled" })
+    .mockResolvedValue({ running: false, log: "cancelled" });
+
+  render(
+    <MemoryRouter initialEntries={["/projects/project-1"]}>
+      <Routes>
+        <Route path="/projects/:projectId" element={<ProjectTasksPage />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByRole("button", { name: "Runner" })).toBeInTheDocument();
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Runner" }));
+  fireEvent.click(screen.getByRole("button", { name: "Runner実行" }));
+
+  await waitFor(() => {
+    expect(screen.getByRole("button", { name: "Runnerキャンセル" })).toBeEnabled();
+    expect(executeRunner).toHaveBeenCalledWith("project-1");
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Runnerキャンセル" }));
+
+  await waitFor(() => {
+    expect(confirmSpy).toHaveBeenNthCalledWith(1, "RUNNERを実行しますか？");
+    expect(confirmSpy).toHaveBeenNthCalledWith(2, "Runnerをキャンセルしますか？");
+    expect(cancelRunner).toHaveBeenCalledWith("project-1");
+  });
+  await waitFor(() => {
+    expect(screen.getByRole("button", { name: "Runner実行" })).toBeEnabled();
+  });
+  expect(screen.queryByRole("button", { name: "Runnerキャンセル" })).not.toBeInTheDocument();
 });
 
 test("swaps task ids with up/down buttons", async () => {
@@ -960,11 +1040,13 @@ test("refreshes tasks every 60 seconds", async () => {
   });
   expect(intervalHandlers.length).toBeGreaterThan(0);
 
-  const latestHandler = intervalHandlers[intervalHandlers.length - 1];
-  latestHandler?.();
+  const beforeRefreshCallCount = vi.mocked(fetchTasks).mock.calls.length;
+  intervalHandlers.forEach((handler) => {
+    handler();
+  });
 
   await waitFor(() => {
-    expect(vi.mocked(fetchTasks).mock.calls.length).toBeGreaterThanOrEqual(2);
+    expect(vi.mocked(fetchTasks).mock.calls.length).toBeGreaterThan(beforeRefreshCallCount);
     expect(screen.getByText("refreshed task")).toBeInTheDocument();
   });
 });

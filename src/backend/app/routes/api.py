@@ -162,6 +162,13 @@ def execute_runner(project_id: str):
     return jsonify({"running": True}), 202
 
 
+@api_bp.post("/projects/<project_id>/runner/cancel")
+def cancel_runner(project_id: str):
+    service = RunnerService(_project_repository())
+    service.cancel_runner(project_id)
+    return jsonify({"running": False}), 202
+
+
 @api_bp.get("/projects/<project_id>/runner/logs")
 def get_runner_logs(project_id: str):
     lines = _parse_runner_log_lines(request.args.get("lines"))

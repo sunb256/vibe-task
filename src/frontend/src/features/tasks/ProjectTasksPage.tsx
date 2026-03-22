@@ -18,6 +18,7 @@ import {
   saveTaskCache,
 } from "./projectTasksPageCache";
 import {
+  cancelRunner,
   createTask,
   deleteTask,
   executeRunner,
@@ -32,7 +33,8 @@ const defaultTaskAction = "";
 const AUTO_REFRESH_MS = 60_000;
 const RUNNER_LOG_REFRESH_MS = 2_000;
 const RUNNER_LOG_LINES = 300;
-type ProjectTab = "tasks" | "docs";
+type ProjectTab = "tasks" | "runner" | "docs";
+type RunnerTab = "list" | "log" | "history";
 const defaultVisibleSources: Record<TaskSource, boolean> = {
   action: true,
   runner: false,
@@ -47,6 +49,7 @@ export function ProjectTasksPage() {
   const [tasks, setTasks] = useState<TaskRecord[]>([]);
   const [runnerHistory, setRunnerHistory] = useState<RunnerHistoryRecord[]>([]);
   const [activeTab, setActiveTab] = useState<ProjectTab>("tasks");
+  const [activeRunnerTab, setActiveRunnerTab] = useState<RunnerTab>("list");
   const [error, setError] = useState("");
   const [runnerLogError, setRunnerLogError] = useState("");
   const [createError, setCreateError] = useState("");
@@ -54,6 +57,7 @@ export function ProjectTasksPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRunnerRunning, setIsRunnerRunning] = useState(false);
   const [isRunnerStarting, setIsRunnerStarting] = useState(false);
+  const [isRunnerCanceling, setIsRunnerCanceling] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -71,6 +75,10 @@ export function ProjectTasksPage() {
 
   useEffect(() => {
     setActiveTab("tasks");
+  }, [projectId]);
+
+  useEffect(() => {
+    setActiveRunnerTab("list");
   }, [projectId]);
 
   useEffect(() => {
@@ -119,7 +127,7 @@ export function ProjectTasksPage() {
   }, [projectId]);
 
   useEffect(() => {
-    if (!projectId || activeTab !== "tasks") {
+    if (!projectId || activeTab === "docs") {
       return;
     }
     let cancelled = false;
@@ -158,12 +166,14 @@ export function ProjectTasksPage() {
   useEffect(() => {
     if (
       !projectId ||
-      activeTab !== "tasks" ||
+      activeTab === "docs" ||
       isLoading ||
       isCreateOpen ||
       isEditOpen ||
       isCreating ||
-      isEditing
+      isEditing ||
+      isRunnerStarting ||
+      isRunnerCanceling
     ) {
       return;
     }
@@ -177,7 +187,17 @@ export function ProjectTasksPage() {
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [activeTab, projectId, isCreateOpen, isEditOpen, isCreating, isEditing, isLoading]);
+  }, [
+    activeTab,
+    projectId,
+    isCreateOpen,
+    isEditOpen,
+    isCreating,
+    isEditing,
+    isLoading,
+    isRunnerStarting,
+    isRunnerCanceling,
+  ]);
 
   async function handleDelete(task: TaskRecord) {
     const ok = window.confirm(`task ${task.id} を削除しますか？`);
@@ -212,6 +232,13 @@ export function ProjectTasksPage() {
     setCreateError("");
     setNewTaskAction(defaultTaskAction);
     setCreateTaskSource("action");
+    setIsCreateOpen(true);
+  }
+
+  function openCreateRunnerDialog() {
+    setCreateError("");
+    setNewTaskAction(defaultTaskAction);
+    setCreateTaskSource("runner");
     setIsCreateOpen(true);
   }
 
@@ -342,11 +369,15 @@ export function ProjectTasksPage() {
   }
 
   async function handleRunnerExecute() {
+    const confirmed = window.confirm("RUNNERを実行しますか？");
+    if (!confirmed) {
+      return;
+    }
+    setActiveRunnerTab("log");
     setRunnerLogError("");
     setIsRunnerStarting(true);
     try {
       await executeRunner(projectId);
-      setVisibleSources((current) => ({ ...current, runner: true }));
       const log = await readRunnerLog(projectId);
       setRunnerLog(log.log);
       setIsRunnerRunning(log.running);
@@ -358,8 +389,41 @@ export function ProjectTasksPage() {
     }
   }
 
+  async function handleRunnerCancel() {
+    const confirmed = window.confirm("Runnerをキャンセルしますか？");
+    if (!confirmed) {
+      return;
+    }
+    setRunnerLogError("");
+    setIsRunnerCanceling(true);
+    try {
+      await cancelRunner(projectId);
+      setIsRunnerRunning(false);
+      runnerRunningRef.current = false;
+      setActiveRunnerTab("log");
+      const log = await readRunnerLog(projectId);
+      setRunnerLog(log.log);
+      setIsRunnerRunning(log.running);
+      runnerRunningRef.current = log.running;
+      await refreshTasks(projectId, setTasks, setRunnerHistory);
+    } catch (cancelError) {
+      setRunnerLogError(readErrorMessage(cancelError, "runner のキャンセルに失敗しました。"));
+    } finally {
+      setIsRunnerCanceling(false);
+    }
+  }
+
+  async function handleRunnerAction() {
+    if (isRunnerRunning) {
+      await handleRunnerCancel();
+      return;
+    }
+    await handleRunnerExecute();
+  }
+
   const orderedTasks = orderTasks(tasks);
   const visibleTasks = filterTasks(orderedTasks, visibleSources);
+  const runnerTasks = orderedTasks.filter((task) => task.source === "runner");
 
   return (
     <PageFrame
@@ -383,14 +447,7 @@ export function ProjectTasksPage() {
             >
               新規タスク(N)
             </PrimaryButton>
-            <PrimaryButton
-              type="button"
-              onClick={() => void handleRunnerExecute()}
-              disabled={isRunnerStarting || isRunnerRunning}
-            >
-              {isRunnerStarting ? "起動中..." : isRunnerRunning ? "RUNNER実行中..." : "RUNNER実行"}
-            </PrimaryButton>
-            {TASK_FILTER_ORDER.map((source, index) => (
+            {TASK_LIST_FILTER_ORDER.map((source, index) => (
               <button
                 key={source}
                 type="button"
@@ -402,113 +459,87 @@ export function ProjectTasksPage() {
               </button>
             ))}
           </div>
-          {visibleSources.runner ? (
-            <RunnerHistoryPanel
-              history={runnerHistory}
-              runnerLog={runnerLog}
-              isRunning={isRunnerRunning}
-              logError={runnerLogError}
-            />
-          ) : null}
           {error ? <Notice tone="error" message={error} /> : null}
           {isLoading ? <Notice tone="neutral" message="Loading tasks..." /> : null}
           {!error && !isLoading && visibleTasks.length === 0 ? (
             <Notice tone="neutral" message="task はありません" />
           ) : null}
           {!isLoading && visibleTasks.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="min-w-full border-separate border-spacing-y-1 text-left text-sm">
-                <thead>
-                  <tr className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
-                    <th className="px-3 whitespace-nowrap">id</th>
-                    <th className="px-3 w-full">task</th>
-                    <th className="pl-1 pr-3 w-[13rem] whitespace-nowrap">actions</th>
-                    <th className="px-3 text-center">url</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {visibleTasks.map((task) => {
-                    const upTargetId = swapTargetId(orderedTasks, task, "up");
-                    const downTargetId = swapTargetId(orderedTasks, task, "down");
-                    return (
-                      <tr
-                        key={`${task.source}-${task.id}`}
-                        onClick={() => openEditDialog(task)}
-                        className="group cursor-pointer"
-                      >
-                        <td className="rounded-l-md border-y border-l border-[var(--border)] bg-[var(--panel-strong)] px-3 py-2 text-[var(--muted)] whitespace-nowrap transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
-                          <span
-                            className={`rounded-md px-3 py-1 text-xs font-semibold uppercase ${sourceBadgeTone(task.source)}`}
-                          >
-                            {sourceTag(task)}
-                          </span>
-                        </td>
-                        <td className="w-full min-w-[34rem] border-y border-[var(--border)] bg-[var(--panel-strong)] transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
-                          <button
-                            type="button"
-                            aria-label={`task ${task.id} を編集`}
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              openEditDialog(task);
-                            }}
-                            className="block h-full w-full px-3 py-2 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
-                          >
-                            <div className="space-y-1">
-                              {showTaskTitle(task.title) ? (
-                                <p className="font-semibold text-[var(--ink)]">{task.title}</p>
-                              ) : null}
-                              <p className="line-clamp-6 max-w-[56rem] whitespace-pre-wrap break-all text-black">
-                                {task.action}
-                              </p>
-                            </div>
-                          </button>
-                        </td>
-                        <td className="w-[13rem] whitespace-nowrap border-y border-[var(--border)] bg-[var(--panel-strong)] pl-1 pr-3 py-2 transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
-                          <div className="flex items-center gap-1">
-                            <button
-                              type="button"
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                openEditDialog(task);
-                              }}
-                              className="inline-flex w-[4.5rem] items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 py-2 font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
-                            >
-                              編集
-                            </button>
-                            <PrimaryButton
-                              type="button"
-                              className="w-[4.5rem] border border-rose-200 bg-white !text-rose-700 hover:border-rose-300 hover:bg-rose-50 focus-visible:outline-rose-300"
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                void handleDelete(task);
-                              }}
-                            >
-                              削除
-                            </PrimaryButton>
-                            <SwapButton
-                              label="↑"
-                              ariaLabel={`task ${task.id} を上へ`}
-                              disabled={isSwapping || !upTargetId}
-                              onClick={() => void handleSwap(task, upTargetId)}
-                            />
-                            <SwapButton
-                              label="↓"
-                              ariaLabel={`task ${task.id} を下へ`}
-                              disabled={isSwapping || !downTargetId}
-                              onClick={() => void handleSwap(task, downTargetId)}
-                            />
-                          </div>
-                        </td>
-                        <td className="rounded-r-md border-y border-r border-[var(--border)] bg-[var(--panel-strong)] px-3 py-2 text-center transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
-                          <TaskPrLink url={task.url} />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <TaskTable
+              tasks={visibleTasks}
+              orderedTasks={orderedTasks}
+              isSwapping={isSwapping}
+              onEdit={openEditDialog}
+              onDelete={(task) => void handleDelete(task)}
+              onSwap={(task, targetId) => void handleSwap(task, targetId)}
+            />
           ) : null}
+        </section>
+      ) : null}
+      {activeTab === "runner" ? (
+        <section className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
+          <div className="mb-4 flex w-full items-center justify-start gap-2 pl-2">
+            <PrimaryButton type="button" onClick={openCreateRunnerDialog} disabled={isCreating}>
+              新規Runner
+            </PrimaryButton>
+            <PrimaryButton
+              type="button"
+              onClick={() => void handleRunnerAction()}
+              disabled={isRunnerStarting || isRunnerCanceling}
+            >
+              {isRunnerStarting
+                ? "起動中..."
+                : isRunnerCanceling
+                  ? "キャンセル中..."
+                  : isRunnerRunning
+                    ? "Runnerキャンセル"
+                    : "Runner実行"}
+            </PrimaryButton>
+            <button
+              type="button"
+              onClick={() => setActiveRunnerTab("list")}
+              className={runnerTabClass(activeRunnerTab === "list")}
+            >
+              Runner
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveRunnerTab("log")}
+              className={runnerTabClass(activeRunnerTab === "log")}
+            >
+              ログ
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveRunnerTab("history")}
+              className={runnerTabClass(activeRunnerTab === "history")}
+            >
+              履歴
+            </button>
+          </div>
+          {error ? <Notice tone="error" message={error} /> : null}
+          {isLoading ? <Notice tone="neutral" message="Loading tasks..." /> : null}
+          {activeRunnerTab === "list" && !error && !isLoading && runnerTasks.length === 0 ? (
+            <Notice tone="neutral" message="RUNNER task はありません" />
+          ) : null}
+          {activeRunnerTab === "list" && !error && !isLoading && runnerTasks.length > 0 ? (
+            <TaskTable
+              tasks={runnerTasks}
+              orderedTasks={orderedTasks}
+              isSwapping={isSwapping}
+              onEdit={openEditDialog}
+              onDelete={(task) => void handleDelete(task)}
+              onSwap={(task, targetId) => void handleSwap(task, targetId)}
+            />
+          ) : null}
+          {activeRunnerTab === "log" ? (
+            <RunnerLogPanel
+              runnerLog={runnerLog}
+              isRunning={isRunnerRunning}
+              logError={runnerLogError}
+            />
+          ) : null}
+          {activeRunnerTab === "history" ? <RunnerHistoryPanel history={runnerHistory} /> : null}
         </section>
       ) : null}
       {activeTab === "docs" && project?.repositoryPath ? (
@@ -517,7 +548,7 @@ export function ProjectTasksPage() {
           projectId={projectId}
         />
       ) : null}
-      {activeTab === "tasks" ? (
+      {activeTab !== "docs" ? (
         <NewTaskDialog
           isOpen={isCreateOpen}
           isSaving={isCreating}
@@ -538,7 +569,7 @@ export function ProjectTasksPage() {
           onSubmit={handleCreate}
         />
       ) : null}
-      {activeTab === "tasks" ? (
+      {activeTab !== "docs" ? (
         <NewTaskDialog
           isOpen={isEditOpen}
           isSaving={isEditing}
@@ -640,6 +671,13 @@ function ProjectTabs(props: ProjectTabsProps) {
         </button>
         <button
           type="button"
+          onClick={() => props.onChange("runner")}
+          className={projectTabClass(props.activeTab === "runner")}
+        >
+          Runner
+        </button>
+        <button
+          type="button"
           onClick={() => props.onChange("docs")}
           className={projectTabClass(props.activeTab === "docs")}
         >
@@ -665,6 +703,13 @@ function projectTabClass(isActive: boolean) {
     return "rounded-md border border-zinc-300 bg-zinc-200 px-3 py-1 text-base font-semibold text-zinc-900";
   }
   return "rounded-md border border-transparent px-3 py-1 text-base text-[var(--muted)] hover:bg-zinc-100";
+}
+
+function runnerTabClass(isActive: boolean) {
+  if (isActive) {
+    return "inline-flex h-8 items-center rounded-full border border-zinc-300 bg-zinc-200 px-3 text-xs font-semibold";
+  }
+  return "inline-flex h-8 items-center rounded-full border border-[var(--border)] bg-white px-3 text-xs font-semibold text-[var(--muted)]";
 }
 
 type TaskPrLinkProps = {
@@ -699,11 +744,114 @@ function prLabel(url: string) {
   return `PR#${matched[1]}`;
 }
 
+type TaskTableProps = {
+  tasks: TaskRecord[];
+  orderedTasks: TaskRecord[];
+  isSwapping: boolean;
+  onEdit: (task: TaskRecord) => void;
+  onDelete: (task: TaskRecord) => void;
+  onSwap: (task: TaskRecord, targetId: string | null) => void;
+};
+
+function TaskTable(props: TaskTableProps) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="min-w-full border-separate border-spacing-y-1 text-left text-sm">
+        <thead>
+          <tr className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
+            <th className="px-3 whitespace-nowrap">id</th>
+            <th className="px-3 w-full">task</th>
+            <th className="pl-1 pr-3 w-[13rem] whitespace-nowrap">actions</th>
+            <th className="px-3 text-center">url</th>
+          </tr>
+        </thead>
+        <tbody>
+          {props.tasks.map((task) => {
+            const upTargetId = swapTargetId(props.orderedTasks, task, "up");
+            const downTargetId = swapTargetId(props.orderedTasks, task, "down");
+            return (
+              <tr
+                key={`${task.source}-${task.id}`}
+                onClick={() => props.onEdit(task)}
+                className="group cursor-pointer"
+              >
+                <td className="rounded-l-md border-y border-l border-[var(--border)] bg-[var(--panel-strong)] px-3 py-2 text-[var(--muted)] whitespace-nowrap transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
+                  <span
+                    className={`rounded-md px-3 py-1 text-xs font-semibold uppercase ${sourceBadgeTone(task.source)}`}
+                  >
+                    {sourceTag(task)}
+                  </span>
+                </td>
+                <td className="w-full min-w-[34rem] border-y border-[var(--border)] bg-[var(--panel-strong)] transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
+                  <button
+                    type="button"
+                    aria-label={`task ${task.id} を編集`}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      props.onEdit(task);
+                    }}
+                    className="block h-full w-full px-3 py-2 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+                  >
+                    <div className="space-y-1">
+                      {showTaskTitle(task.title) ? (
+                        <p className="font-semibold text-[var(--ink)]">{task.title}</p>
+                      ) : null}
+                      <p className="line-clamp-6 max-w-[56rem] whitespace-pre-wrap break-all text-black">
+                        {task.action}
+                      </p>
+                    </div>
+                  </button>
+                </td>
+                <td className="w-[13rem] whitespace-nowrap border-y border-[var(--border)] bg-[var(--panel-strong)] pl-1 pr-3 py-2 transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        props.onEdit(task);
+                      }}
+                      className="inline-flex w-[4.5rem] items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 py-2 font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
+                    >
+                      編集
+                    </button>
+                    <PrimaryButton
+                      type="button"
+                      className="w-[4.5rem] border border-rose-200 bg-white !text-rose-700 hover:border-rose-300 hover:bg-rose-50 focus-visible:outline-rose-300"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        props.onDelete(task);
+                      }}
+                    >
+                      削除
+                    </PrimaryButton>
+                    <SwapButton
+                      label="↑"
+                      ariaLabel={`task ${task.id} を上へ`}
+                      disabled={props.isSwapping || !upTargetId}
+                      onClick={() => props.onSwap(task, upTargetId)}
+                    />
+                    <SwapButton
+                      label="↓"
+                      ariaLabel={`task ${task.id} を下へ`}
+                      disabled={props.isSwapping || !downTargetId}
+                      onClick={() => props.onSwap(task, downTargetId)}
+                    />
+                  </div>
+                </td>
+                <td className="rounded-r-md border-y border-r border-[var(--border)] bg-[var(--panel-strong)] px-3 py-2 text-center transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
+                  <TaskPrLink url={task.url} />
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 type RunnerHistoryPanelProps = {
   history: RunnerHistoryRecord[];
-  runnerLog: string;
-  isRunning: boolean;
-  logError: string;
 };
 
 function RunnerHistoryPanel(props: RunnerHistoryPanelProps) {
@@ -740,18 +888,29 @@ function RunnerHistoryPanel(props: RunnerHistoryPanelProps) {
           </table>
         </div>
       )}
-      <div className="mt-3 border-t border-[var(--border)] pt-3">
-        <div className="mb-2 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-[var(--ink)]">RUNNERログ</h3>
-          <span className={runnerStateClass(props.isRunning)}>
-            {props.isRunning ? "RUNNING" : "IDLE"}
-          </span>
-        </div>
-        {props.logError ? <Notice tone="error" message={props.logError} /> : null}
-        <pre className="max-h-72 overflow-auto rounded-md border border-[var(--border)] bg-zinc-950 px-3 py-2 text-xs leading-5 text-zinc-100">
-          {props.runnerLog || "ログはありません。"}
-        </pre>
+    </section>
+  );
+}
+
+type RunnerLogPanelProps = {
+  runnerLog: string;
+  isRunning: boolean;
+  logError: string;
+};
+
+function RunnerLogPanel(props: RunnerLogPanelProps) {
+  return (
+    <section className="flex h-[calc(100vh-16rem)] min-h-[28rem] flex-col rounded-lg border border-[var(--border)] bg-white px-3 py-2">
+      <div className="mb-2 flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-[var(--ink)]">ログ</h2>
+        <span className={runnerStateClass(props.isRunning)}>
+          {props.isRunning ? "RUNNING" : "IDLE"}
+        </span>
       </div>
+      {props.logError ? <Notice tone="error" message={props.logError} /> : null}
+      <pre className="min-h-0 flex-1 overflow-auto rounded-md border border-[var(--border)] bg-zinc-950 px-3 py-2 text-xs leading-5 text-zinc-100">
+        {props.runnerLog || "ログはありません。"}
+      </pre>
     </section>
   );
 }
@@ -906,6 +1065,7 @@ function toggleSourceFilter(
 }
 
 const TASK_FILTER_ORDER: TaskSource[] = ["action", "pending", "done", "cancel", "runner"];
+const TASK_LIST_FILTER_ORDER: TaskSource[] = ["action", "pending", "done", "cancel"];
 const SOURCE_META: Record<
   TaskSource,
   {
