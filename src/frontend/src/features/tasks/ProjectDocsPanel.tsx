@@ -103,7 +103,7 @@ export function ProjectDocsPanel(props: ProjectDocsPanelProps) {
 
   return (
     <section className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
-      <div className="mb-4 flex justify-end">
+      <div className="mb-4 flex justify-start">
         <div className="relative w-full max-w-56">
           <img
             src="/assets/images/search.svg"
