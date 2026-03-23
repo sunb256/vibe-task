@@ -23,6 +23,10 @@ def test_lists_markdown_docs_and_applies_gitignore(client, project_repo: Path):
     docs_dir = project_repo / "docs"
     docs_dir.mkdir(parents=True, exist_ok=True)
     (docs_dir / "guide.md").write_text("# Guide\n", encoding="utf-8")
+    (project_repo / ".venv" / "docs.md").parent.mkdir(parents=True, exist_ok=True)
+    (project_repo / ".venv" / "docs.md").write_text("# Venv\n", encoding="utf-8")
+    (project_repo / "node_modules" / "pkg" / "readme.md").parent.mkdir(parents=True, exist_ok=True)
+    (project_repo / "node_modules" / "pkg" / "readme.md").write_text("# Node\n", encoding="utf-8")
     ignored_dir = project_repo / "ignored"
     ignored_dir.mkdir(parents=True, exist_ok=True)
     (ignored_dir / "secret.md").write_text("# Secret\n", encoding="utf-8")
@@ -70,6 +74,10 @@ def test_lists_markdown_docs_without_git_repository(client, project_repo: Path):
     docs_dir = project_repo / "docs"
     docs_dir.mkdir(parents=True, exist_ok=True)
     (docs_dir / "guide.md").write_text("# Guide\n", encoding="utf-8")
+    (project_repo / ".venv" / "docs.md").parent.mkdir(parents=True, exist_ok=True)
+    (project_repo / ".venv" / "docs.md").write_text("# Venv\n", encoding="utf-8")
+    (project_repo / "node_modules" / "pkg" / "readme.md").parent.mkdir(parents=True, exist_ok=True)
+    (project_repo / "node_modules" / "pkg" / "readme.md").write_text("# Node\n", encoding="utf-8")
     project_id = create_project(client, project_repo, "impl-no-git")
 
     response = client.get(f"/api/projects/{project_id}/docs")

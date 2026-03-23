@@ -31,9 +31,12 @@ prompts:
 
     6. 次に差分を self-review し、必要な修正をして下さい
 
-    7. 最後に AGENTS.md に記載の レビュー方法を行い、PR して下さい
+    7. タスクが完了したら、historyに記載して下さい
+       history の `datetime` は常にダブルクォートで記述すること
 
-    8. 完了後、PR のタイトルと URL を提示して下さい
+    8. 最後に AGENTS.md に記載の レビュー方法を行い、PR して下さい
+
+    9. 完了後、PR のタイトルと URL を提示して下さい
 
   # 8. タスクが完了したら、'id'と同じコードに 'title' と 'url' を追加して PR のタイトルと URL を追加してください
   #     yamlへの追加は、`title` と `url` は常にダブルクォートで記述すること
@@ -41,7 +44,8 @@ prompts:
 
 
 reply_wanted:
-  mode: harfauto  # fullauto
+  # mode: harfauto
+  mode: fullauto
   max_auto_reply_count: 4
   suffixes:
     - "?"
