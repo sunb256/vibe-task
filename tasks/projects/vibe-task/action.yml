@@ -1,11 +1,4 @@
 task:
-  - id: '159'
-    url: '-'
-    title: '-'
-    action: |-
-      frontend docs画面
-
-      .venvとnode_modulesが含まれているものは表示したくない
   - id: '160'
     url: '-'
     title: '-'
