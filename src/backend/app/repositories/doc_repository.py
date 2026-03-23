@@ -4,6 +4,8 @@ from pathlib import Path
 from app.errors import AppError
 from app.models import ProjectDocFile, ProjectDocSummary
 
+EXCLUDED_DOC_DIRS = frozenset({".venv", "node_modules"})
+
 
 class DocRepository:
     def list_docs(self, repository_root: Path) -> list[ProjectDocSummary]:
@@ -67,6 +69,8 @@ class DocRepository:
                 continue
             if relative.suffix.lower() != ".md":
                 continue
+            if self._is_excluded_doc_path(relative):
+                continue
             doc_paths.append(relative)
         return doc_paths
 
@@ -75,9 +79,11 @@ class DocRepository:
         for path in root.rglob("*.md"):
             if not path.is_file():
                 continue
-            if self._is_hidden_git_path(path):
-                continue
             relative = path.resolve().relative_to(root)
+            if self._is_hidden_git_path(relative):
+                continue
+            if self._is_excluded_doc_path(relative):
+                continue
             doc_paths.append(relative)
         return doc_paths
 
@@ -96,6 +102,10 @@ class DocRepository:
 
     def _is_hidden_git_path(self, path: Path) -> bool:
         return any(part == ".git" for part in path.parts)
+
+    def _is_excluded_doc_path(self, path: Path) -> bool:
+        lowered_parts = {part.lower() for part in path.parts}
+        return any(name in lowered_parts for name in EXCLUDED_DOC_DIRS)
 
     def _normalize_doc_path(self, doc_path: str) -> str:
         normalized = doc_path.strip().replace("\\", "/").lstrip("/")

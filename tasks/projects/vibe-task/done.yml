@@ -1,4 +1,11 @@
 task:
+  - id: "159"
+    url: "https://github.com/sunb256/vibe-task/pull/173"
+    title: "docs一覧で.venvとnode_modulesを非表示にしてtask159対応"
+    action: |-
+      frontend docs画面
+
+      .venvとnode_modulesが含まれているものは表示したくない
   - id: "158"
     url: "https://github.com/sunb256/vibe-task/pull/172"
     title: "frontend プロジェクト画面にRunnerタブと一覧/ログ/履歴タブを追加"
