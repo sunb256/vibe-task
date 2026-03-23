@@ -455,6 +455,7 @@ test("switches to docs tab and renders markdown viewer", async () => {
 
 test("starts runner execution and shows runner logs", async () => {
   const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+  const runnerLogState = { running: false, log: "" };
   vi.mocked(fetchProjects).mockResolvedValue({
     projects: [
       {
@@ -477,11 +478,12 @@ test("starts runner execution and shows runner logs", async () => {
     ],
     runnerHistory: [],
   });
-  vi.mocked(fetchRunnerLogs)
-    .mockResolvedValueOnce({ running: false, log: "" })
-    .mockResolvedValueOnce({ running: false, log: "" })
-    .mockResolvedValueOnce({ running: true, log: "runner started" })
-    .mockResolvedValue({ running: true, log: "runner started" });
+  vi.mocked(executeRunner).mockImplementation(async () => {
+    runnerLogState.running = true;
+    runnerLogState.log = "runner started";
+    return { running: true };
+  });
+  vi.mocked(fetchRunnerLogs).mockImplementation(async () => ({ ...runnerLogState }));
 
   render(
     <MemoryRouter initialEntries={["/projects/project-1"]}>
@@ -510,6 +512,7 @@ test("starts runner execution and shows runner logs", async () => {
 
 test("cancels running runner from runner tab", async () => {
   const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+  const runnerLogState = { running: false, log: "" };
   vi.mocked(fetchProjects).mockResolvedValue({
     projects: [
       {
@@ -532,12 +535,17 @@ test("cancels running runner from runner tab", async () => {
     ],
     runnerHistory: [],
   });
-  vi.mocked(fetchRunnerLogs)
-    .mockResolvedValueOnce({ running: false, log: "" })
-    .mockResolvedValueOnce({ running: false, log: "" })
-    .mockResolvedValueOnce({ running: true, log: "running..." })
-    .mockResolvedValueOnce({ running: false, log: "cancelled" })
-    .mockResolvedValue({ running: false, log: "cancelled" });
+  vi.mocked(executeRunner).mockImplementation(async () => {
+    runnerLogState.running = true;
+    runnerLogState.log = "running...";
+    return { running: true };
+  });
+  vi.mocked(cancelRunner).mockImplementation(async () => {
+    runnerLogState.running = false;
+    runnerLogState.log = "cancelled";
+    return { running: false };
+  });
+  vi.mocked(fetchRunnerLogs).mockImplementation(async () => ({ ...runnerLogState }));
 
   render(
     <MemoryRouter initialEntries={["/projects/project-1"]}>
@@ -568,6 +576,58 @@ test("cancels running runner from runner tab", async () => {
     expect(screen.getByRole("button", { name: "Runner実行" })).toBeEnabled();
   });
   expect(screen.queryByRole("button", { name: "Runnerキャンセル" })).not.toBeInTheDocument();
+});
+
+test("fetches runner logs only when log tab is visible", async () => {
+  vi.mocked(fetchProjects).mockResolvedValue({
+    projects: [
+      {
+        id: "project-1",
+        name: "impl",
+        repositoryPath: "/tmp/impl",
+      },
+    ],
+  });
+  vi.mocked(fetchTasks).mockResolvedValue({
+    tasks: [
+      {
+        projectId: "project-1",
+        source: "runner",
+        id: "1",
+        title: "-",
+        url: "-",
+        action: "task body",
+      },
+    ],
+    runnerHistory: [],
+  });
+  vi.mocked(fetchRunnerLogs).mockResolvedValue({ running: false, log: "" });
+
+  render(
+    <MemoryRouter initialEntries={["/projects/project-1"]}>
+      <Routes>
+        <Route path="/projects/:projectId" element={<ProjectTasksPage />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByRole("button", { name: "Runner" })).toBeInTheDocument();
+  });
+  expect(fetchRunnerLogs).not.toHaveBeenCalled();
+
+  fireEvent.click(screen.getByRole("button", { name: "Runner" }));
+  expect(fetchRunnerLogs).not.toHaveBeenCalled();
+
+  fireEvent.click(screen.getByRole("button", { name: "ログ" }));
+  await waitFor(() => {
+    expect(fetchRunnerLogs).toHaveBeenCalledWith("project-1", 300);
+  });
+  const callCountOnLog = vi.mocked(fetchRunnerLogs).mock.calls.length;
+
+  fireEvent.click(screen.getByRole("button", { name: "履歴" }));
+  expect(screen.getByRole("heading", { level: 2, name: "RUNNER履歴" })).toBeInTheDocument();
+  expect(vi.mocked(fetchRunnerLogs).mock.calls.length).toBe(callCountOnLog);
 });
 
 test("swaps task ids with up/down buttons", async () => {

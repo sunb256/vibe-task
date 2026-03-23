@@ -127,7 +127,7 @@ export function ProjectTasksPage() {
   }, [projectId]);
 
   useEffect(() => {
-    if (!projectId || activeTab === "docs") {
+    if (!projectId || activeTab !== "runner" || activeRunnerTab !== "log") {
       return;
     }
     let cancelled = false;
@@ -161,7 +161,7 @@ export function ProjectTasksPage() {
       cancelled = true;
       window.clearInterval(intervalId);
     };
-  }, [activeTab, projectId]);
+  }, [activeRunnerTab, activeTab, projectId]);
 
   useEffect(() => {
     if (

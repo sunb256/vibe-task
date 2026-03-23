@@ -1,4 +1,10 @@
 task:
+  - id: "160"
+    url: "https://github.com/sunb256/vibe-task/pull/174"
+    title: "Runnerログの取得をログタブ表示時のみに制限してtask160対応"
+    action: |
+      runner ログ読み込みが多い
+      タブが表示されているときのみそのようにする変更をしてください
   - id: "159"
     url: "https://github.com/sunb256/vibe-task/pull/173"
     title: "docs一覧で.venvとnode_modulesを非表示にしてtask159対応"
