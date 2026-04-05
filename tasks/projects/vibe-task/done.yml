@@ -1,4 +1,12 @@
 task:
+  - id: "161"
+    url: "https://github.com/sunb256/vibe-task/pull/176"
+    title: "frontend依存設定を整理し新規タスク画面にコピー機能を追加"
+    action: |-
+      frontenc
+
+      新規タスク画面
+      タスクのコピー機能が欲しい
   - id: "160"
     url: "https://github.com/sunb256/vibe-task/pull/174"
     title: "Runnerログの取得をログタブ表示時のみに制限してtask160対応"
