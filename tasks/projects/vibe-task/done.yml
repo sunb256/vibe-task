@@ -1,4 +1,12 @@
 task:
+  - id: "164"
+    url: "https://github.com/sunb256/vibe-task/pull/179"
+    title: "frontendからCustom Prompt機能を削除"
+    action: |-
+      frontend
+
+      Custom Prompt機能はディスコンになってしまった。
+      そのため、この機能は不要になってしまったので削除したい
   - id: "163"
     url: "https://github.com/sunb256/vibe-task/pull/178"
     title: "DONEタスクタイトルをドラッグ選択可能にする"
