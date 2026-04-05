@@ -22,3 +22,5 @@ src/runner/logs/
 
 tasks/projects/
 tasks/projects.yml
+
+logs/

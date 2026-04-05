@@ -1,4 +1,5 @@
 import os
+import shutil
 import signal
 import subprocess
 from pathlib import Path
@@ -9,7 +10,8 @@ from app.models import ProjectRecord, RunnerLogRecord
 from app.repositories.project_repository import ProjectRepository
 from app.repositories.task_repository import TaskRepository, normalize_project_directory_name
 
-RUNNER_START_CMD = ["npx", "tsx", "src/runner/src/run.ts", "--task"]
+RUNNER_START_CMD = ["tsx", "src/runner/src/run.ts", "--task"]
+RUNNER_FALLBACK_START_CMD = ["--prefix", "src/runner", "run", "start", "--", "--task"]
 RUNNER_LOG_FILE = Path("logs") / "log.log"
 
 
@@ -18,7 +20,13 @@ class RunnerProcessStore:
         self._lock = Lock()
         self._processes: dict[str, subprocess.Popen] = {}
 
-    def start(self, project_id: str, command: list[str], cwd: Path) -> None:
+    def start(
+        self,
+        project_id: str,
+        command: list[str],
+        cwd: Path,
+        env: dict[str, str] | None = None,
+    ) -> None:
         with self._lock:
             if self._is_running_locked(project_id):
                 raise AppError("runner is already running", 409)
@@ -30,6 +38,7 @@ class RunnerProcessStore:
                     stderr=subprocess.DEVNULL,
                     text=True,
                     start_new_session=True,
+                    env=env,
                 )
             except OSError as error:
                 raise AppError("failed to start runner", 500) from error
@@ -103,8 +112,8 @@ class RunnerService:
 
     def execute_runner(self, project_id: str) -> None:
         project = self._load_project(project_id)
-        command = self._build_runner_command(project)
-        runner_process_store.start(project.id, command, self.repo_root)
+        command, env = self._build_runner_command(project)
+        runner_process_store.start(project.id, command, self.repo_root, env)
 
     def cancel_runner(self, project_id: str) -> None:
         project = self._load_project(project_id)
@@ -120,9 +129,54 @@ class RunnerService:
         self.task_repository.ensure_project_files(project)
         return project
 
-    def _build_runner_command(self, project: ProjectRecord) -> list[str]:
+    def _build_runner_command(
+        self,
+        project: ProjectRecord,
+    ) -> tuple[list[str], dict[str, str]]:
         task_project = normalize_project_directory_name(project.name, project.id)
-        return [*RUNNER_START_CMD, task_project]
+        npx_path = self._resolve_node_command("npx")
+        if npx_path:
+            return [npx_path, *RUNNER_START_CMD, task_project], self._build_runner_env(npx_path)
+
+        npm_path = self._resolve_node_command("npm")
+        if npm_path:
+            return [npm_path, *RUNNER_FALLBACK_START_CMD, task_project], self._build_runner_env(
+                npm_path,
+            )
+
+        raise AppError("failed to start runner", 500)
+
+    def _build_runner_env(self, command_path: str) -> dict[str, str]:
+        env = os.environ.copy()
+        bin_dir = str(Path(command_path).resolve().parent)
+        current_path = env.get("PATH", "")
+        if current_path:
+            env["PATH"] = f"{bin_dir}{os.pathsep}{current_path}"
+        else:
+            env["PATH"] = bin_dir
+        return env
+
+    def _resolve_node_command(self, command_name: str) -> str | None:
+        direct = shutil.which(command_name)
+        if direct:
+            return direct
+
+        home = Path.home()
+        nvm_versions_dir = home / ".nvm" / "versions" / "node"
+        if nvm_versions_dir.exists():
+            candidates = sorted(nvm_versions_dir.glob(f"*/bin/{command_name}"))
+            if candidates:
+                return str(candidates[-1])
+
+        volta_command = home / ".volta" / "bin" / command_name
+        if volta_command.exists():
+            return str(volta_command)
+
+        asdf_command = home / ".asdf" / "shims" / command_name
+        if asdf_command.exists():
+            return str(asdf_command)
+
+        return None
 
     def _tail_runner_log(self, lines: int) -> str:
         log_path = self.repo_root / RUNNER_LOG_FILE
