@@ -9,6 +9,7 @@ import {
   parseProjectSelectionInput,
   parseRuntimeOptions,
   promptConfigToDefaults,
+  resolveRepositoryDirFromEnv,
   resolveRepositoryDirFromProjectName,
   resolveDefaultsCwd,
   resolveTaskProjectSelection,
@@ -281,6 +282,37 @@ test("resolveRepositoryDirFromProjectName resolves sibling repository path", () 
     "tmux-codex-status"
   );
   assert.equal(value, "/home/sunb/ghq/github.com/sunb256/tmux-codex-status");
+});
+
+test("resolveRepositoryDirFromEnv expands HOME variable", () => {
+  const value = resolveRepositoryDirFromEnv(
+    "/app/src/runner",
+    {
+      RUNNER_REPOSITORY_DIR: "$HOME/ghq/github.com/sunb256/vibe-task",
+      HOME: "/Users/user",
+    } as NodeJS.ProcessEnv
+  );
+  assert.equal(value, "/Users/user/ghq/github.com/sunb256/vibe-task");
+});
+
+test("resolveRepositoryDirFromEnv resolves relative path from runner root", () => {
+  const value = resolveRepositoryDirFromEnv(
+    "/app/src/runner",
+    {
+      RUNNER_REPOSITORY_DIR: "../../workspace/repo",
+    } as NodeJS.ProcessEnv
+  );
+  assert.equal(value, "/app/workspace/repo");
+});
+
+test("resolveRepositoryDirFromEnv returns undefined when env value is empty", () => {
+  const value = resolveRepositoryDirFromEnv(
+    "/app/src/runner",
+    {
+      RUNNER_REPOSITORY_DIR: "  ",
+    } as NodeJS.ProcessEnv
+  );
+  assert.equal(value, undefined);
 });
 
 test("resolveTaskProjectSelection throws on invalid project name", () => {

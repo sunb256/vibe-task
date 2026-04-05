@@ -3,6 +3,8 @@ from app.repositories.prompt_repository import PromptRepository
 
 
 class PromptService:
+    """Application service for runner/CLI prompt file operations."""
+
     def __init__(self, prompt_repository: PromptRepository) -> None:
         self.prompt_repository = prompt_repository
 

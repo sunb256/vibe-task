@@ -53,6 +53,7 @@ const LOG_FILE_PATH = path.resolve("logs/log.log");
 const LOG_MAX_BYTES = 10 * 1024 * 1024;
 const LOG_MAX_FILES = 5;
 const TASK_OPTION_NAME = "--task";
+const REPOSITORY_DIR_ENV_NAME = "RUNNER_REPOSITORY_DIR";
 
 // 設定値から返信モードを決定し、旧設定も後方互換で解釈する。
 function resolveReplyMode(config: RunnerConfig): ReplyMode {
@@ -165,6 +166,36 @@ export function promptConfigToDefaults(
   };
 }
 
+function expandEnvVariables(value: string, env: NodeJS.ProcessEnv): string {
+  return value.replace(/\$([A-Za-z_][A-Za-z0-9_]*)|\$\{([A-Za-z_][A-Za-z0-9_]*)\}/g, (_match, name, bracedName) => {
+    const key = String(name ?? bracedName ?? "");
+    return env[key] ?? "";
+  });
+}
+
+// 環境変数から repository_dir を取得し、必要に応じて展開・絶対化する。
+export function resolveRepositoryDirFromEnv(
+  runnerRoot: string,
+  env: NodeJS.ProcessEnv = process.env,
+): string | undefined {
+  const raw = env[REPOSITORY_DIR_ENV_NAME]?.trim();
+  if (!raw) {
+    return undefined;
+  }
+
+  let expanded = expandEnvVariables(raw, env);
+  if (expanded === "~" && env.HOME) {
+    expanded = env.HOME;
+  } else if (expanded.startsWith("~/") && env.HOME) {
+    expanded = path.join(env.HOME, expanded.slice(2));
+  }
+
+  if (path.isAbsolute(expanded)) {
+    return expanded;
+  }
+  return path.resolve(runnerRoot, expanded);
+}
+
 type RuntimeSelectionResult = {
   runtime: RuntimeOptions;
   selectedRepositoryDir?: string;
@@ -244,14 +275,16 @@ async function main(): Promise<void> {
 
   const selection = await resolveRuntimeSelection(args, config, runnerRoot, runtime);
   runtime = selection.runtime;
+  const repositoryDirFromEnv = resolveRepositoryDirFromEnv(runnerRoot);
+  const selectedRepositoryDir = repositoryDirFromEnv ?? selection.selectedRepositoryDir;
 
   const absTaskFilePath = resolveRunnerPath(runnerRoot, runtime.taskFilePath);
   const { tasks, defaults } = await loadTasks(absTaskFilePath);
   const taskIds = tasks.map((task) => String(task.id));
   const shouldWriteRunnerHistory = isRunnerTaskFile(absTaskFilePath);
-  const promptDefaults = selection.selectedRepositoryDir
-    ? { ...promptConfigToDefaults(config), cwd: selection.selectedRepositoryDir }
-    : promptConfigToDefaults(config, selection.selectedRepositoryDir);
+  const promptDefaults = selectedRepositoryDir
+    ? { ...promptConfigToDefaults(config), cwd: selectedRepositoryDir }
+    : promptConfigToDefaults(config, selectedRepositoryDir);
   const mergedDefaults = resolveDefaultsCwd(mergeTaskDefaults(defaults, promptDefaults), runnerRoot);
 
   const codexCommand = config.codex?.command ?? "codex";

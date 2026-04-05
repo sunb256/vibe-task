@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 
-import { Notice } from "../../components/Notice";
+import { ListStateNotice } from "../../components/ListStateNotice";
 import { PageFrame } from "../../components/PageFrame";
 import { PrimaryButton } from "../../components/PrimaryButton";
+import { SearchInput } from "../../components/SearchInput";
 import { displayPath } from "../../lib/displayPath";
+import { normalizeQuery } from "../../lib/normalizeQuery";
 import { readErrorMessage } from "../../lib/readErrorMessage";
 import { NewTaskDialog } from "../tasks/NewTaskDialog";
 import { createSkill, deleteSkill, fetchSkill, fetchSkills, updateSkill } from "./skillApi";
@@ -15,13 +17,17 @@ export function SkillsPage() {
   const [skills, setSkills] = useState<SkillSummary[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState("");
+  const [createError, setCreateError] = useState("");
   const [editError, setEditError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingEditor, setIsLoadingEditor] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [createName, setCreateName] = useState("");
+  const [createContent, setCreateContent] = useState(emptyContent);
   const [editSkill, setEditSkill] = useState<SkillFile | null>(null);
   const [editContent, setEditContent] = useState(emptyContent);
   const visibleSkills = useMemo(() => filterSkills(skills, searchQuery), [skills, searchQuery]);
@@ -73,26 +79,40 @@ export function SkillsPage() {
     setEditContent(emptyContent);
   }
 
-  async function handleCreate() {
-    const name = window.prompt("Skill名を入力してください。");
-    if (name === null) {
+  function openCreateDialog() {
+    setCreateError("");
+    setCreateName("");
+    setCreateContent(emptyContent);
+    setIsCreateOpen(true);
+  }
+
+  function closeCreateDialog() {
+    if (isCreating) {
       return;
     }
-    const skillName = name.trim();
+    setCreateError("");
+    setIsCreateOpen(false);
+  }
+
+  async function handleCreate() {
+    const skillName = createName.trim();
     if (!skillName) {
-      setError("Skill名を入力してください。");
+      setCreateError("Skill名を入力してください。");
       return;
     }
     setIsCreating(true);
+    setCreateError("");
     setError("");
     try {
-      const created = await createSkill(skillName, `# ${skillName}\n`);
+      const content = buildCreateSkillContent(skillName, createContent);
+      const created = await createSkill(skillName, content);
       setEditSkill(created);
       setEditContent(created.content);
+      setIsCreateOpen(false);
       setIsEditOpen(true);
       await loadSkills();
     } catch (createError) {
-      setError(readErrorMessage(createError, "Skill の作成に失敗しました。"));
+      setCreateError(readErrorMessage(createError, "Skill の作成に失敗しました。"));
     } finally {
       setIsCreating(false);
     }
@@ -144,28 +164,17 @@ export function SkillsPage() {
       >
         <section className="space-y-3 rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
           <div className="mb-4 flex w-full items-center justify-between gap-2">
-            <div className="relative w-full min-w-48 max-w-64">
-              <img
-                src="/assets/images/search.svg"
-                alt=""
-                aria-hidden="true"
-                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-65"
-              />
-              <input
-                id="skill-search"
-                type="search"
-                aria-label="Search"
-                autoFocus
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Search"
-                className="h-9 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12"
-              />
-            </div>
+            <SearchInput
+              id="skill-search"
+              value={searchQuery}
+              autoFocus
+              onChange={setSearchQuery}
+              wrapperClassName="w-full min-w-48 max-w-64"
+            />
             <div className="flex shrink-0 items-center justify-end">
               <PrimaryButton
                 type="button"
-                onClick={() => void handleCreate()}
+                onClick={openCreateDialog}
                 disabled={isCreating}
                 className="whitespace-nowrap"
               >
@@ -173,14 +182,15 @@ export function SkillsPage() {
               </PrimaryButton>
             </div>
           </div>
-          {error ? <Notice tone="error" message={error} /> : null}
-          {isLoading ? <Notice tone="neutral" message="Loading skills..." /> : null}
-          {!error && !isLoading && skills.length === 0 ? (
-            <Notice tone="neutral" message="Skill は見つかりませんでした。" />
-          ) : null}
-          {!error && !isLoading && skills.length > 0 && visibleSkills.length === 0 ? (
-            <Notice tone="neutral" message="検索条件に一致するSkillはありません。" />
-          ) : null}
+          <ListStateNotice
+            error={error}
+            isLoading={isLoading}
+            hasItems={skills.length > 0}
+            hasVisibleItems={visibleSkills.length > 0}
+            loadingMessage="Loading skills..."
+            emptyMessage="Skill は見つかりませんでした。"
+            noMatchMessage="検索条件に一致するSkillはありません。"
+          />
           {visibleSkills.map((skill) => (
             <article
               key={skill.path}
@@ -263,6 +273,37 @@ export function SkillsPage() {
         </section>
       </PageFrame>
       <NewTaskDialog
+        isOpen={isCreateOpen}
+        isSaving={isCreating}
+        error={createError}
+        action={createContent}
+        title="新規Skill"
+        titleIconSrc="/assets/images/file-text.svg"
+        description=""
+        submitLabel="新規作成"
+        submittingLabel="作成中..."
+        autoFocusEditor={false}
+        enableShortcut
+        extraFields={
+          <div className="grid gap-2">
+            <label htmlFor="new-skill-name" className="text-sm font-semibold text-[var(--ink)]">
+              name
+            </label>
+            <input
+              id="new-skill-name"
+              type="text"
+              autoFocus
+              value={createName}
+              onChange={(event) => setCreateName(event.target.value)}
+              className="h-10 rounded-lg border border-[var(--border)] px-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12"
+            />
+          </div>
+        }
+        onActionChange={setCreateContent}
+        onClose={closeCreateDialog}
+        onSubmit={handleCreate}
+      />
+      <NewTaskDialog
         isOpen={isEditOpen}
         isSaving={isSaving}
         error={editError}
@@ -281,8 +322,15 @@ export function SkillsPage() {
   );
 }
 
+function buildCreateSkillContent(skillName: string, content: string) {
+  if (content.trim()) {
+    return content;
+  }
+  return `# ${skillName}\n`;
+}
+
 function filterSkills(skills: SkillSummary[], searchQuery: string) {
-  const query = searchQuery.trim().toLowerCase();
+  const query = normalizeQuery(searchQuery);
   if (!query) {
     return skills;
   }

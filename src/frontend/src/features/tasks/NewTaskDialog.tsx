@@ -1,5 +1,5 @@
 import Editor from "@monaco-editor/react";
-import { type FormEvent, type MouseEvent, useEffect, useRef } from "react";
+import { type FormEvent, type MouseEvent, type ReactNode, useEffect, useRef } from "react";
 
 import { Notice } from "../../components/Notice";
 
@@ -19,6 +19,8 @@ type NewTaskDialogProps = {
   description: string;
   submitLabel: string;
   submittingLabel: string;
+  autoFocusEditor?: boolean;
+  extraFields?: ReactNode;
   enableShortcut?: boolean;
   statusLabel?: string;
   statusValue?: string;
@@ -40,6 +42,8 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
     description,
     submitLabel,
     submittingLabel,
+    autoFocusEditor = true,
+    extraFields,
     enableShortcut,
     statusLabel,
     statusValue,
@@ -151,6 +155,9 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
           </div>
         </div>
         <form className="grid gap-4" onSubmit={handleSubmit}>
+          {extraFields ? (
+            <div className="rounded-md border border-[var(--border)] bg-white px-4 py-3">{extraFields}</div>
+          ) : null}
           <div className="mt-1 overflow-hidden rounded-md border border-[var(--border)] bg-white">
             <Editor
               height="64vh"
@@ -167,7 +174,9 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
                   wordSeparators:
                     "~!@#$%^&*()-=+[{]}\\|;:'\",.<>/?、。，．・：；？！…（）［］｛｝「」『』【】〈〉《》〔〕",
                 });
-                editor.focus();
+                if (autoFocusEditor) {
+                  editor.focus();
+                }
                 if (!enableShortcut) {
                   return;
                 }

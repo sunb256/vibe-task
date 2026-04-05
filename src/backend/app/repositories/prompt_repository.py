@@ -5,6 +5,8 @@ from app.models import PromptRecord
 
 
 class PromptRepository:
+    """File-backed prompt store used by runner/CLI workflows."""
+
     def __init__(self, prompts_dir: Path) -> None:
         self.prompts_dir = prompts_dir.expanduser().resolve()
 

@@ -1,4 +1,5 @@
 import type { TaskRecord, TaskSource } from "./types";
+import { normalizeQuery } from "../../lib/normalizeQuery";
 
 export const TASK_FILTER_ORDER: TaskSource[] = ["action", "pending", "done", "cancel", "runner"];
 export const TASK_LIST_FILTER_ORDER: TaskSource[] = ["action", "pending", "done", "cancel"];
@@ -62,7 +63,7 @@ export function filterTasks(tasks: TaskRecord[], visibleSources: Record<TaskSour
 }
 
 export function filterTaskSearch(tasks: TaskRecord[], searchQuery: string) {
-  const query = searchQuery.trim().toLowerCase();
+  const query = normalizeQuery(searchQuery);
   if (!query) {
     return tasks;
   }

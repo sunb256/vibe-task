@@ -2,8 +2,10 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, beforeEach, vi } from "vitest";
 
+import type { Project } from "../projects/types";
 import { ProjectTasksPage } from "./ProjectTasksPage";
 import { resetProjectTasksPageCacheForTest } from "./projectTasksPageCache";
+import type { TaskRecord } from "./types";
 
 vi.mock("@monaco-editor/react", () => ({
   default: (props: {
@@ -104,42 +106,59 @@ afterEach(() => {
   resetProjectTasksPageCacheForTest();
 });
 
+function mockProject(overrides: Partial<Project> = {}): Project {
+  return {
+    id: "project-1",
+    name: "impl",
+    repositoryPath: "/tmp/impl",
+    ...overrides,
+  };
+}
+
+function mockTask(overrides: Partial<TaskRecord> = {}): TaskRecord {
+  return {
+    projectId: "project-1",
+    source: "action",
+    id: "1",
+    title: "-",
+    url: "-",
+    action: "task body",
+    ...overrides,
+  };
+}
+
+function renderProjectTasksPage(projectId = "project-1") {
+  return render(
+    <MemoryRouter initialEntries={[`/projects/${projectId}`]}>
+      <Routes>
+        <Route path="/projects/:projectId" element={<ProjectTasksPage />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+}
+
 test("does not render the removed project subtitle", async () => {
   vi.mocked(fetchProjects).mockResolvedValue({
-    projects: [
-      {
-        id: "project-1",
-        name: "impl",
-        repositoryPath: "/tmp/impl",
-      },
-    ],
+    projects: [mockProject()],
   });
   vi.mocked(fetchTasks).mockResolvedValue({
     tasks: [
-      {
-        projectId: "project-1",
-        source: "action",
-        id: "1",
-        title: "-",
+      mockTask({
         url: "https://github.com/sunb256/impl/pull/4",
         action: "first task",
-      },
-      {
-        projectId: "project-1",
+      }),
+      mockTask({
         source: "done",
         id: "2",
         title: "done-title-2",
-        url: "-",
         action: "done task 2",
-      },
-      {
-        projectId: "project-1",
+      }),
+      mockTask({
         source: "done",
         id: "10",
         title: "done-title-10",
-        url: "-",
         action: "done task 10",
-      },
+      }),
     ],
     runnerHistory: [
       {
@@ -150,13 +169,7 @@ test("does not render the removed project subtitle", async () => {
     ],
   });
 
-  render(
-    <MemoryRouter initialEntries={["/projects/project-1"]}>
-      <Routes>
-        <Route path="/projects/:projectId" element={<ProjectTasksPage />} />
-      </Routes>
-    </MemoryRouter>,
-  );
+  renderProjectTasksPage();
 
   await waitFor(() => {
     expect(screen.getByText("impl")).toBeInTheDocument();
@@ -638,64 +651,36 @@ test("fetches runner logs only when log tab is visible", async () => {
 
 test("swaps task ids with up/down buttons", async () => {
   vi.mocked(fetchProjects).mockResolvedValue({
-    projects: [
-      {
-        id: "project-1",
-        name: "impl",
-        repositoryPath: "/tmp/impl",
-      },
-    ],
+    projects: [mockProject()],
   });
   vi.mocked(fetchTasks)
     .mockResolvedValueOnce({
       tasks: [
-        {
-          projectId: "project-1",
-          source: "action",
+        mockTask({
           id: "1",
-          title: "-",
-          url: "-",
           action: "first task",
-        },
-        {
-          projectId: "project-1",
-          source: "action",
+        }),
+        mockTask({
           id: "2",
-          title: "-",
-          url: "-",
           action: "second task",
-        },
+        }),
       ],
     })
     .mockResolvedValueOnce({
       tasks: [
-        {
-          projectId: "project-1",
-          source: "action",
+        mockTask({
           id: "2",
-          title: "-",
-          url: "-",
           action: "first task",
-        },
-        {
-          projectId: "project-1",
-          source: "action",
+        }),
+        mockTask({
           id: "1",
-          title: "-",
-          url: "-",
           action: "second task",
-        },
+        }),
       ],
     });
   vi.mocked(swapTaskId).mockResolvedValue();
 
-  render(
-    <MemoryRouter initialEntries={["/projects/project-1"]}>
-      <Routes>
-        <Route path="/projects/:projectId" element={<ProjectTasksPage />} />
-      </Routes>
-    </MemoryRouter>,
-  );
+  renderProjectTasksPage();
 
   await waitFor(() => {
     expect(screen.getByText("impl")).toBeInTheDocument();
@@ -721,25 +706,10 @@ test("swaps task ids with up/down buttons", async () => {
 test("renders tasks before project list request finishes", async () => {
   vi.mocked(fetchProjects).mockImplementation(() => new Promise(() => {}));
   vi.mocked(fetchTasks).mockResolvedValue({
-    tasks: [
-      {
-        projectId: "project-1",
-        source: "action",
-        id: "1",
-        title: "-",
-        url: "-",
-        action: "fast task",
-      },
-    ],
+    tasks: [mockTask({ action: "fast task" })],
   });
 
-  render(
-    <MemoryRouter initialEntries={["/projects/project-1"]}>
-      <Routes>
-        <Route path="/projects/:projectId" element={<ProjectTasksPage />} />
-      </Routes>
-    </MemoryRouter>,
-  );
+  renderProjectTasksPage();
 
   await waitFor(() => {
     expect(screen.getByText("fast task")).toBeInTheDocument();
@@ -755,49 +725,25 @@ test("renders tasks before project list request finishes", async () => {
 
 test("uses cached tasks on revisit before refetch resolves", async () => {
   vi.mocked(fetchProjects).mockResolvedValue({
-    projects: [
-      {
-        id: "project-1",
-        name: "impl",
-        repositoryPath: "/tmp/impl",
-      },
-    ],
+    projects: [mockProject()],
   });
   vi.mocked(fetchTasks).mockResolvedValue({
-    tasks: [
-      {
-        projectId: "project-1",
-        source: "action",
-        id: "1",
-        title: "-",
-        url: "-",
-        action: "cached task",
-      },
-    ],
+    tasks: [mockTask({ action: "cached task" })],
   });
 
-  const first = render(
-    <MemoryRouter initialEntries={["/projects/project-1"]}>
-      <Routes>
-        <Route path="/projects/:projectId" element={<ProjectTasksPage />} />
-      </Routes>
-    </MemoryRouter>,
-  );
+  const first = renderProjectTasksPage();
   await waitFor(() => {
     expect(screen.getByText("cached task")).toBeInTheDocument();
+  });
+  await waitFor(() => {
+    expect(screen.getByRole("button", { name: "Setting" })).toBeInTheDocument();
   });
   first.unmount();
 
   vi.mocked(fetchProjects).mockImplementation(() => new Promise(() => {}));
   vi.mocked(fetchTasks).mockImplementation(() => new Promise(() => {}));
 
-  render(
-    <MemoryRouter initialEntries={["/projects/project-1"]}>
-      <Routes>
-        <Route path="/projects/:projectId" element={<ProjectTasksPage />} />
-      </Routes>
-    </MemoryRouter>,
-  );
+  renderProjectTasksPage();
 
   expect(screen.getByText("cached task")).toBeInTheDocument();
   expect(screen.queryByText("Loading tasks...")).not.toBeInTheDocument();

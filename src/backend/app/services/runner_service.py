@@ -12,7 +12,9 @@ from app.repositories.task_repository import TaskRepository, normalize_project_d
 
 RUNNER_START_CMD = ["--prefix", "src/runner", "run", "start", "--", "--task"]
 RUNNER_FALLBACK_START_CMD = ["--yes", "--prefix", "src/runner", "tsx", "src/runner/src/run.ts", "--task"]
-RUNNER_LOG_FILE = Path("logs") / "log.log"
+RUNNER_LOG_FILE = Path("src") / "runner" / "logs" / "log.log"
+RUNNER_LEGACY_LOG_FILE = Path("logs") / "log.log"
+RUNNER_REPOSITORY_DIR_ENV = "RUNNER_REPOSITORY_DIR"
 
 
 class RunnerProcessStore:
@@ -112,8 +114,15 @@ class RunnerService:
 
     def execute_runner(self, project_id: str) -> None:
         project = self._load_project(project_id)
-        command, env = self._build_runner_command(project)
-        runner_process_store.start(project.id, command, self.repo_root, env)
+        for command, env in self._build_runner_commands(project):
+            try:
+                runner_process_store.start(project.id, command, self.repo_root, env)
+                return
+            except AppError as error:
+                if error.status_code != 500:
+                    raise
+
+        raise AppError("failed to start runner", 500)
 
     def cancel_runner(self, project_id: str) -> None:
         project = self._load_project(project_id)
@@ -133,20 +142,38 @@ class RunnerService:
         self,
         project: ProjectRecord,
     ) -> tuple[list[str], dict[str, str]]:
+        return self._build_runner_commands(project)[0]
+
+    def _build_runner_commands(
+        self,
+        project: ProjectRecord,
+    ) -> list[tuple[list[str], dict[str, str]]]:
         task_project = normalize_project_directory_name(project.name, project.id)
+        commands: list[tuple[list[str], dict[str, str]]] = []
+
         npm_path = self._resolve_node_command("npm")
         if npm_path:
-            return [npm_path, *RUNNER_START_CMD, task_project], self._build_runner_env(npm_path)
+            commands.append(
+                (
+                    [npm_path, *RUNNER_START_CMD, task_project],
+                    self._build_runner_env(npm_path, project.repository_path),
+                ),
+            )
 
         npx_path = self._resolve_node_command("npx")
         if npx_path:
-            return [npx_path, *RUNNER_FALLBACK_START_CMD, task_project], self._build_runner_env(
-                npx_path,
+            commands.append(
+                (
+                    [npx_path, *RUNNER_FALLBACK_START_CMD, task_project],
+                    self._build_runner_env(npx_path, project.repository_path),
+                ),
             )
 
+        if commands:
+            return commands
         raise AppError("failed to start runner", 500)
 
-    def _build_runner_env(self, command_path: str) -> dict[str, str]:
+    def _build_runner_env(self, command_path: str, repository_path: str) -> dict[str, str]:
         env = os.environ.copy()
         # npm/npx が symlink の場合、resolve() すると lib/node_modules 配下へ飛び
         # node 実行バイナリと同居しないため、元の bin ディレクトリを優先する。
@@ -156,7 +183,16 @@ class RunnerService:
             env["PATH"] = f"{bin_dir}{os.pathsep}{current_path}"
         else:
             env["PATH"] = bin_dir
+        env[RUNNER_REPOSITORY_DIR_ENV] = self._resolve_repository_path(repository_path)
         return env
+
+    def _resolve_repository_path(self, repository_path: str) -> str:
+        expanded = os.path.expanduser(os.path.expandvars(repository_path.strip()))
+        if not expanded:
+            return str(self.repo_root)
+        if Path(expanded).is_absolute():
+            return expanded
+        return str((self.repo_root / expanded).resolve())
 
     def _resolve_node_command(self, command_name: str) -> str | None:
         direct = shutil.which(command_name)
@@ -181,14 +217,16 @@ class RunnerService:
         return None
 
     def _tail_runner_log(self, lines: int) -> str:
-        log_path = self.repo_root / RUNNER_LOG_FILE
-        if not log_path.exists():
-            return ""
-        content = log_path.read_text(encoding="utf-8", errors="ignore")
-        if not content:
-            return ""
-        rows = content.splitlines()
-        return "\n".join(rows[-lines:])
+        for relative_path in (RUNNER_LOG_FILE, RUNNER_LEGACY_LOG_FILE):
+            log_path = self.repo_root / relative_path
+            if not log_path.exists():
+                continue
+            content = log_path.read_text(encoding="utf-8", errors="ignore")
+            if not content:
+                return ""
+            rows = content.splitlines()
+            return "\n".join(rows[-lines:])
+        return ""
 
     def _resolve_repo_root(self, projects_file: Path) -> Path:
         projects_parent = projects_file.parent

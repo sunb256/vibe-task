@@ -1,3 +1,5 @@
+"""Prompts API contract tests kept for runner/CLI support."""
+
 from pathlib import Path
 
 
