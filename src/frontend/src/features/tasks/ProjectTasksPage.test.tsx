@@ -937,6 +937,7 @@ test("creates a new action task from modal editor", async () => {
 });
 
 test("copies an existing task from task list actions", async () => {
+  const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
   vi.mocked(fetchProjects).mockResolvedValue({
     projects: [
       {
@@ -1011,10 +1012,54 @@ test("copies an existing task from task list actions", async () => {
   fireEvent.click(screen.getByRole("button", { name: "コピー" }));
 
   await waitFor(() => {
+    expect(confirmSpy).toHaveBeenCalledWith("task 1 をコピーしますか？");
     expect(createTask).toHaveBeenCalledWith("project-1", "action");
     expect(updateTask).toHaveBeenCalledWith("project-1", "action", "2", "first task");
     expect(screen.getAllByText("first task")).toHaveLength(2);
   });
+});
+
+test("does not copy task when copy confirmation is canceled", async () => {
+  const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(false);
+  vi.mocked(fetchProjects).mockResolvedValue({
+    projects: [
+      {
+        id: "project-1",
+        name: "impl",
+        repositoryPath: "/tmp/impl",
+      },
+    ],
+  });
+  vi.mocked(fetchTasks).mockResolvedValue({
+    tasks: [
+      {
+        projectId: "project-1",
+        source: "action",
+        id: "1",
+        title: "-",
+        url: "-",
+        action: "first task",
+      },
+    ],
+  });
+
+  render(
+    <MemoryRouter initialEntries={["/projects/project-1"]}>
+      <Routes>
+        <Route path="/projects/:projectId" element={<ProjectTasksPage />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("first task")).toBeInTheDocument();
+  });
+
+  fireEvent.click(screen.getByRole("button", { name: "コピー" }));
+
+  expect(confirmSpy).toHaveBeenCalledWith("task 1 をコピーしますか？");
+  expect(createTask).not.toHaveBeenCalled();
+  expect(updateTask).not.toHaveBeenCalled();
 });
 
 test("edits a task in modal editor and supports keyboard shortcuts", async () => {

@@ -213,6 +213,10 @@ export function ProjectTasksPage() {
   }
 
   async function handleCopy(task: TaskRecord) {
+    const ok = window.confirm(`task ${task.id} をコピーしますか？`);
+    if (!ok) {
+      return;
+    }
     setError("");
     try {
       const created = await createTask(projectId, task.source);

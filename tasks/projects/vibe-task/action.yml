@@ -11,7 +11,7 @@ task:
   - id: '163'
     url: '-'
     title: '-'
-    action: |
+    action: |-
       frontend
 
       タスク画面
