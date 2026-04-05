@@ -1,9 +1,1 @@
-task:
-  - id: "164"
-    url: "-"
-    title: "-"
-    action: |-
-      frontend
-
-      Custom Prompt機能はディスコンになってしまった。
-      そのため、この機能は不要になってしまったので削除したい
+task: []

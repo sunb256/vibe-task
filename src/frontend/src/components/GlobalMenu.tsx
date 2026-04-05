@@ -6,7 +6,6 @@ type MenuItem = {
 };
 
 const menuItems: MenuItem[] = [
-  { to: "/custom-prompt", label: "Custom Prompt" },
   { to: "/skills", label: "Skills" },
 ];
 
