@@ -1,4 +1,14 @@
 task:
+  - id: "162"
+    url: "https://github.com/sunb256/vibe-task/pull/177"
+    title: "タスク画面にコピー改善とインクリメンタル検索を追加"
+    action: |
+      frontend 
+      タスク画面
+      タスクの検索機能が欲しい
+
+      UIはほかの画面と同じでインクリメンタルサーチ
+      CANCELの右隣に欲しい
   - id: "161"
     url: "https://github.com/sunb256/vibe-task/pull/176"
     title: "frontend依存設定を整理し新規タスク画面にコピー機能を追加"

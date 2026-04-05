@@ -1,14 +1,4 @@
 task:
-  - id: '162'
-    url: '-'
-    title: '-'
-    action: |
-      frontend 
-      タスク画面
-      タスクの検索機能が欲しい
-
-      UIはほかの画面と同じでインクリメンタルサーチ
-      CANCELの右隣に欲しい
   - id: '163'
     url: '-'
     title: '-'
