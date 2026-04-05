@@ -1,7 +1,9 @@
 import { type RefObject } from "react";
 
+import { ListStateNotice } from "../../components/ListStateNotice";
 import { Notice } from "../../components/Notice";
 import { PrimaryButton } from "../../components/PrimaryButton";
+import { SearchInput } from "../../components/SearchInput";
 import { ProjectDocsPanel } from "./ProjectDocsPanel";
 import {
   TASK_LIST_FILTER_ORDER,
@@ -59,32 +61,22 @@ export function TaskTabPanel(props: TaskTabPanelProps) {
             {`${sourceLabel(source)}(${countTasks(props.tasks, source)})`}
           </button>
         ))}
-        <div className="relative w-full min-w-48 max-w-64">
-          <img
-            src="/assets/images/search.svg"
-            alt=""
-            aria-hidden="true"
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-65"
-          />
-          <input
-            id="task-search"
-            type="search"
-            aria-label="Search"
-            value={props.taskSearchQuery}
-            onChange={(event) => props.onTaskSearchChange(event.target.value)}
-            placeholder="Search"
-            className="h-9 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12"
-          />
-        </div>
+        <SearchInput
+          id="task-search"
+          value={props.taskSearchQuery}
+          onChange={props.onTaskSearchChange}
+          wrapperClassName="w-full min-w-48 max-w-64"
+        />
       </div>
-      {props.error ? <Notice tone="error" message={props.error} /> : null}
-      {props.isLoading ? <Notice tone="neutral" message="Loading tasks..." /> : null}
-      {!props.error && !props.isLoading && props.visibleTasks.length === 0 ? (
-        <Notice tone="neutral" message="task はありません" />
-      ) : null}
-      {!props.error && !props.isLoading && props.visibleTasks.length > 0 && props.filteredTasks.length === 0 ? (
-        <Notice tone="neutral" message="検索条件に一致するtask はありません。" />
-      ) : null}
+      <ListStateNotice
+        error={props.error}
+        isLoading={props.isLoading}
+        hasItems={props.visibleTasks.length > 0}
+        hasVisibleItems={props.filteredTasks.length > 0}
+        loadingMessage="Loading tasks..."
+        emptyMessage="task はありません"
+        noMatchMessage="検索条件に一致するtask はありません。"
+      />
       {!props.isLoading && props.filteredTasks.length > 0 ? (
         <TaskTable
           tasks={props.filteredTasks}

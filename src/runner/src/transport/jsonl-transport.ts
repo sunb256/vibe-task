@@ -17,6 +17,7 @@ export class JsonlTransport {
   private nextId = 1;
   private pending = new Map<JsonRpcId, PendingRequest>();
   private stdoutBuffer = "";
+  private stderrBuffer = "";
   private notificationHandlers: Array<
     (msg: JsonRpcNotification) => Promise<void> | void
   > = [];
@@ -34,11 +35,12 @@ export class JsonlTransport {
 
     proc.stderr.setEncoding("utf8");
     proc.stderr.on("data", (chunk: string) => {
-      // app-server の stderr は診断用としてそのまま出す
-      process.stderr.write(`[codex stderr] ${chunk}`);
+      this.stderrBuffer += chunk;
+      this.drainStderr();
     });
 
     proc.on("exit", (code, signal) => {
+      this.drainStderr(true);
       const err = new Error(`codex app-server exited (code=${code}, signal=${signal})`);
       for (const [, pending] of this.pending) {
         pending.reject(err);
@@ -114,6 +116,34 @@ export class JsonlTransport {
 
       void this.dispatch(msg);
     }
+  }
+
+  // 標準エラーを行単位で処理し、既知のPATH更新警告だけ抑制する。
+  private drainStderr(flushRemainder = false): void {
+    while (true) {
+      const newlineIndex = this.stderrBuffer.indexOf("\n");
+      if (newlineIndex < 0) {
+        break;
+      }
+
+      const line = this.stderrBuffer.slice(0, newlineIndex);
+      this.stderrBuffer = this.stderrBuffer.slice(newlineIndex + 1);
+      this.forwardStderrLine(`${line}\n`);
+    }
+
+    if (flushRemainder && this.stderrBuffer) {
+      this.forwardStderrLine(this.stderrBuffer);
+      this.stderrBuffer = "";
+    }
+  }
+
+  // 既知のノイズ警告を除き、stderr行をプレフィックス付きで転送する。
+  private forwardStderrLine(line: string): void {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("WARNING: proceeding, even though we could not update PATH:")) {
+      return;
+    }
+    process.stderr.write(`[codex stderr] ${line}`);
   }
 
   // JSON-RPCメッセージ種別を判定して対応ハンドラへ振り分ける。

@@ -1,1 +1,13 @@
-task: []
+task:
+  - id: '171'
+    url: '-'
+    title: '-'
+    action: |-
+      frontend runnerログのシンタックスハイライトをしたい
+  - id: '170'
+    url: '-'
+    title: '-'
+    action: |-
+      docker-compose
+
+      git/gh をdockerイメージ内に入れておきたい

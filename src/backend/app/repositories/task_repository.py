@@ -1,5 +1,5 @@
 import re
-from collections.abc import MutableSequence
+from collections.abc import Callable, MutableSequence
 from datetime import date, datetime
 from pathlib import Path
 from typing import Final
@@ -31,27 +31,21 @@ def normalize_project_directory_name(name: str, project_id: str) -> str:
     return f"project-{project_id}"
 
 
-class TaskRepository:
-    def __init__(self, projects_root: Path) -> None:
+class TaskYamlStore:
+    def __init__(self, projects_root: Path, yaml: YAML) -> None:
         self.projects_root = projects_root
-        self.yaml = YAML()
-        self.yaml.preserve_quotes = True
-        self.yaml.indent(mapping=2, sequence=4, offset=2)
+        self.yaml = yaml
 
     def ensure_project_files(self, project: ProjectRecord) -> None:
         project_dir = self._resolve_project_dir(project)
         project_dir.mkdir(parents=True, exist_ok=True)
         for source in TASK_SOURCES:
-            path = project_dir / self._source_file_name(source)
+            path = project_dir / self.source_file_name(source)
             if path.exists():
                 continue
             path.write_text(self._empty_document_text(source), encoding="utf-8")
 
-    def relocate_project_files(
-        self,
-        previous: ProjectRecord,
-        current: ProjectRecord,
-    ) -> None:
+    def relocate_project_files(self, previous: ProjectRecord, current: ProjectRecord) -> None:
         previous_dir = self._resolve_project_dir(previous)
         current_dir = self._resolve_project_dir(current)
         if previous_dir == current_dir or not previous_dir.exists():
@@ -61,166 +55,10 @@ class TaskRepository:
         current_dir.parent.mkdir(parents=True, exist_ok=True)
         previous_dir.rename(current_dir)
 
-    def list_tasks(self, project: ProjectRecord) -> list[TaskRecord]:
-        records: list[TaskRecord] = []
-        for source in TASK_SOURCES:
-            document = self._load_source(project, source)
-            records.extend(self._to_task_records(project.id, source, document))
-        return records
+    def load_source(self, project: ProjectRecord, source: str) -> dict:
+        return self.load_yaml(self.resolve_source_path(project, source))
 
-    def list_runner_history(self, project: ProjectRecord) -> list[RunnerHistoryRecord]:
-        document = self._load_source(project, "runner")
-        history_items = self._get_history_items(document)
-        return [self._to_runner_history_record(item) for item in history_items]
-
-    def get_task(
-        self,
-        project: ProjectRecord,
-        source: str,
-        task_id: str,
-    ) -> TaskRecord:
-        document = self._load_source(project, source)
-        task = self._find_task(document, task_id)
-        return self._to_task_record(project.id, source, task)
-
-    def update_task(
-        self,
-        project: ProjectRecord,
-        source: str,
-        task_id: str,
-        action: str,
-        next_source: str | None,
-    ) -> TaskRecord:
-        path = self._resolve_source_path(project, source)
-        document = self._load_yaml(path)
-        task = self._update_task_action(document, task_id, action)
-        target_source = self._normalize_next_source(source, next_source)
-        if target_source == source:
-            self._write_yaml(path, document)
-            return self._to_task_record(project.id, source, task)
-        target_document = self._load_source(project, target_source)
-        moved_task = self._move_task(document, target_document, task_id)
-        self._write_yaml(self._resolve_source_path(project, target_source), target_document)
-        self._write_yaml(path, document)
-        return self._to_task_record(project.id, target_source, moved_task)
-
-    def delete_task(self, project: ProjectRecord, source: str, task_id: str) -> None:
-        path = self._resolve_source_path(project, source)
-        document = self._load_yaml(path)
-        tasks = self._get_task_items(document)
-        index = self._find_task_index(tasks, task_id)
-        del tasks[index]
-        self._write_yaml(path, document)
-
-    def swap_task_id(
-        self,
-        project: ProjectRecord,
-        source: str,
-        task_id: str,
-        swap_with_id: str,
-    ) -> None:
-        if task_id == swap_with_id:
-            return
-        path = self._resolve_source_path(project, source)
-        document = self._load_yaml(path)
-        task = self._find_task(document, task_id)
-        swap_task = self._find_task(document, swap_with_id)
-        task["id"], swap_task["id"] = swap_task.get("id"), task.get("id")
-        self._write_yaml(path, document)
-
-    def create_task(self, project: ProjectRecord, source: str) -> TaskRecord:
-        path = self._resolve_source_path(project, source)
-        document = self._load_yaml(path)
-        tasks = self._get_task_items(document)
-        task_id = self._create_task_id(project, source, tasks)
-        task = {
-            "id": task_id,
-            "url": "-",
-            "title": "-",
-            "action": LiteralScalarString("TODO\n"),
-        }
-        tasks.append(task)
-        self._write_yaml(path, document)
-        return self._to_task_record(project.id, source, task)
-
-    def _create_task_id(
-        self,
-        project: ProjectRecord,
-        source: str,
-        tasks: MutableSequence,
-    ) -> str:
-        if source != "action" or len(tasks) > 0:
-            return self._next_task_id(tasks)
-        return str(self._max_other_task_id(project, source) + 1)
-
-    def _to_task_records(
-        self,
-        project_id: str,
-        source: str,
-        document: dict,
-    ) -> list[TaskRecord]:
-        tasks = self._get_task_items(document)
-        return [self._to_task_record(project_id, source, item) for item in tasks]
-
-    def _to_task_record(
-        self,
-        project_id: str,
-        source: str,
-        item: dict,
-    ) -> TaskRecord:
-        return TaskRecord(
-            project_id=project_id,
-            source=source,
-            id=str(item.get("id", "")),
-            title=str(item.get("title", "-")),
-            url=str(item.get("url", "-")),
-            action=str(item.get("action", "")),
-        )
-
-    def _load_source(self, project: ProjectRecord, source: str) -> dict:
-        path = self._resolve_source_path(project, source)
-        return self._load_yaml(path)
-
-    def _update_task_action(
-        self,
-        document: dict,
-        task_id: str,
-        action: str,
-    ) -> dict:
-        task = self._find_task(document, task_id)
-        normalized = self._normalize_line_endings(action)
-        task["action"] = LiteralScalarString(normalized.rstrip("\n") + "\n")
-        return task
-
-    def _normalize_line_endings(self, value: str) -> str:
-        return value.replace("\r\n", "\n").replace("\r", "\n")
-
-    def _normalize_next_source(self, source: str, next_source: str | None) -> str:
-        if next_source is None:
-            return source
-        normalized = next_source.strip()
-        if not normalized:
-            raise AppError("nextSource is invalid", 400)
-        self._source_file_name(normalized)
-        return normalized
-
-    def _move_task(
-        self,
-        document: dict,
-        target_document: dict,
-        task_id: str,
-    ) -> dict:
-        tasks = self._get_task_items(document)
-        index = self._find_task_index(tasks, task_id)
-        task = tasks[index]
-        if not isinstance(task, dict):
-            raise AppError("task item is invalid", 400)
-        del tasks[index]
-        target_tasks = self._get_task_items(target_document)
-        target_tasks.append(task)
-        return task
-
-    def _load_yaml(self, path: Path) -> dict:
+    def load_yaml(self, path: Path) -> dict:
         if not path.exists():
             raise AppError(f"task file not found: {path}", 400)
         raw_text = path.read_text(encoding="utf-8")
@@ -234,62 +72,112 @@ class TaskRepository:
         document.setdefault("task", [])
         return document
 
-    def _write_yaml(self, path: Path, document: dict) -> None:
+    def write_yaml(self, path: Path, document: dict) -> None:
         with path.open("w", encoding="utf-8") as handle:
             self.yaml.dump(document, handle)
 
-    def _find_task(self, document: dict, task_id: str) -> dict:
-        tasks = self._get_task_items(document)
-        index = self._find_task_index(tasks, task_id)
-        task = tasks[index]
-        if not isinstance(task, dict):
-            raise AppError("task item is invalid", 400)
-        return task
+    def resolve_source_path(self, project: ProjectRecord, source: str) -> Path:
+        project_dir = self._resolve_project_dir(project)
+        return project_dir / self.source_file_name(source)
 
-    def _find_task_index(self, tasks: MutableSequence, task_id: str) -> int:
-        for index, item in enumerate(tasks):
-            if isinstance(item, dict) and str(item.get("id", "")) == task_id:
-                return index
-        raise AppError("task not found", 404)
+    def source_file_name(self, source: str) -> str:
+        file_name = SOURCE_FILES.get(source)
+        if file_name is None:
+            raise AppError("invalid source", 400)
+        return file_name
 
-    def _next_task_id(self, tasks: MutableSequence) -> str:
-        return str(self._max_task_id(tasks) + 1)
-
-    def _max_other_task_id(self, project: ProjectRecord, source: str) -> int:
-        max_id = 0
-        for current_source in TASK_SOURCES:
-            if current_source == source:
-                continue
-            document = self._load_source(project, current_source)
-            tasks = self._get_task_items(document)
-            max_id = max(max_id, self._max_task_id(tasks))
-        return max_id
-
-    def _max_task_id(self, tasks: MutableSequence) -> int:
-        max_id = 0
-        for item in tasks:
-            if not isinstance(item, dict):
-                continue
-            value = item.get("id")
-            if isinstance(value, int):
-                max_id = max(max_id, value)
-                continue
-            if isinstance(value, str) and value.isdigit():
-                max_id = max(max_id, int(value))
-        return max_id
+    def _resolve_project_dir(self, project: ProjectRecord) -> Path:
+        root = self.projects_root.resolve()
+        directory = normalize_project_directory_name(project.name, project.id)
+        project_dir = (root / directory).resolve()
+        if root not in project_dir.parents and project_dir != root:
+            raise AppError("invalid project task directory", 400)
+        return project_dir
 
     def _empty_document_text(self, source: str) -> str:
         if source == "runner":
             return "task: []\nhistory: []\n"
         return "task: []\n"
 
-    def _get_task_items(self, document: dict) -> MutableSequence:
+    def _normalize_dash_placeholders(self, raw_text: str) -> str:
+        normalized: list[str] = []
+        block_indent: int | None = None
+        pattern = re.compile(r"(:\s)-(\s*(?:#.*)?$)")
+
+        for line in raw_text.splitlines():
+            indent = len(line) - len(line.lstrip(" "))
+            stripped = line.strip()
+            if block_indent is not None and stripped and indent <= block_indent:
+                block_indent = None
+            if block_indent is None and stripped.endswith("|"):
+                block_indent = indent
+            if block_indent is None:
+                line = pattern.sub(r'\1"-"\2', line)
+            normalized.append(line)
+
+        return "\n".join(normalized)
+
+
+class TaskMutator:
+    def get_task_items(self, document: dict) -> MutableSequence:
         tasks = document.get("task", [])
         if not isinstance(tasks, MutableSequence):
             raise AppError("task file is invalid", 400)
         return tasks
 
-    def _get_history_items(self, document: dict) -> MutableSequence:
+    def find_task(self, document: dict, task_id: str) -> dict:
+        tasks = self.get_task_items(document)
+        index = self.find_task_index(tasks, task_id)
+        task = tasks[index]
+        if not isinstance(task, dict):
+            raise AppError("task item is invalid", 400)
+        return task
+
+    def find_task_index(self, tasks: MutableSequence, task_id: str) -> int:
+        for index, item in enumerate(tasks):
+            if isinstance(item, dict) and str(item.get("id", "")) == task_id:
+                return index
+        raise AppError("task not found", 404)
+
+    def update_task_action(self, document: dict, task_id: str, action: str) -> dict:
+        task = self.find_task(document, task_id)
+        normalized = self._normalize_line_endings(action)
+        task["action"] = LiteralScalarString(normalized.rstrip("\n") + "\n")
+        return task
+
+    def move_task(self, document: dict, target_document: dict, task_id: str) -> dict:
+        tasks = self.get_task_items(document)
+        index = self.find_task_index(tasks, task_id)
+        task = tasks[index]
+        if not isinstance(task, dict):
+            raise AppError("task item is invalid", 400)
+        del tasks[index]
+        target_tasks = self.get_task_items(target_document)
+        target_tasks.append(task)
+        return task
+
+    def delete_task(self, document: dict, task_id: str) -> None:
+        tasks = self.get_task_items(document)
+        index = self.find_task_index(tasks, task_id)
+        del tasks[index]
+
+    def swap_task_id(self, document: dict, task_id: str, swap_with_id: str) -> None:
+        if task_id == swap_with_id:
+            return
+        task = self.find_task(document, task_id)
+        swap_task = self.find_task(document, swap_with_id)
+        task["id"], swap_task["id"] = swap_task.get("id"), task.get("id")
+
+    def _normalize_line_endings(self, value: str) -> str:
+        return value.replace("\r\n", "\n").replace("\r", "\n")
+
+
+class RunnerHistoryParser:
+    def parse(self, document: dict) -> list[RunnerHistoryRecord]:
+        history_items = self._history_items(document)
+        return [self._to_runner_history_record(item) for item in history_items]
+
+    def _history_items(self, document: dict) -> MutableSequence:
         history = document.get("history", [])
         if not isinstance(history, MutableSequence):
             raise AppError("task file is invalid", 400)
@@ -303,11 +191,7 @@ class TaskRepository:
         status = item.get("status")
         if status not in {"done", "error"}:
             raise AppError("task file is invalid", 400)
-        return RunnerHistoryRecord(
-            ids=ids,
-            datetime=datetime_value,
-            status=status,
-        )
+        return RunnerHistoryRecord(ids=ids, datetime=datetime_value, status=status)
 
     def _history_datetime(self, value: object) -> str:
         if isinstance(value, str):
@@ -334,41 +218,158 @@ class TaskRepository:
             raise AppError("task file is invalid", 400)
         return ids
 
-    def _resolve_source_path(self, project: ProjectRecord, source: str) -> Path:
-        project_dir = self._resolve_project_dir(project)
-        return project_dir / self._source_file_name(source)
 
-    def _source_file_name(self, source: str) -> str:
-        file_name = SOURCE_FILES.get(source)
-        if file_name is None:
-            raise AppError("invalid source", 400)
-        return file_name
+class TaskIdAllocator:
+    def create_task_id(
+        self,
+        project: ProjectRecord,
+        source: str,
+        tasks: MutableSequence,
+        load_tasks_for_source: Callable[[ProjectRecord, str], MutableSequence],
+    ) -> str:
+        if source != "action" or len(tasks) > 0:
+            return str(self._max_task_id(tasks) + 1)
+        return str(self._max_other_task_id(project, source, load_tasks_for_source) + 1)
 
-    def _resolve_project_dir(self, project: ProjectRecord) -> Path:
-        root = self.projects_root.resolve()
-        directory = self._project_directory_name(project.name, project.id)
-        project_dir = (root / directory).resolve()
-        if root not in project_dir.parents and project_dir != root:
-            raise AppError("invalid project task directory", 400)
-        return project_dir
+    def _max_other_task_id(
+        self,
+        project: ProjectRecord,
+        source: str,
+        load_tasks_for_source: Callable[[ProjectRecord, str], MutableSequence],
+    ) -> int:
+        max_id = 0
+        for current_source in TASK_SOURCES:
+            if current_source == source:
+                continue
+            tasks = load_tasks_for_source(project, current_source)
+            max_id = max(max_id, self._max_task_id(tasks))
+        return max_id
 
-    def _project_directory_name(self, name: str, project_id: str) -> str:
-        return normalize_project_directory_name(name, project_id)
+    def _max_task_id(self, tasks: MutableSequence) -> int:
+        max_id = 0
+        for item in tasks:
+            if not isinstance(item, dict):
+                continue
+            value = item.get("id")
+            if isinstance(value, int):
+                max_id = max(max_id, value)
+                continue
+            if isinstance(value, str) and value.isdigit():
+                max_id = max(max_id, int(value))
+        return max_id
 
-    def _normalize_dash_placeholders(self, raw_text: str) -> str:
-        normalized: list[str] = []
-        block_indent: int | None = None
-        pattern = re.compile(r"(:\s)-(\s*(?:#.*)?$)")
 
-        for line in raw_text.splitlines():
-            indent = len(line) - len(line.lstrip(" "))
-            stripped = line.strip()
-            if block_indent is not None and stripped and indent <= block_indent:
-                block_indent = None
-            if block_indent is None and stripped.endswith("|"):
-                block_indent = indent
-            if block_indent is None:
-                line = pattern.sub(r'\1"-"\2', line)
-            normalized.append(line)
+class TaskRepository:
+    def __init__(self, projects_root: Path) -> None:
+        yaml = YAML()
+        yaml.preserve_quotes = True
+        yaml.indent(mapping=2, sequence=4, offset=2)
+        self.store = TaskYamlStore(projects_root, yaml)
+        self.task_mutator = TaskMutator()
+        self.history_parser = RunnerHistoryParser()
+        self.id_allocator = TaskIdAllocator()
 
-        return "\n".join(normalized)
+    def ensure_project_files(self, project: ProjectRecord) -> None:
+        self.store.ensure_project_files(project)
+
+    def relocate_project_files(self, previous: ProjectRecord, current: ProjectRecord) -> None:
+        self.store.relocate_project_files(previous, current)
+
+    def list_tasks(self, project: ProjectRecord) -> list[TaskRecord]:
+        records: list[TaskRecord] = []
+        for source in TASK_SOURCES:
+            document = self.store.load_source(project, source)
+            records.extend(self._to_task_records(project.id, source, document))
+        return records
+
+    def list_runner_history(self, project: ProjectRecord) -> list[RunnerHistoryRecord]:
+        document = self.store.load_source(project, "runner")
+        return self.history_parser.parse(document)
+
+    def get_task(self, project: ProjectRecord, source: str, task_id: str) -> TaskRecord:
+        document = self.store.load_source(project, source)
+        task = self.task_mutator.find_task(document, task_id)
+        return self._to_task_record(project.id, source, task)
+
+    def update_task(
+        self,
+        project: ProjectRecord,
+        source: str,
+        task_id: str,
+        action: str,
+        next_source: str | None,
+    ) -> TaskRecord:
+        path = self.store.resolve_source_path(project, source)
+        document = self.store.load_yaml(path)
+        task = self.task_mutator.update_task_action(document, task_id, action)
+        target_source = self._normalize_next_source(source, next_source)
+        if target_source == source:
+            self.store.write_yaml(path, document)
+            return self._to_task_record(project.id, source, task)
+
+        target_document = self.store.load_source(project, target_source)
+        moved_task = self.task_mutator.move_task(document, target_document, task_id)
+        target_path = self.store.resolve_source_path(project, target_source)
+        self.store.write_yaml(target_path, target_document)
+        self.store.write_yaml(path, document)
+        return self._to_task_record(project.id, target_source, moved_task)
+
+    def delete_task(self, project: ProjectRecord, source: str, task_id: str) -> None:
+        path = self.store.resolve_source_path(project, source)
+        document = self.store.load_yaml(path)
+        self.task_mutator.delete_task(document, task_id)
+        self.store.write_yaml(path, document)
+
+    def swap_task_id(
+        self,
+        project: ProjectRecord,
+        source: str,
+        task_id: str,
+        swap_with_id: str,
+    ) -> None:
+        path = self.store.resolve_source_path(project, source)
+        document = self.store.load_yaml(path)
+        self.task_mutator.swap_task_id(document, task_id, swap_with_id)
+        self.store.write_yaml(path, document)
+
+    def create_task(self, project: ProjectRecord, source: str) -> TaskRecord:
+        path = self.store.resolve_source_path(project, source)
+        document = self.store.load_yaml(path)
+        tasks = self.task_mutator.get_task_items(document)
+        task_id = self.id_allocator.create_task_id(project, source, tasks, self._load_tasks_for_source)
+        task = {
+            "id": task_id,
+            "url": "-",
+            "title": "-",
+            "action": LiteralScalarString("TODO\n"),
+        }
+        tasks.append(task)
+        self.store.write_yaml(path, document)
+        return self._to_task_record(project.id, source, task)
+
+    def _load_tasks_for_source(self, project: ProjectRecord, source: str) -> MutableSequence:
+        document = self.store.load_source(project, source)
+        return self.task_mutator.get_task_items(document)
+
+    def _to_task_records(self, project_id: str, source: str, document: dict) -> list[TaskRecord]:
+        tasks = self.task_mutator.get_task_items(document)
+        return [self._to_task_record(project_id, source, item) for item in tasks]
+
+    def _to_task_record(self, project_id: str, source: str, item: dict) -> TaskRecord:
+        return TaskRecord(
+            project_id=project_id,
+            source=source,
+            id=str(item.get("id", "")),
+            title=str(item.get("title", "-")),
+            url=str(item.get("url", "-")),
+            action=str(item.get("action", "")),
+        )
+
+    def _normalize_next_source(self, source: str, next_source: str | None) -> str:
+        if next_source is None:
+            return source
+        normalized = next_source.strip()
+        if not normalized:
+            raise AppError("nextSource is invalid", 400)
+        self.store.source_file_name(normalized)
+        return normalized

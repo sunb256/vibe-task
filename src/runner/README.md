@@ -47,6 +47,9 @@ npx tsx src/run.ts -h
 
 既定値の優先順位は `taskごとの指定 > config/config.yml の prompts.* > tasks.yml の defaults(後方互換)` です。
 
+環境変数 `RUNNER_REPOSITORY_DIR` が設定されている場合は、`cwd` の既定値として優先されます。
+- 例: backend から `--task <project>` 実行時に実リポジトリパスを明示
+
 `verbose` を `true` にすると、`[thread.started]` / `[item.completed]` などのイベントログを表示します。
 CLI の `--verbose` 指定がある場合は config より優先して有効になります。
 

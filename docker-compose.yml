@@ -9,6 +9,7 @@ services:
       - ${BACKEND_PORT}:5000
     environment:
       - HOME=${HOME}
+      - TZ=${TZ:-Asia/Tokyo}
       - UV_CACHE_DIR=/tmp/uv-cache
       # Proxy
       - HTTP_PROXY=${http_proxy}
@@ -20,11 +21,12 @@ services:
     volumes:
       - ./src/backend:/app/src/backend
       - ./tasks:/app/tasks
-      # codex custom prompts
-      - ${HOME}/.codex/prompts:${HOME}/.codex/prompts
+      # codex home (prompts / skills / memories ...)
+      - ${HOME}/.codex:${HOME}/.codex
       # project directory
       - ${HOME}/ghq:${HOME}/ghq
       - ${HOME}/app:${HOME}/app
+      - ${HOME}/ghq/github.com/sunb256/vibe-task:/vibe-task   # 追加
     restart: unless-stopped
 
   frontend:

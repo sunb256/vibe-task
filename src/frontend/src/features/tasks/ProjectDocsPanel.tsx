@@ -2,7 +2,10 @@ import { type ReactNode, useEffect, useMemo, useState } from "react";
 import hljs from "highlight.js/lib/common";
 import ReactMarkdown, { type Components } from "react-markdown";
 
+import { ListStateNotice } from "../../components/ListStateNotice";
 import { Notice } from "../../components/Notice";
+import { SearchInput } from "../../components/SearchInput";
+import { normalizeQuery } from "../../lib/normalizeQuery";
 import { readErrorMessage } from "../../lib/readErrorMessage";
 import { ProjectMermaidBlock } from "./ProjectMermaidBlock";
 import { type FrontMatterRow, splitFrontMatter } from "./frontMatter";
@@ -107,33 +110,23 @@ export function ProjectDocsPanel(props: ProjectDocsPanelProps) {
   return (
     <section className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
       <div className="mb-4 flex justify-start">
-        <div className="relative w-full max-w-56">
-          <img
-            src="/assets/images/search.svg"
-            alt=""
-            aria-hidden="true"
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-65"
-          />
-          <input
-            id="project-doc-search"
-            type="search"
-            aria-label="Search"
-            autoFocus
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="Search"
-            className="h-9 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12"
-          />
-        </div>
+        <SearchInput
+          id="project-doc-search"
+          value={searchQuery}
+          autoFocus
+          onChange={setSearchQuery}
+          wrapperClassName="w-full max-w-56"
+        />
       </div>
-      {loadError ? <Notice tone="error" message={loadError} /> : null}
-      {isLoadingDocs ? <Notice tone="neutral" message="Loading docs..." /> : null}
-      {!loadError && !isLoadingDocs && docs.length === 0 ? (
-        <Notice tone="neutral" message="Markdown は見つかりませんでした。" />
-      ) : null}
-      {!loadError && !isLoadingDocs && docs.length > 0 && visibleDocs.length === 0 ? (
-        <Notice tone="neutral" message="検索条件に一致するMarkdownはありません。" />
-      ) : null}
+      <ListStateNotice
+        error={loadError}
+        isLoading={isLoadingDocs}
+        hasItems={docs.length > 0}
+        hasVisibleItems={visibleDocs.length > 0}
+        loadingMessage="Loading docs..."
+        emptyMessage="Markdown は見つかりませんでした。"
+        noMatchMessage="検索条件に一致するMarkdownはありません。"
+      />
       {!loadError && !isLoadingDocs && visibleDocs.length > 0 ? (
         <div className="grid gap-3 lg:grid-cols-[16rem_minmax(0,1fr)]">
           <div className="max-h-[70vh] overflow-auto rounded-lg border border-[var(--border)] bg-white p-2">
@@ -175,7 +168,7 @@ function resolveInitialPath(docs: ProjectDocSummary[], currentPath: string) {
 }
 
 function filterDocs(docs: ProjectDocSummary[], queryText: string) {
-  const query = queryText.trim().toLowerCase();
+  const query = normalizeQuery(queryText);
   if (!query) {
     return docs;
   }

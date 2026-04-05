@@ -9,9 +9,11 @@ import {
 } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { Notice } from "../../components/Notice";
+import { ListStateNotice } from "../../components/ListStateNotice";
 import { PageFrame } from "../../components/PageFrame";
 import { PrimaryButton } from "../../components/PrimaryButton";
+import { SearchInput } from "../../components/SearchInput";
+import { normalizeQuery } from "../../lib/normalizeQuery";
 import { readErrorMessage } from "../../lib/readErrorMessage";
 import {
   createProject,
@@ -214,38 +216,28 @@ export function ProjectListPage() {
       >
         <section className="space-y-3 rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
           <div className="mb-4 flex w-full items-center justify-between gap-2">
-            <div className="relative w-full min-w-48 max-w-64">
-              <img
-                src="/assets/images/search.svg"
-                alt=""
-                aria-hidden="true"
-                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-65"
-              />
-              <input
-                id="project-search"
-                type="search"
-                aria-label="Search"
-                autoFocus
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Search"
-                className="h-9 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12"
-              />
-            </div>
+            <SearchInput
+              id="project-search"
+              value={searchQuery}
+              autoFocus
+              onChange={setSearchQuery}
+              wrapperClassName="w-full min-w-48 max-w-64"
+            />
             <div className="flex shrink-0 items-center justify-end gap-2">
               <PrimaryButton className="whitespace-nowrap" onClick={() => setIsDialogOpen(true)}>
                 新規プロジェクト
               </PrimaryButton>
             </div>
           </div>
-          {error ? <Notice tone="error" message={error} /> : null}
-          {isLoading ? <Notice tone="neutral" message="Loading projects..." /> : null}
-          {!error && !isLoading && projects.length === 0 ? (
-            <Notice tone="neutral" message="Project はまだ登録されていません。" />
-          ) : null}
-          {!error && !isLoading && projects.length > 0 && visibleProjects.length === 0 ? (
-            <Notice tone="neutral" message="検索条件に一致するProjectはありません。" />
-          ) : null}
+          <ListStateNotice
+            error={error}
+            isLoading={isLoading}
+            hasItems={projects.length > 0}
+            hasVisibleItems={visibleProjects.length > 0}
+            loadingMessage="Loading projects..."
+            emptyMessage="Project はまだ登録されていません。"
+            noMatchMessage="検索条件に一致するProjectはありません。"
+          />
           {visibleProjects.map((project) => (
             <article
               key={project.id}
@@ -358,7 +350,7 @@ function isInteractiveTarget(target: EventTarget | null) {
 }
 
 function filterProjects(projects: Project[], searchQuery: string) {
-  const query = searchQuery.trim().toLowerCase();
+  const query = normalizeQuery(searchQuery);
   if (!query) {
     return projects;
   }

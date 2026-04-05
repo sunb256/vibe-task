@@ -14,7 +14,8 @@ thread:
 prompts:
   # approval_policy: on-request
   approval_policy: never
-  sandbox: workspace-write
+  # sandbox: workspace-write
+  sandbox: danger-full-access
   common: |
     1. 最初にカントフォルダのフォルダ名を取得して下さい (@PWDとする)
      また、ベースフォルダは ~/ghq/github.com/sunb256/vibe-task です(@BASE_DIRとする)

@@ -264,7 +264,6 @@ test("creates a new skill from new button", async () => {
       { status: 201 },
     ),
   });
-  vi.spyOn(window, "prompt").mockReturnValue("new-skill");
 
   render(
     <MemoryRouter initialEntries={["/skills"]}>
@@ -276,6 +275,9 @@ test("creates a new skill from new button", async () => {
     expect(screen.getByRole("button", { name: "新規Skill" })).toBeInTheDocument();
   });
   fireEvent.click(screen.getByRole("button", { name: "新規Skill" }));
+  expect(screen.getByRole("dialog", { name: "新規Skill" })).toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText("name"), { target: { value: "new-skill" } });
+  fireEvent.click(screen.getByRole("button", { name: "新規作成" }));
 
   await waitFor(() => {
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -288,6 +290,28 @@ test("creates a new skill from new button", async () => {
     );
   });
   expect(screen.getByRole("dialog", { name: "編集 - new-skill" })).toBeInTheDocument();
+});
+
+test("shows validation error when creating without skill name", async () => {
+  const fetchMock = mockFetchRoutes({
+    "GET /api/settings": settingsResponse(),
+    "GET /api/skills": new Response(JSON.stringify({ skills: [] })),
+  });
+
+  render(
+    <MemoryRouter initialEntries={["/skills"]}>
+      <SkillsPage />
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByRole("button", { name: "新規Skill" })).toBeInTheDocument();
+  });
+  fireEvent.click(screen.getByRole("button", { name: "新規Skill" }));
+  fireEvent.click(screen.getByRole("button", { name: "新規作成" }));
+
+  expect(screen.getByText("Skill名を入力してください。")).toBeInTheDocument();
+  expect(fetchMock).toHaveBeenCalledTimes(2);
 });
 
 test("edits skill content in modal editor", async () => {

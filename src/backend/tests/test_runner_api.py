@@ -36,10 +36,18 @@ def clear_runner_processes() -> None:
     reset_runner_process_store_for_test()
 
 
-def create_project(client, project_repo: Path, project_name: str = "impl") -> str:
+def create_project(
+    client,
+    project_repo: Path,
+    project_name: str = "impl",
+    repository_path: str | None = None,
+) -> str:
     response = client.post(
         "/api/projects",
-        json={"name": project_name, "repositoryPath": str(project_repo)},
+        json={
+            "name": project_name,
+            "repositoryPath": repository_path or str(project_repo),
+        },
     )
     assert response.status_code == 201
     return response.get_json()["id"]
@@ -51,6 +59,7 @@ def test_execute_runner_starts_process(client, project_repo: Path, monkeypatch):
     def fake_popen(command, **kwargs):
         captured["command"] = command
         captured["cwd"] = kwargs.get("cwd")
+        captured["env"] = kwargs.get("env")
         return FakeProcess(None)
 
     monkeypatch.setattr("app.services.runner_service.subprocess.Popen", fake_popen)
@@ -76,6 +85,62 @@ def test_execute_runner_starts_process(client, project_repo: Path, monkeypatch):
             "impl",
         ]
     assert captured["cwd"] == str(project_repo.parent)
+    env = captured["env"]
+    assert isinstance(env, dict)
+    assert env["RUNNER_REPOSITORY_DIR"] == str(project_repo)
+
+
+def test_execute_runner_falls_back_to_npx_when_npm_start_fails(client, project_repo: Path, monkeypatch):
+    attempts: list[list[str]] = []
+
+    def fake_resolve(self, command_name: str):
+        if command_name == "npm":
+            return "/opt/node/bin/npm"
+        if command_name == "npx":
+            return "/opt/node/bin/npx"
+        return None
+
+    def fake_popen(command, **kwargs):
+        _ = kwargs
+        attempts.append(command)
+        if Path(command[0]).name == "npm":
+            raise OSError("permission denied")
+        return FakeProcess(None)
+
+    monkeypatch.setattr(RunnerService, "_resolve_node_command", fake_resolve)
+    monkeypatch.setattr("app.services.runner_service.subprocess.Popen", fake_popen)
+    project_id = create_project(client, project_repo)
+
+    response = client.post(f"/api/projects/{project_id}/runner/execute")
+
+    assert response.status_code == 202
+    assert response.get_json() == {"running": True}
+    assert [Path(command[0]).name for command in attempts] == ["npm", "npx"]
+
+
+def test_execute_runner_expands_home_in_repository_path(client, project_repo: Path, monkeypatch):
+    captured: dict[str, object] = {}
+
+    def fake_popen(command, **kwargs):
+        captured["command"] = command
+        captured["env"] = kwargs.get("env")
+        return FakeProcess(None)
+
+    monkeypatch.setenv("HOME", str(project_repo.parent))
+    monkeypatch.setattr("app.services.runner_service.subprocess.Popen", fake_popen)
+    project_id = create_project(
+        client,
+        project_repo,
+        project_name="impl",
+        repository_path="$HOME/sample-repo",
+    )
+
+    response = client.post(f"/api/projects/{project_id}/runner/execute")
+
+    assert response.status_code == 202
+    env = captured["env"]
+    assert isinstance(env, dict)
+    assert env["RUNNER_REPOSITORY_DIR"] == str(project_repo.parent / "sample-repo")
 
 
 def test_execute_runner_returns_conflict_while_running(client, project_repo: Path, monkeypatch):
