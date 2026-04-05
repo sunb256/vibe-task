@@ -61,8 +61,20 @@ def test_execute_runner_starts_process(client, project_repo: Path, monkeypatch):
     assert response.status_code == 202
     assert response.get_json() == {"running": True}
     command = captured["command"]
-    assert Path(command[0]).name == "npx"
-    assert command[1:] == ["tsx", "src/runner/src/run.ts", "--task", "impl"]
+    executable = Path(command[0]).name
+    assert executable in {"npm", "npx"}
+    if executable == "npm":
+        assert command[1:] == ["--prefix", "src/runner", "run", "start", "--", "--task", "impl"]
+    else:
+        assert command[1:] == [
+            "--yes",
+            "--prefix",
+            "src/runner",
+            "tsx",
+            "src/runner/src/run.ts",
+            "--task",
+            "impl",
+        ]
     assert captured["cwd"] == str(project_repo.parent)
 
 
@@ -159,6 +171,39 @@ def test_build_runner_command_falls_back_to_npm_when_npx_is_unavailable(
         "run",
         "start",
         "--",
+        "--task",
+        "impl",
+    ]
+    assert env["PATH"].startswith("/opt/node/bin")
+
+
+def test_build_runner_command_uses_npx_when_npm_is_unavailable(
+    client,
+    project_repo: Path,
+    monkeypatch,
+):
+    project_id = create_project(client, project_repo)
+    service = RunnerService(ProjectRepository(Path(client.application.config["PROJECTS_FILE"])))
+    project = service.project_repository.get_project(project_id)
+
+    def fake_resolve(command_name: str):
+        if command_name == "npm":
+            return None
+        if command_name == "npx":
+            return "/opt/node/bin/npx"
+        return None
+
+    monkeypatch.setattr(service, "_resolve_node_command", fake_resolve)
+
+    command, env = service._build_runner_command(project)
+
+    assert command == [
+        "/opt/node/bin/npx",
+        "--yes",
+        "--prefix",
+        "src/runner",
+        "tsx",
+        "src/runner/src/run.ts",
         "--task",
         "impl",
     ]
