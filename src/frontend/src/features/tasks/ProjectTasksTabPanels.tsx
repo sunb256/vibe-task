@@ -1,4 +1,5 @@
-import { type RefObject } from "react";
+import { type RefObject, useMemo } from "react";
+import hljs from "highlight.js/lib/common";
 
 import { ListStateNotice } from "../../components/ListStateNotice";
 import { Notice } from "../../components/Notice";
@@ -403,6 +404,9 @@ type RunnerLogPanelProps = {
 };
 
 function RunnerLogPanel(props: RunnerLogPanelProps) {
+  const logText = props.runnerLog || "ログはありません。";
+  const highlightedLog = useMemo(() => highlightRunnerLog(logText), [logText]);
+
   return (
     <section className="flex h-[calc(100vh-16rem)] min-h-[28rem] flex-col rounded-lg border border-[var(--border)] bg-white px-3 py-2">
       <div className="mb-2 flex items-center justify-between">
@@ -410,11 +414,19 @@ function RunnerLogPanel(props: RunnerLogPanelProps) {
         <span className={runnerStateClass(props.isRunning)}>{props.isRunning ? "RUNNING" : "IDLE"}</span>
       </div>
       {props.logError ? <Notice tone="error" message={props.logError} /> : null}
-      <pre className="min-h-0 flex-1 overflow-auto rounded-md border border-[var(--border)] bg-zinc-950 px-3 py-2 text-xs leading-5 text-zinc-100">
-        {props.runnerLog || "ログはありません。"}
+      <pre className="min-h-0 flex-1 overflow-auto rounded-md border border-[var(--border)] bg-zinc-50 px-3 py-2 text-xs leading-5 text-[var(--ink)]">
+        <code
+          className="hljs language-log"
+          data-testid="runner-log-code-block"
+          dangerouslySetInnerHTML={{ __html: highlightedLog }}
+        />
       </pre>
     </section>
   );
+}
+
+function highlightRunnerLog(log: string) {
+  return hljs.highlightAuto(log).value;
 }
 
 function runnerTabClass(isActive: boolean) {

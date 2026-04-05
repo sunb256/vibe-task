@@ -1,6 +1,1 @@
 task:
-  - id: '171'
-    url: '-'
-    title: '-'
-    action: |-
-      frontend runnerログのシンタックスハイライトをしたい

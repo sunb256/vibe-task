@@ -1,4 +1,9 @@
 task:
+  - id: "171"
+    url: "https://github.com/sunb256/vibe-task/pull/186"
+    title: "docker-compose用backendイメージにgit/ghを追加"
+    action: |-
+      frontend runnerログのシンタックスハイライトをしたい
   - id: "170"
     url: "https://github.com/sunb256/vibe-task/pull/186"
     title: "docker-compose用backendイメージにgit/ghを追加"

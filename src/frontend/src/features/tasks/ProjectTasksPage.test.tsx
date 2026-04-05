@@ -527,6 +527,7 @@ test("starts runner execution and shows runner logs", async () => {
   expect(screen.getByRole("button", { name: "Runnerキャンセル" })).toBeEnabled();
   expect(screen.getByText("RUNNING")).toBeInTheDocument();
   expect(screen.getByText("runner started")).toBeInTheDocument();
+  expect(screen.getByTestId("runner-log-code-block")).toHaveClass("hljs", "language-log");
 });
 
 test("cancels running runner from runner tab", async () => {
