@@ -69,12 +69,14 @@ export function ProjectTasksPage() {
   const [editTaskAction, setEditTaskAction] = useState("");
   const [editTaskSource, setEditTaskSource] = useState<TaskSource>("action");
   const [visibleSources, setVisibleSources] = useState(defaultVisibleSources);
+  const [taskSearchQuery, setTaskSearchQuery] = useState("");
   const [runnerLog, setRunnerLog] = useState("");
   const createButtonRef = useRef<HTMLButtonElement | null>(null);
   const runnerRunningRef = useRef(false);
 
   useEffect(() => {
     setActiveTab("tasks");
+    setTaskSearchQuery("");
   }, [projectId]);
 
   useEffect(() => {
@@ -438,6 +440,7 @@ export function ProjectTasksPage() {
 
   const orderedTasks = orderTasks(tasks);
   const visibleTasks = filterTasks(orderedTasks, visibleSources);
+  const filteredTasks = filterTaskSearch(visibleTasks, taskSearchQuery);
   const runnerTasks = orderedTasks.filter((task) => task.source === "runner");
 
   return (
@@ -473,15 +476,35 @@ export function ProjectTasksPage() {
                 {`${sourceLabel(source)}(${countTasks(tasks, source)})`}
               </button>
             ))}
+            <div className="relative w-full min-w-48 max-w-64">
+              <img
+                src="/assets/images/search.svg"
+                alt=""
+                aria-hidden="true"
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-65"
+              />
+              <input
+                id="task-search"
+                type="search"
+                aria-label="Search"
+                value={taskSearchQuery}
+                onChange={(event) => setTaskSearchQuery(event.target.value)}
+                placeholder="Search"
+                className="h-9 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12"
+              />
+            </div>
           </div>
           {error ? <Notice tone="error" message={error} /> : null}
           {isLoading ? <Notice tone="neutral" message="Loading tasks..." /> : null}
           {!error && !isLoading && visibleTasks.length === 0 ? (
             <Notice tone="neutral" message="task はありません" />
           ) : null}
-          {!isLoading && visibleTasks.length > 0 ? (
+          {!error && !isLoading && visibleTasks.length > 0 && filteredTasks.length === 0 ? (
+            <Notice tone="neutral" message="検索条件に一致するtask はありません。" />
+          ) : null}
+          {!isLoading && filteredTasks.length > 0 ? (
             <TaskTable
-              tasks={visibleTasks}
+              tasks={filteredTasks}
               orderedTasks={orderedTasks}
               isSwapping={isSwapping}
               onEdit={openEditDialog}
@@ -989,6 +1012,22 @@ function orderTasks(tasks: TaskRecord[]) {
 
 function filterTasks(tasks: TaskRecord[], visibleSources: Record<TaskSource, boolean>) {
   return tasks.filter((task) => visibleSources[task.source]);
+}
+
+function filterTaskSearch(tasks: TaskRecord[], searchQuery: string) {
+  const query = searchQuery.trim().toLowerCase();
+  if (!query) {
+    return tasks;
+  }
+  return tasks.filter((task) => {
+    const title = showTaskTitle(task.title) ? task.title.toLowerCase() : "";
+    return (
+      task.id.toLowerCase().includes(query) ||
+      sourceLabel(task.source).toLowerCase().includes(query) ||
+      title.includes(query) ||
+      task.action.toLowerCase().includes(query)
+    );
+  });
 }
 
 function countTasks(tasks: TaskRecord[], source: TaskRecord["source"]) {
