@@ -66,6 +66,7 @@ export function ProjectTasksPage() {
   const [editTask, setEditTask] = useState<TaskRecord | null>(null);
   const [newTaskAction, setNewTaskAction] = useState(defaultTaskAction);
   const [createTaskSource, setCreateTaskSource] = useState<TaskSource>("action");
+  const [createCopySource, setCreateCopySource] = useState("");
   const [editTaskAction, setEditTaskAction] = useState("");
   const [editTaskSource, setEditTaskSource] = useState<TaskSource>("action");
   const [visibleSources, setVisibleSources] = useState(defaultVisibleSources);
@@ -232,6 +233,7 @@ export function ProjectTasksPage() {
     setCreateError("");
     setNewTaskAction(defaultTaskAction);
     setCreateTaskSource("action");
+    setCreateCopySource("");
     setIsCreateOpen(true);
   }
 
@@ -239,6 +241,7 @@ export function ProjectTasksPage() {
     setCreateError("");
     setNewTaskAction(defaultTaskAction);
     setCreateTaskSource("runner");
+    setCreateCopySource("");
     setIsCreateOpen(true);
   }
 
@@ -260,6 +263,7 @@ export function ProjectTasksPage() {
       setCreateError("");
       setNewTaskAction(defaultTaskAction);
       setCreateTaskSource("action");
+      setCreateCopySource("");
       setIsCreateOpen(true);
     }
 
@@ -276,6 +280,7 @@ export function ProjectTasksPage() {
     setCreateError("");
     setIsCreateOpen(false);
     setCreateTaskSource("action");
+    setCreateCopySource("");
     createButtonRef.current?.focus();
   }
 
@@ -320,6 +325,7 @@ export function ProjectTasksPage() {
       await refreshTasks(projectId, setTasks, setRunnerHistory);
       setIsCreateOpen(false);
       setCreateTaskSource("action");
+      setCreateCopySource("");
       createButtonRef.current?.focus();
     } catch (createError) {
       setCreateError(readErrorMessage(createError, "task の作成に失敗しました。"));
@@ -329,15 +335,17 @@ export function ProjectTasksPage() {
   }
 
   async function handleCreateCopy() {
-    setCreateError("");
-    try {
-      if (!navigator.clipboard || typeof navigator.clipboard.writeText !== "function") {
-        throw new Error("Clipboard API is unavailable");
-      }
-      await navigator.clipboard.writeText(newTaskAction);
-    } catch (copyError) {
-      setCreateError(readErrorMessage(copyError, "task のコピーに失敗しました。"));
+    if (!createCopySource) {
+      setCreateError("コピー元タスクを選択してください。");
+      return;
     }
+    const sourceTask = tasks.find((task) => taskCopyKey(task) === createCopySource);
+    if (!sourceTask) {
+      setCreateError("コピー元タスクが見つかりません。");
+      return;
+    }
+    setCreateError("");
+    setNewTaskAction(sourceTask.action);
   }
 
   async function handleEdit() {
@@ -436,6 +444,10 @@ export function ProjectTasksPage() {
   const orderedTasks = orderTasks(tasks);
   const visibleTasks = filterTasks(orderedTasks, visibleSources);
   const runnerTasks = orderedTasks.filter((task) => task.source === "runner");
+  const createCopyOptions = orderedTasks.map((task) => ({
+    value: taskCopyKey(task),
+    label: taskCopyLabel(task),
+  }));
 
   return (
     <PageFrame
@@ -575,9 +587,13 @@ export function ProjectTasksPage() {
           statusLabel="種別"
           statusValue={createTaskSource}
           statusOptions={TASK_STATUS_OPTIONS}
+          copySourceLabel="コピー元"
+          copySourceValue={createCopySource}
+          copySourceOptions={createCopyOptions}
           copyLabel="コピー"
           onActionChange={setNewTaskAction}
           onStatusChange={handleCreateTaskSource}
+          onCopySourceChange={setCreateCopySource}
           onCopy={handleCreateCopy}
           onClose={closeCreateDialog}
           onSubmit={handleCreate}
@@ -956,6 +972,17 @@ function sourceLabel(source: TaskRecord["source"]) {
 }
 
 function sourceTag(task: TaskRecord) {
+  return `${sourceLabel(task.source)} #${task.id}`;
+}
+
+function taskCopyKey(task: TaskRecord) {
+  return `${task.source}:${task.id}`;
+}
+
+function taskCopyLabel(task: TaskRecord) {
+  if (showTaskTitle(task.title)) {
+    return `${sourceLabel(task.source)} #${task.id} - ${task.title}`;
+  }
   return `${sourceLabel(task.source)} #${task.id}`;
 }
 

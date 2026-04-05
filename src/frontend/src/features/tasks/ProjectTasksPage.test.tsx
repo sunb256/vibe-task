@@ -875,11 +875,6 @@ test("creates a new action task from modal editor", async () => {
 
   fireEvent.keyDown(window, { key: "n", ctrlKey: true });
   expect(screen.getByRole("dialog", { name: "新規タスク" })).toBeInTheDocument();
-  const writeText = vi.fn().mockResolvedValue(undefined);
-  Object.defineProperty(window.navigator, "clipboard", {
-    value: { writeText },
-    configurable: true,
-  });
   const createDialog = screen.getByRole("dialog", { name: "新規タスク" });
   expect(createDialog.querySelector('img[src="/assets/images/square-check-big.svg"]')).not.toBeNull();
   expect(createDialog).toHaveClass("max-w-7xl");
@@ -896,13 +891,11 @@ test("creates a new action task from modal editor", async () => {
   );
   expect(screen.getByLabelText("task-editor")).toHaveValue("");
   expect(screen.getByLabelText("task-editor")).toHaveAttribute("data-edit-context", "false");
-  fireEvent.change(screen.getByLabelText("task-editor"), {
-    target: { value: "copy target task" },
+  fireEvent.change(screen.getByRole("combobox", { name: "コピー元タスク" }), {
+    target: { value: "action:1" },
   });
   fireEvent.click(screen.getByRole("button", { name: "コピー" }));
-  await waitFor(() => {
-    expect(writeText).toHaveBeenCalledWith("copy target task");
-  });
+  expect(screen.getByLabelText("task-editor")).toHaveValue("first task");
   fireEvent.keyDown(window, { key: "Escape" });
   expect(screen.queryByRole("dialog", { name: "新規タスク" })).not.toBeInTheDocument();
   expect(screen.getByRole("button", { name: "新規タスク(N)" })).toHaveFocus();
