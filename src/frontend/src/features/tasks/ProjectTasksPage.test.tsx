@@ -219,10 +219,17 @@ test("does not render the removed project subtitle", async () => {
   const pendingToggle = screen.getByRole("button", { name: "PENDING(0)" });
   const doneToggle = screen.getByRole("button", { name: "DONE(2)" });
   const cancelToggle = screen.getByRole("button", { name: "CANCEL(0)" });
+  const taskSearchInput = screen.getByRole("searchbox", { name: "Search" });
   expect(todoToggle).toHaveAttribute("aria-pressed", "true");
   expect(pendingToggle).toHaveAttribute("aria-pressed", "true");
   expect(doneToggle).toHaveAttribute("aria-pressed", "false");
   expect(cancelToggle).toHaveAttribute("aria-pressed", "false");
+  expect(cancelToggle.compareDocumentPosition(taskSearchInput) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  fireEvent.change(taskSearchInput, { target: { value: "missing text" } });
+  expect(screen.getByText("検索条件に一致するtask はありません。")).toBeInTheDocument();
+  fireEvent.change(taskSearchInput, { target: { value: "first" } });
+  expect(screen.getByText("first task")).toBeInTheDocument();
+  fireEvent.change(taskSearchInput, { target: { value: "" } });
   expect(todoToggle).toHaveClass("bg-blue-100", "text-blue-700", "rounded-full");
   expect(pendingToggle).toHaveClass("bg-amber-100", "text-amber-700", "rounded-full");
   expect(doneToggle).toHaveClass("rounded-full");
@@ -452,7 +459,7 @@ test("switches to docs tab and renders markdown viewer", async () => {
   expect(screen.queryByRole("button", { name: "新規タスク(N)" })).not.toBeInTheDocument();
 
   fireEvent.click(screen.getByRole("button", { name: "impl" }));
-  expect(screen.queryByRole("searchbox", { name: "Search" })).not.toBeInTheDocument();
+  expect(screen.getByRole("searchbox", { name: "Search" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "新規タスク(N)" })).toBeInTheDocument();
 });
 

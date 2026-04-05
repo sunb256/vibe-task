@@ -2,12 +2,13 @@ task:
   - id: '162'
     url: '-'
     title: '-'
-    action: |-
+    action: |
       frontend 
       タスク画面
       タスクの検索機能が欲しい
 
-      UIはほかと同じ、CANCELの右隣に欲しい
+      UIはほかの画面と同じでインクリメンタルサーチ
+      CANCELの右隣に欲しい
   - id: '163'
     url: '-'
     title: '-'
@@ -16,3 +17,11 @@ task:
 
       タスク画面
       DONEタスクなどのタイトルをコピーできないのでコピーできるようにして
+  - id: '164'
+    url: '-'
+    title: '-'
+    action: |
+      frontend
+
+      Custom Prompt機能はディスコンになってしまった。
+      そのため、この機能は不要になってしまったので削除したい
