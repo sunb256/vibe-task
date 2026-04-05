@@ -1,4 +1,9 @@
 task:
+  - id: "169"
+    url: "-"
+    title: "runner実行失敗をPATH非依存で解消してtask169対応"
+    action: |
+      runnerを実行すると失敗します
   - id: "165"
     url: "https://github.com/sunb256/vibe-task/pull/180"
     title: "ProjectTasksPageとrunner起動フローを責務分離してtask165対応"
