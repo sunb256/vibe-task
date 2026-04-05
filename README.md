@@ -50,11 +50,20 @@ npm run start
 cp .env.local .env
 # -> edit port, UID, GID, proxy ...
 
+mkdir -p src/frontend/.node_modules_container
 docker compose up --build -d
 ```
 
 - backend: http://127.0.0.1:5000
 - frontend: http://127.0.0.1:5555
+- frontend は起動時にコンテナ内で `npm ci` を実行します（Mac/Linux 差分の依存を分離）
+- frontend の依存が壊れた場合:
+
+```bash
+rm -rf src/frontend/.node_modules_container
+docker compose up --build -d
+```
+
 - bind mount
   - `tasks/projects.yml`:  
   - `${HOME}/.codex/prompts`
