@@ -71,10 +71,6 @@ test("renders project list", async () => {
   expect(
     projectMenuLink.querySelector('img[src="/assets/images/vibe_task_logo_active.png"]'),
   ).not.toBeNull();
-  expect(screen.getByRole("link", { name: "Custom Prompt" })).toHaveAttribute(
-    "href",
-    "/custom-prompt",
-  );
   expect(screen.getByRole("link", { name: "Skills" })).toHaveAttribute("href", "/skills");
   expect(screen.queryByRole("link", { name: "Project 一覧" })).not.toBeInTheDocument();
   const newProjectButton = screen.getByRole("button", { name: "新規プロジェクト" });

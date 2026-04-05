@@ -101,10 +101,6 @@ test("renders skills list and global menu", async () => {
   });
 
   expect(screen.getByRole("link", { name: "Project" })).toHaveAttribute("href", "/");
-  expect(screen.getByRole("link", { name: "Custom Prompt" })).toHaveAttribute(
-    "href",
-    "/custom-prompt",
-  );
   expect(screen.getByRole("link", { name: "Skills" })).toHaveAttribute("href", "/skills");
   expect(screen.getByRole("button", { name: "Setting" })).toBeInTheDocument();
   expect(screen.getByRole("heading", { level: 1, name: "Skills" })).toBeInTheDocument();

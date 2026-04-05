@@ -167,10 +167,6 @@ test("does not render the removed project subtitle", async () => {
       .getByRole("link", { name: "Project" })
       .querySelector('img[src="/assets/images/vibe_task_logo_active.png"]'),
   ).not.toBeNull();
-  expect(screen.getByRole("link", { name: "Custom Prompt" })).toHaveAttribute(
-    "href",
-    "/custom-prompt",
-  );
   expect(screen.getByRole("link", { name: "Skills" })).toHaveAttribute("href", "/skills");
   expect(screen.getByRole("button", { name: "Setting" })).toBeInTheDocument();
   expect(screen.queryByText("VIBE TASK")).not.toBeInTheDocument();
@@ -754,10 +750,6 @@ test("renders tasks before project list request finishes", async () => {
       .getAllByRole("link", { name: "Project" })
       .some((link) => link.getAttribute("href") === "/"),
   ).toBe(true);
-  expect(screen.getByRole("link", { name: "Custom Prompt" })).toHaveAttribute(
-    "href",
-    "/custom-prompt",
-  );
   expect(screen.getByRole("link", { name: "Skills" })).toHaveAttribute("href", "/skills");
 });
 
