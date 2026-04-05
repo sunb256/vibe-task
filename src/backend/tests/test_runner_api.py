@@ -2,6 +2,8 @@ from pathlib import Path
 
 import pytest
 
+from app.repositories.project_repository import ProjectRepository
+from app.services.runner_service import RunnerService
 from app.services.runner_service import reset_runner_process_store_for_test
 
 
@@ -58,7 +60,9 @@ def test_execute_runner_starts_process(client, project_repo: Path, monkeypatch):
 
     assert response.status_code == 202
     assert response.get_json() == {"running": True}
-    assert captured["command"] == ["npx", "tsx", "src/runner/src/run.ts", "--task", "impl"]
+    command = captured["command"]
+    assert Path(command[0]).name == "npx"
+    assert command[1:] == ["tsx", "src/runner/src/run.ts", "--task", "impl"]
     assert captured["cwd"] == str(project_repo.parent)
 
 
@@ -126,3 +130,36 @@ def test_get_runner_logs_reports_running_process(client, project_repo: Path, mon
 
     assert response.status_code == 200
     assert response.get_json()["running"] is True
+
+
+def test_build_runner_command_falls_back_to_npm_when_npx_is_unavailable(
+    client,
+    project_repo: Path,
+    monkeypatch,
+):
+    project_id = create_project(client, project_repo)
+    service = RunnerService(ProjectRepository(Path(client.application.config["PROJECTS_FILE"])))
+    project = service.project_repository.get_project(project_id)
+
+    def fake_resolve(command_name: str):
+        if command_name == "npx":
+            return None
+        if command_name == "npm":
+            return "/opt/node/bin/npm"
+        return None
+
+    monkeypatch.setattr(service, "_resolve_node_command", fake_resolve)
+
+    command, env = service._build_runner_command(project)
+
+    assert command == [
+        "/opt/node/bin/npm",
+        "--prefix",
+        "src/runner",
+        "run",
+        "start",
+        "--",
+        "--task",
+        "impl",
+    ]
+    assert env["PATH"].startswith("/opt/node/bin")
