@@ -328,6 +328,18 @@ export function ProjectTasksPage() {
     }
   }
 
+  async function handleCreateCopy() {
+    setCreateError("");
+    try {
+      if (!navigator.clipboard || typeof navigator.clipboard.writeText !== "function") {
+        throw new Error("Clipboard API is unavailable");
+      }
+      await navigator.clipboard.writeText(newTaskAction);
+    } catch (copyError) {
+      setCreateError(readErrorMessage(copyError, "task のコピーに失敗しました。"));
+    }
+  }
+
   async function handleEdit() {
     if (!editTask) {
       return;
@@ -563,8 +575,10 @@ export function ProjectTasksPage() {
           statusLabel="種別"
           statusValue={createTaskSource}
           statusOptions={TASK_STATUS_OPTIONS}
+          copyLabel="コピー"
           onActionChange={setNewTaskAction}
           onStatusChange={handleCreateTaskSource}
+          onCopy={handleCreateCopy}
           onClose={closeCreateDialog}
           onSubmit={handleCreate}
         />

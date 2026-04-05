@@ -23,8 +23,10 @@ type NewTaskDialogProps = {
   statusLabel?: string;
   statusValue?: string;
   statusOptions?: DialogStatusOption[];
+  copyLabel?: string;
   onActionChange: (action: string) => void;
   onStatusChange?: (status: string) => void;
+  onCopy?: () => Promise<void>;
   onClose: () => void;
   onSubmit: () => Promise<void>;
 };
@@ -44,8 +46,10 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
     statusLabel,
     statusValue,
     statusOptions,
+    copyLabel,
     onActionChange,
     onStatusChange,
+    onCopy,
     onClose,
     onSubmit,
   } = props;
@@ -226,6 +230,18 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
               <button type="submit" disabled={isSaving} className={dialogSubmitButtonClass()}>
                 {isSaving ? submittingLabel : submitLabel}
               </button>
+              {onCopy ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    void onCopy();
+                  }}
+                  disabled={isSaving}
+                  className={dialogCancelButtonClass()}
+                >
+                  {copyLabel ?? "Copy"}
+                </button>
+              ) : null}
               <button
                 type="button"
                 onClick={onClose}
