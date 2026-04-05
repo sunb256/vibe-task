@@ -1,1 +1,26 @@
-task: []
+task:
+  - id: '161'
+    url: '-'
+    title: '-'
+    action: |-
+      frontenc
+
+      新規タスク画面
+      タスクのコピー機能が欲しい
+  - id: '162'
+    url: '-'
+    title: '-'
+    action: |-
+      frontend 
+      タスク画面
+      タスクの検索機能が欲しい
+
+      UIはほかと同じ、CANCELの右隣に欲しい
+  - id: '163'
+    url: '-'
+    title: '-'
+    action: |
+      frontend
+
+      タスク画面
+      DONEタスクなどのタイトルをコピーできないのでコピーできるようにして

@@ -32,7 +32,10 @@ services:
       context: .
       dockerfile: src/frontend/Dockerfile
     user: "${UID}:${GID}"
+    command: sh -c "npm ci && npm run dev -- --host 0.0.0.0 --port 5555"
     environment:
+      - HOME=/tmp
+      - NPM_CONFIG_CACHE=/tmp/.npm
       - VITE_API_PROXY_TARGET=http://backend:5000
       # Proxy
       - HTTP_PROXY=${http_proxy}
@@ -45,6 +48,7 @@ services:
       - "${FRONTEND_PORT}:5555"
     volumes:
       - ./src/frontend:/app/src/frontend
+      - ./src/frontend/.node_modules_container:/app/src/frontend/node_modules
     restart: unless-stopped
     depends_on:
       - backend

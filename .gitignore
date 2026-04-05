@@ -4,6 +4,7 @@ src/backend/.ruff_cache/
 src/backend/*.egg-info/
 
 src/frontend/node_modules/
+src/frontend/.node_modules_container/
 src/frontend/dist/
 src/frontend/coverage/
 
