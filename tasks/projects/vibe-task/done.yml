@@ -1,4 +1,15 @@
 task:
+  - id: "163"
+    url: "https://github.com/sunb256/vibe-task/pull/178"
+    title: "DONEタスクタイトルをドラッグ選択可能にする"
+    action: |
+      frontend
+
+      タスク画面
+      DONEタスクなどのタイトルをドラッグなどで選択できない
+      できるようにして
+
+      タスク画面を開いたときに、タイトルに表示するでもいいです
   - id: "162"
     url: "https://github.com/sunb256/vibe-task/pull/177"
     title: "タスク画面にコピー改善とインクリメンタル検索を追加"

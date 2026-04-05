@@ -1,16 +1,8 @@
 task:
-  - id: '163'
-    url: '-'
-    title: '-'
+  - id: "164"
+    url: "-"
+    title: "-"
     action: |-
-      frontend
-
-      タスク画面
-      DONEタスクなどのタイトルをコピーできないのでコピーできるようにして
-  - id: '164'
-    url: '-'
-    title: '-'
-    action: |
       frontend
 
       Custom Prompt機能はディスコンになってしまった。

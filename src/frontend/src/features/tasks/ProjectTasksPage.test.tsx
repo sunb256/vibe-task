@@ -1069,6 +1069,62 @@ test("does not copy task when copy confirmation is canceled", async () => {
   expect(updateTask).not.toHaveBeenCalled();
 });
 
+test("does not open edit dialog when task text selection exists", async () => {
+  vi.mocked(fetchProjects).mockResolvedValue({
+    projects: [
+      {
+        id: "project-1",
+        name: "impl",
+        repositoryPath: "/tmp/impl",
+      },
+    ],
+  });
+  vi.mocked(fetchTasks).mockResolvedValue({
+    tasks: [
+      {
+        projectId: "project-1",
+        source: "done",
+        id: "10",
+        title: "done-title-10",
+        url: "-",
+        action: "done body",
+      },
+    ],
+  });
+
+  render(
+    <MemoryRouter initialEntries={["/projects/project-1"]}>
+      <Routes>
+        <Route path="/projects/:projectId" element={<ProjectTasksPage />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  await waitFor(() => {
+    expect(screen.getByRole("button", { name: "DONE(1)" })).toBeInTheDocument();
+  });
+
+  fireEvent.click(screen.getByRole("button", { name: "DONE(1)" }));
+
+  await waitFor(() => {
+    expect(screen.getByText("done-title-10")).toBeInTheDocument();
+  });
+
+  const titleElement = screen.getByText("done-title-10");
+  const selection = window.getSelection();
+  expect(selection).not.toBeNull();
+  if (selection) {
+    const range = document.createRange();
+    range.selectNodeContents(titleElement);
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+
+  fireEvent.click(titleElement);
+
+  expect(screen.queryByRole("dialog", { name: "編集 - #10" })).not.toBeInTheDocument();
+});
+
 test("edits a task in modal editor and supports keyboard shortcuts", async () => {
   vi.mocked(fetchProjects).mockResolvedValue({
     projects: [
