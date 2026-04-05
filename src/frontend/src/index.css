@@ -85,3 +85,34 @@ button:not(:disabled) {
 .hljs-attribute {
   color: #116329;
 }
+
+.runner-log-hljs.hljs {
+  color: #0f172a;
+}
+
+.runner-log-hljs.hljs .hljs-comment,
+.runner-log-hljs.hljs .hljs-quote {
+  color: #334155;
+}
+
+.runner-log-hljs.hljs .hljs-code {
+  color: #1d4ed8;
+}
+
+.runner-log-hljs.hljs .runner-log-date {
+  color: #6b7280;
+}
+
+.runner-log-hljs.hljs .runner-log-heading {
+  color: #0f766e;
+  font-weight: 600;
+}
+
+.runner-log-hljs.hljs .runner-log-task-banner {
+  color: #7c3aed;
+  font-weight: 700;
+}
+
+.runner-log-hljs.hljs .runner-log-task-banner .runner-log-date {
+  color: #6b7280;
+}

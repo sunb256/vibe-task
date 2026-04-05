@@ -1,4 +1,5 @@
-import { type RefObject } from "react";
+import { type RefObject, useMemo } from "react";
+import hljs from "highlight.js/lib/common";
 
 import { ListStateNotice } from "../../components/ListStateNotice";
 import { Notice } from "../../components/Notice";
@@ -402,7 +403,12 @@ type RunnerLogPanelProps = {
   logError: string;
 };
 
+const RUNNER_DATE_PATTERN = /\[?\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]?/g;
+
 function RunnerLogPanel(props: RunnerLogPanelProps) {
+  const logText = props.runnerLog || "ログはありません。";
+  const highlightedLog = useMemo(() => highlightRunnerLog(logText), [logText]);
+
   return (
     <section className="flex h-[calc(100vh-16rem)] min-h-[28rem] flex-col rounded-lg border border-[var(--border)] bg-white px-3 py-2">
       <div className="mb-2 flex items-center justify-between">
@@ -410,11 +416,45 @@ function RunnerLogPanel(props: RunnerLogPanelProps) {
         <span className={runnerStateClass(props.isRunning)}>{props.isRunning ? "RUNNING" : "IDLE"}</span>
       </div>
       {props.logError ? <Notice tone="error" message={props.logError} /> : null}
-      <pre className="min-h-0 flex-1 overflow-auto rounded-md border border-[var(--border)] bg-zinc-950 px-3 py-2 text-xs leading-5 text-zinc-100">
-        {props.runnerLog || "ログはありません。"}
+      <pre className="min-h-0 flex-1 overflow-auto rounded-md border border-[var(--border)] bg-zinc-50 px-3 py-2 text-xs leading-5 text-[var(--ink)]">
+        <code
+          className="runner-log-hljs hljs language-markdown"
+          data-testid="runner-log-code-block"
+          dangerouslySetInnerHTML={{ __html: highlightedLog }}
+        />
       </pre>
     </section>
   );
+}
+
+function highlightRunnerLog(log: string) {
+  const highlighted = hljs.highlight(log, { language: "markdown", ignoreIllegals: true }).value;
+  const withDate = highlighted.replaceAll(RUNNER_DATE_PATTERN, '<span class="runner-log-date">$&</span>');
+  return applyRunnerLineStyles(log, withDate);
+}
+
+function applyRunnerLineStyles(rawLog: string, highlightedLog: string) {
+  const rawLines = rawLog.split("\n");
+  const highlightedLines = highlightedLog.split("\n");
+  return highlightedLines
+    .map((line, index) => {
+      if (isRunnerTaskBannerLine(rawLines[index] ?? "")) {
+        return `<span class="runner-log-task-banner">${line}</span>`;
+      }
+      if (isRunnerHeadingLine(rawLines[index] ?? "")) {
+        return `<span class="runner-log-heading">${line}</span>`;
+      }
+      return line;
+    })
+    .join("\n");
+}
+
+function isRunnerHeadingLine(line: string) {
+  return /^\s*(?:\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]\s*)?(?:>\s*)?#{2,6}\s+/.test(line);
+}
+
+function isRunnerTaskBannerLine(line: string) {
+  return /^\s*(?:>\s*)?(?:\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]\s*)?=+\s*TASK\b.*=+\s*$/i.test(line);
 }
 
 function runnerTabClass(isActive: boolean) {
