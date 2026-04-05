@@ -403,6 +403,8 @@ type RunnerLogPanelProps = {
   logError: string;
 };
 
+const RUNNER_DATE_PATTERN = /\[?\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]?/g;
+
 function RunnerLogPanel(props: RunnerLogPanelProps) {
   const logText = props.runnerLog || "ログはありません。";
   const highlightedLog = useMemo(() => highlightRunnerLog(logText), [logText]);
@@ -416,7 +418,7 @@ function RunnerLogPanel(props: RunnerLogPanelProps) {
       {props.logError ? <Notice tone="error" message={props.logError} /> : null}
       <pre className="min-h-0 flex-1 overflow-auto rounded-md border border-[var(--border)] bg-zinc-50 px-3 py-2 text-xs leading-5 text-[var(--ink)]">
         <code
-          className="hljs language-log"
+          className="runner-log-hljs hljs language-markdown"
           data-testid="runner-log-code-block"
           dangerouslySetInnerHTML={{ __html: highlightedLog }}
         />
@@ -426,7 +428,33 @@ function RunnerLogPanel(props: RunnerLogPanelProps) {
 }
 
 function highlightRunnerLog(log: string) {
-  return hljs.highlightAuto(log).value;
+  const highlighted = hljs.highlight(log, { language: "markdown", ignoreIllegals: true }).value;
+  const withDate = highlighted.replaceAll(RUNNER_DATE_PATTERN, '<span class="runner-log-date">$&</span>');
+  return applyRunnerLineStyles(log, withDate);
+}
+
+function applyRunnerLineStyles(rawLog: string, highlightedLog: string) {
+  const rawLines = rawLog.split("\n");
+  const highlightedLines = highlightedLog.split("\n");
+  return highlightedLines
+    .map((line, index) => {
+      if (isRunnerTaskBannerLine(rawLines[index] ?? "")) {
+        return `<span class="runner-log-task-banner">${line}</span>`;
+      }
+      if (isRunnerHeadingLine(rawLines[index] ?? "")) {
+        return `<span class="runner-log-heading">${line}</span>`;
+      }
+      return line;
+    })
+    .join("\n");
+}
+
+function isRunnerHeadingLine(line: string) {
+  return /^\s*(?:\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]\s*)?(?:>\s*)?#{2,6}\s+/.test(line);
+}
+
+function isRunnerTaskBannerLine(line: string) {
+  return /^\s*(?:>\s*)?(?:\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]\s*)?=+\s*TASK\b.*=+\s*$/i.test(line);
 }
 
 function runnerTabClass(isActive: boolean) {

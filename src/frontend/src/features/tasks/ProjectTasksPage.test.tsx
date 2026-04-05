@@ -499,7 +499,8 @@ test("starts runner execution and shows runner logs", async () => {
   });
   vi.mocked(executeRunner).mockImplementation(async () => {
     runnerLogState.running = true;
-    runnerLogState.log = "runner started";
+    runnerLogState.log =
+      "[2026-04-05 23:06:26] ========== TASK 166 ==========\n[2026-04-05 23:06:26] > ## 4. Flask APIルートの整理（Medium）\nrun `projects`";
     return { running: true };
   });
   vi.mocked(fetchRunnerLogs).mockImplementation(async () => ({ ...runnerLogState }));
@@ -526,8 +527,17 @@ test("starts runner execution and shows runner logs", async () => {
   expect(screen.getByRole("heading", { level: 2, name: "ログ" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Runnerキャンセル" })).toBeEnabled();
   expect(screen.getByText("RUNNING")).toBeInTheDocument();
-  expect(screen.getByText("runner started")).toBeInTheDocument();
-  expect(screen.getByTestId("runner-log-code-block")).toHaveClass("hljs", "language-log");
+  expect(screen.getByText("`projects`")).toBeInTheDocument();
+  const runnerLog = screen.getByTestId("runner-log-code-block");
+  expect(runnerLog).toHaveClass("hljs", "language-markdown");
+  expect(runnerLog.querySelector(".runner-log-date")).not.toBeNull();
+  const heading = runnerLog.querySelector(".runner-log-heading");
+  expect(heading).not.toBeNull();
+  expect(heading).toHaveTextContent("[2026-04-05 23:06:26] > ## 4. Flask APIルートの整理（Medium）");
+  const taskBanner = runnerLog.querySelector(".runner-log-task-banner");
+  expect(taskBanner).not.toBeNull();
+  expect(taskBanner).toHaveTextContent("[2026-04-05 23:06:26] ========== TASK 166 ==========");
+  expect(runnerLog.querySelector(".hljs-code")).not.toBeNull();
 });
 
 test("cancels running runner from runner tab", async () => {
