@@ -1,4 +1,11 @@
 task:
+  - id: "170"
+    url: "https://github.com/sunb256/vibe-task/pull/186"
+    title: "docker-compose用backendイメージにgit/ghを追加"
+    action: |-
+      docker-compose
+
+      git/gh をdockerイメージ内に入れておきたい
   - id: "169"
     url: "https://github.com/sunb256/vibe-task/pull/182"
     title: "runner実行失敗をPATH非依存で解消してtask169対応"
@@ -1467,6 +1474,128 @@ task:
   - id: '155'
     url: "https://github.com/sunb256/vibe-task/pull/170"
     title: "frontend: docs mermaid モーダル幅を拡大"
-    action: |
+    action: |-
       frontend プロジェクト画面
       docs mermaid のモーダル表示のwidthをもう少し広げてほしい
+  - id: "166"
+    url: "-"
+    title: "-"
+    action: |-
+      refactoring
+
+      ## 3. CodexAppServerClientの分割（High）
+
+      - 対象:
+        - `src/runner/src/app/client.ts:124`
+        - `src/runner/src/app/client.ts:427`
+        - `src/runner/src/app/client.ts:550`
+      - 問題:
+        - 1クラス内で、RPC制御、承認入力UI、requestUserInput解釈、自動返信判定まで実装している。
+        - `askToolUserInput()` が長く、入力仕様変更時の影響が広い。
+      - リファクタリング案:
+        - `ToolUserInputPrompter`（質問/選択肢入力）
+        - `ApprovalPrompter`（承認系）
+        - `ReplyWantedDetector`（suffix/pattern判定）
+        - `CodexSessionClient`（純粋にthread/turn操作）
+      - 期待効果:
+        - 役割ごとの単体テストを追加しやすくなる。
+
+      ## 4. Flask APIルートの整理（Medium）
+
+      - 対象:
+        - `src/backend/app/routes/api.py:20`
+        - `src/backend/app/routes/api.py:309`
+      - 問題:
+        - `request.get_json` の検証や `service = ...` の重複が多い。
+        - Projects/Tasks/Runner/Docs/Skills/Promptsが単一ファイルに集中している。
+      - リファクタリング案:
+        - `routes/projects.py`, `routes/tasks.py` など機能別Blueprintへ分割
+        - `require_json_object()`, `require_str_field()` 等の共通バリデータ導入
+      - 期待効果:
+        - エンドポイント追加時の重複を削減し、誤差分を減らせる。
+  - id: "167"
+    url: "-"
+    title: "-"
+    action: |-
+      refactoring
+
+      ## 5. TaskRepositoryの責務分解（Medium）
+
+      - 対象:
+        - `src/backend/app/repositories/task_repository.py:34`
+        - `src/backend/app/repositories/task_repository.py:223`
+        - `src/backend/app/repositories/task_repository.py:358`
+      - 問題:
+        - YAML読み書き、プレースホルダ正規化、task CRUD、history解釈、ID採番が同一クラスに混在。
+        - 異常系が `AppError("task file is invalid", 400)` に集約され、原因切り分けしにくい。
+      - リファクタリング案:
+        - `TaskYamlStore`（I/Oとparse）
+        - `TaskMutator`（create/update/move/swap）
+        - `RunnerHistoryParser`（history検証）
+        - `TaskIdAllocator`（採番）
+      - 期待効果:
+        - 仕様変更時の影響範囲を縮小し、失敗原因の特定を速くできる。
+
+      ## 6. 検索+一覧UIの共通化（Medium）
+
+      - 対象:
+        - `src/frontend/src/features/projects/ProjectListPage.tsx:216`
+        - `src/frontend/src/features/skills/SkillsPage.tsx:146`
+        - `src/frontend/src/features/tasks/ProjectDocsPanel.tsx:109`
+        - `src/frontend/src/features/tasks/ProjectTasksPage.tsx:459`
+      - 問題:
+        - 検索入力、`Loading/Empty/No-match` 表示、同系統カードUIの実装が重複している。
+      - リファクタリング案:
+        - `SearchInput` コンポーネント
+        - `ListStateNotice` コンポーネント
+        - 共通フィルタユーティリティ（`normalizeQuery` など）
+      - 期待効果:
+        - デザイン変更やa11y改善を1箇所で反映できる。
+  - id: "168"
+    url: "-"
+    title: "-"
+    action: |
+      refactoring
+
+      ## 7. Skillsの作成/編集UX統一（Medium）
+
+      - 対象:
+        - `src/frontend/src/features/skills/SkillsPage.tsx:76`
+        - `src/frontend/src/features/skills/SkillsPage.tsx:265`
+      - 問題:
+        - 新規作成のみ `window.prompt`、編集は `NewTaskDialog` で実装パターンが分かれている。
+        - バリデーションやエラー表示の設計が分散。
+      - リファクタリング案:
+        - 新規作成もDialog化し、編集と同じフォーム・エラーハンドリングに統一
+      - 期待効果:
+        - ユーザー体験と状態管理を一貫化できる。
+
+      ## 8. ProjectTasksPageテストの共通化（Low）
+
+      - 対象:
+        - `src/frontend/src/features/tasks/ProjectTasksPage.test.tsx:107`
+        - `src/frontend/src/features/tasks/ProjectTasksPage.test.tsx:692`
+        - `src/frontend/src/features/tasks/ProjectTasksPage.test.tsx:736`
+      - 問題:
+        - `fetchProjects` / `fetchTasks` のモックと `MemoryRouter` 描画が多数のテストで重複。
+        - 失敗時に本質以外（セットアップ差異）で壊れやすい。
+      - リファクタリング案:
+        - `renderProjectTasksPage()` ヘルパー
+        - `mockProject()` / `mockTask()` fixture factory
+      - 期待効果:
+        - テストの可読性向上とメンテナンス工数削減。
+
+      ## 9. prompts API残存コードの整理（Low, 要件確認）
+
+      - 対象:
+        - `src/backend/app/routes/api.py:194`
+        - `src/backend/app/services/prompt_service.py:1`
+        - `src/backend/app/repositories/prompt_repository.py:1`
+        - `src/backend/tests/test_prompts_api.py:1`
+      - 問題:
+        - frontendから `Custom Prompt` 機能を撤去後も、backend APIとテストは残っている。
+      - リファクタリング案:
+        - 要件として本当に廃止なら、prompts APIを段階的に削除
+        - 廃止しないなら、利用者（runner等）を明示して責務を再定義
+      - 期待効果:
+        - 不要保守コストの削減、機能境界の明確化。
