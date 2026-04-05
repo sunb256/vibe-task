@@ -9,11 +9,6 @@ type DialogStatusOption = {
   toneClass?: string;
 };
 
-type DialogCopyOption = {
-  value: string;
-  label: string;
-};
-
 type NewTaskDialogProps = {
   isOpen: boolean;
   isSaving: boolean;
@@ -28,14 +23,8 @@ type NewTaskDialogProps = {
   statusLabel?: string;
   statusValue?: string;
   statusOptions?: DialogStatusOption[];
-  copySourceLabel?: string;
-  copySourceValue?: string;
-  copySourceOptions?: DialogCopyOption[];
-  copyLabel?: string;
   onActionChange: (action: string) => void;
   onStatusChange?: (status: string) => void;
-  onCopySourceChange?: (source: string) => void;
-  onCopy?: () => Promise<void>;
   onClose: () => void;
   onSubmit: () => Promise<void>;
 };
@@ -55,14 +44,8 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
     statusLabel,
     statusValue,
     statusOptions,
-    copySourceLabel,
-    copySourceValue,
-    copySourceOptions,
-    copyLabel,
     onActionChange,
     onStatusChange,
-    onCopySourceChange,
-    onCopy,
     onClose,
     onSubmit,
   } = props;
@@ -209,71 +192,36 @@ export function NewTaskDialog(props: NewTaskDialogProps) {
           </div>
           {error ? <Notice tone="error" message={error} /> : null}
           <div className="flex items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-3">
-              {statusOptions && statusValue !== undefined && onStatusChange ? (
-                <fieldset className="flex flex-wrap items-center gap-2 border-0 p-0">
-                  <legend className="sr-only">{statusLabel ?? "状態"}</legend>
-                  <span className="text-sm font-semibold text-[var(--ink)]">
-                    {statusLabel ?? "状態"}
-                  </span>
-                  {statusOptions.map((option) => {
-                    const checked = option.value === statusValue;
-                    return (
-                      <label
-                        key={option.value}
-                        className={`${statusOptionClass(option, checked)} ${isSaving ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
-                      >
-                        <input
-                          type="radio"
-                          name="task-status"
-                          value={option.value}
-                          checked={checked}
-                          onChange={() => onStatusChange(option.value)}
-                          disabled={isSaving}
-                          className="sr-only"
-                        />
-                        <span>{option.label}</span>
-                      </label>
-                    );
-                  })}
-                </fieldset>
-              ) : null}
-              {copySourceOptions && copySourceValue !== undefined && onCopySourceChange && onCopy ? (
-                <div className="flex items-center gap-2">
-                  <label
-                    htmlFor="task-copy-source"
-                    className="text-sm font-semibold text-[var(--ink)]"
-                  >
-                    {copySourceLabel ?? "コピー元"}
-                  </label>
-                  <select
-                    id="task-copy-source"
-                    aria-label={`${copySourceLabel ?? "コピー元"}タスク`}
-                    value={copySourceValue}
-                    onChange={(event) => onCopySourceChange(event.target.value)}
-                    disabled={isSaving || copySourceOptions.length === 0}
-                    className="h-10 min-w-[17rem] rounded-md border border-[var(--border)] bg-white px-3 text-sm text-[var(--ink)] transition focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    <option value="">選択してください</option>
-                    {copySourceOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      void onCopy();
-                    }}
-                    disabled={isSaving || copySourceOptions.length === 0}
-                    className={dialogCancelButtonClass()}
-                  >
-                    {copyLabel ?? "コピー"}
-                  </button>
-                </div>
-              ) : null}
-            </div>
+            {statusOptions && statusValue !== undefined && onStatusChange ? (
+              <fieldset className="flex flex-wrap items-center gap-2 border-0 p-0">
+                <legend className="sr-only">{statusLabel ?? "状態"}</legend>
+                <span className="text-sm font-semibold text-[var(--ink)]">
+                  {statusLabel ?? "状態"}
+                </span>
+                {statusOptions.map((option) => {
+                  const checked = option.value === statusValue;
+                  return (
+                    <label
+                      key={option.value}
+                      className={`${statusOptionClass(option, checked)} ${isSaving ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
+                    >
+                      <input
+                        type="radio"
+                        name="task-status"
+                        value={option.value}
+                        checked={checked}
+                        onChange={() => onStatusChange(option.value)}
+                        disabled={isSaving}
+                        className="sr-only"
+                      />
+                      <span>{option.label}</span>
+                    </label>
+                  );
+                })}
+              </fieldset>
+            ) : (
+              <span />
+            )}
             <div className="flex justify-end gap-2">
               <button type="submit" disabled={isSaving} className={dialogSubmitButtonClass()}>
                 {isSaving ? submittingLabel : submitLabel}

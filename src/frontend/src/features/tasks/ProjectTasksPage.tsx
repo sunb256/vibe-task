@@ -66,7 +66,6 @@ export function ProjectTasksPage() {
   const [editTask, setEditTask] = useState<TaskRecord | null>(null);
   const [newTaskAction, setNewTaskAction] = useState(defaultTaskAction);
   const [createTaskSource, setCreateTaskSource] = useState<TaskSource>("action");
-  const [createCopySource, setCreateCopySource] = useState("");
   const [editTaskAction, setEditTaskAction] = useState("");
   const [editTaskSource, setEditTaskSource] = useState<TaskSource>("action");
   const [visibleSources, setVisibleSources] = useState(defaultVisibleSources);
@@ -213,6 +212,17 @@ export function ProjectTasksPage() {
     }
   }
 
+  async function handleCopy(task: TaskRecord) {
+    setError("");
+    try {
+      const created = await createTask(projectId, task.source);
+      await updateTask(projectId, created.source, created.id, task.action);
+      await refreshTasks(projectId, setTasks, setRunnerHistory);
+    } catch (copyError) {
+      setError(readErrorMessage(copyError, "task のコピーに失敗しました。"));
+    }
+  }
+
   async function handleSwap(task: TaskRecord, swapWithId: string | null) {
     if (!swapWithId) {
       return;
@@ -233,7 +243,6 @@ export function ProjectTasksPage() {
     setCreateError("");
     setNewTaskAction(defaultTaskAction);
     setCreateTaskSource("action");
-    setCreateCopySource("");
     setIsCreateOpen(true);
   }
 
@@ -241,7 +250,6 @@ export function ProjectTasksPage() {
     setCreateError("");
     setNewTaskAction(defaultTaskAction);
     setCreateTaskSource("runner");
-    setCreateCopySource("");
     setIsCreateOpen(true);
   }
 
@@ -263,7 +271,6 @@ export function ProjectTasksPage() {
       setCreateError("");
       setNewTaskAction(defaultTaskAction);
       setCreateTaskSource("action");
-      setCreateCopySource("");
       setIsCreateOpen(true);
     }
 
@@ -280,7 +287,6 @@ export function ProjectTasksPage() {
     setCreateError("");
     setIsCreateOpen(false);
     setCreateTaskSource("action");
-    setCreateCopySource("");
     createButtonRef.current?.focus();
   }
 
@@ -325,27 +331,12 @@ export function ProjectTasksPage() {
       await refreshTasks(projectId, setTasks, setRunnerHistory);
       setIsCreateOpen(false);
       setCreateTaskSource("action");
-      setCreateCopySource("");
       createButtonRef.current?.focus();
     } catch (createError) {
       setCreateError(readErrorMessage(createError, "task の作成に失敗しました。"));
     } finally {
       setIsCreating(false);
     }
-  }
-
-  async function handleCreateCopy() {
-    if (!createCopySource) {
-      setCreateError("コピー元タスクを選択してください。");
-      return;
-    }
-    const sourceTask = tasks.find((task) => taskCopyKey(task) === createCopySource);
-    if (!sourceTask) {
-      setCreateError("コピー元タスクが見つかりません。");
-      return;
-    }
-    setCreateError("");
-    setNewTaskAction(sourceTask.action);
   }
 
   async function handleEdit() {
@@ -444,10 +435,6 @@ export function ProjectTasksPage() {
   const orderedTasks = orderTasks(tasks);
   const visibleTasks = filterTasks(orderedTasks, visibleSources);
   const runnerTasks = orderedTasks.filter((task) => task.source === "runner");
-  const createCopyOptions = orderedTasks.map((task) => ({
-    value: taskCopyKey(task),
-    label: taskCopyLabel(task),
-  }));
 
   return (
     <PageFrame
@@ -494,6 +481,7 @@ export function ProjectTasksPage() {
               orderedTasks={orderedTasks}
               isSwapping={isSwapping}
               onEdit={openEditDialog}
+              onCopy={(task) => void handleCopy(task)}
               onDelete={(task) => void handleDelete(task)}
               onSwap={(task, targetId) => void handleSwap(task, targetId)}
             />
@@ -552,6 +540,7 @@ export function ProjectTasksPage() {
               orderedTasks={orderedTasks}
               isSwapping={isSwapping}
               onEdit={openEditDialog}
+              onCopy={(task) => void handleCopy(task)}
               onDelete={(task) => void handleDelete(task)}
               onSwap={(task, targetId) => void handleSwap(task, targetId)}
             />
@@ -587,14 +576,8 @@ export function ProjectTasksPage() {
           statusLabel="種別"
           statusValue={createTaskSource}
           statusOptions={TASK_STATUS_OPTIONS}
-          copySourceLabel="コピー元"
-          copySourceValue={createCopySource}
-          copySourceOptions={createCopyOptions}
-          copyLabel="コピー"
           onActionChange={setNewTaskAction}
           onStatusChange={handleCreateTaskSource}
-          onCopySourceChange={setCreateCopySource}
-          onCopy={handleCreateCopy}
           onClose={closeCreateDialog}
           onSubmit={handleCreate}
         />
@@ -779,6 +762,7 @@ type TaskTableProps = {
   orderedTasks: TaskRecord[];
   isSwapping: boolean;
   onEdit: (task: TaskRecord) => void;
+  onCopy: (task: TaskRecord) => void;
   onDelete: (task: TaskRecord) => void;
   onSwap: (task: TaskRecord, targetId: string | null) => void;
 };
@@ -791,7 +775,7 @@ function TaskTable(props: TaskTableProps) {
           <tr className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
             <th className="px-3 whitespace-nowrap">id</th>
             <th className="px-3 w-full">task</th>
-            <th className="pl-1 pr-3 w-[13rem] whitespace-nowrap">actions</th>
+            <th className="pl-1 pr-3 w-[18rem] whitespace-nowrap">actions</th>
             <th className="px-3 text-center">url</th>
           </tr>
         </thead>
@@ -832,7 +816,7 @@ function TaskTable(props: TaskTableProps) {
                     </div>
                   </button>
                 </td>
-                <td className="w-[13rem] whitespace-nowrap border-y border-[var(--border)] bg-[var(--panel-strong)] pl-1 pr-3 py-2 transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
+                <td className="w-[18rem] whitespace-nowrap border-y border-[var(--border)] bg-[var(--panel-strong)] pl-1 pr-3 py-2 transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
                   <div className="flex items-center gap-1">
                     <button
                       type="button"
@@ -843,6 +827,16 @@ function TaskTable(props: TaskTableProps) {
                       className="inline-flex w-[4.5rem] items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 py-2 font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
                     >
                       編集
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        props.onCopy(task);
+                      }}
+                      className="inline-flex w-[4.5rem] items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 py-2 font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
+                    >
+                      コピー
                     </button>
                     <PrimaryButton
                       type="button"
@@ -972,17 +966,6 @@ function sourceLabel(source: TaskRecord["source"]) {
 }
 
 function sourceTag(task: TaskRecord) {
-  return `${sourceLabel(task.source)} #${task.id}`;
-}
-
-function taskCopyKey(task: TaskRecord) {
-  return `${task.source}:${task.id}`;
-}
-
-function taskCopyLabel(task: TaskRecord) {
-  if (showTaskTitle(task.title)) {
-    return `${sourceLabel(task.source)} #${task.id} - ${task.title}`;
-  }
   return `${sourceLabel(task.source)} #${task.id}`;
 }
 
