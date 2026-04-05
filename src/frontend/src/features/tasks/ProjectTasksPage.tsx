@@ -1,40 +1,31 @@
-import { type Dispatch, type SetStateAction, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 
-import { Notice } from "../../components/Notice";
 import { PageFrame } from "../../components/PageFrame";
-import { PrimaryButton } from "../../components/PrimaryButton";
 import { readErrorMessage } from "../../lib/readErrorMessage";
-import { fetchProjects } from "../projects/projectApi";
 import { NewTaskDialog } from "./NewTaskDialog";
-import { ProjectDocsPanel } from "./ProjectDocsPanel";
-import type { Project } from "../projects/types";
 import {
-  readCachedProject,
-  readCachedRunnerHistory,
-  readCachedTasks,
-  saveProjectCache,
-  saveRunnerHistoryCache,
-  saveTaskCache,
-} from "./projectTasksPageCache";
+  DocsTabPanel,
+  RunnerTabPanel,
+  type RunnerTab,
+  TaskTabPanel,
+} from "./ProjectTasksTabPanels";
+import { TASK_STATUS_OPTIONS, filterTaskSearch, filterTasks, orderTasks } from "./taskPanelUtils";
 import {
   cancelRunner,
   createTask,
   deleteTask,
   executeRunner,
-  fetchRunnerLogs,
-  fetchTasks,
   swapTaskId,
   updateTask,
 } from "./taskApi";
-import type { RunnerHistoryRecord, TaskRecord, TaskSource } from "./types";
+import type { TaskRecord, TaskSource } from "./types";
+import { useProjectTasksData } from "./useProjectTasksData";
+import { useRunnerPolling } from "./useRunnerPolling";
+import { useTaskDialogs } from "./useTaskDialogs";
 
-const defaultTaskAction = "";
-const AUTO_REFRESH_MS = 60_000;
-const RUNNER_LOG_REFRESH_MS = 2_000;
-const RUNNER_LOG_LINES = 300;
 type ProjectTab = "tasks" | "runner" | "docs";
-type RunnerTab = "list" | "log" | "history";
+
 const defaultVisibleSources: Record<TaskSource, boolean> = {
   action: true,
   runner: false,
@@ -45,34 +36,69 @@ const defaultVisibleSources: Record<TaskSource, boolean> = {
 
 export function ProjectTasksPage() {
   const { projectId = "" } = useParams();
-  const [project, setProject] = useState<Project | null>(null);
-  const [tasks, setTasks] = useState<TaskRecord[]>([]);
-  const [runnerHistory, setRunnerHistory] = useState<RunnerHistoryRecord[]>([]);
   const [activeTab, setActiveTab] = useState<ProjectTab>("tasks");
   const [activeRunnerTab, setActiveRunnerTab] = useState<RunnerTab>("list");
-  const [error, setError] = useState("");
-  const [runnerLogError, setRunnerLogError] = useState("");
-  const [createError, setCreateError] = useState("");
-  const [editError, setEditError] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRunnerRunning, setIsRunnerRunning] = useState(false);
   const [isRunnerStarting, setIsRunnerStarting] = useState(false);
   const [isRunnerCanceling, setIsRunnerCanceling] = useState(false);
-  const [isCreating, setIsCreating] = useState(false);
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
   const [isSwapping, setIsSwapping] = useState(false);
-  const [editTask, setEditTask] = useState<TaskRecord | null>(null);
-  const [newTaskAction, setNewTaskAction] = useState(defaultTaskAction);
-  const [createTaskSource, setCreateTaskSource] = useState<TaskSource>("action");
-  const [editTaskAction, setEditTaskAction] = useState("");
-  const [editTaskSource, setEditTaskSource] = useState<TaskSource>("action");
   const [visibleSources, setVisibleSources] = useState(defaultVisibleSources);
   const [taskSearchQuery, setTaskSearchQuery] = useState("");
-  const [runnerLog, setRunnerLog] = useState("");
   const createButtonRef = useRef<HTMLButtonElement | null>(null);
-  const runnerRunningRef = useRef(false);
+  const {
+    createError,
+    editError,
+    isCreateOpen,
+    isEditOpen,
+    isCreating,
+    isEditing,
+    newTaskAction,
+    createTaskSource,
+    editTask,
+    editTaskAction,
+    editTaskSource,
+    setCreateError,
+    setEditError,
+    setIsCreating,
+    setIsEditing,
+    setNewTaskAction,
+    setEditTaskAction,
+    openCreateDialog,
+    openCreateRunnerDialog,
+    closeCreateDialog,
+    openEditDialog,
+    closeEditDialog,
+    completeCreateDialog,
+    completeEditDialog,
+    handleCreateTaskSource,
+    handleEditTaskSource,
+  } = useTaskDialogs(createButtonRef);
+
+  const pauseAutoRefresh =
+    isCreateOpen ||
+    isEditOpen ||
+    isCreating ||
+    isEditing ||
+    isRunnerStarting ||
+    isRunnerCanceling;
+  const { project, tasks, runnerHistory, error, isLoading, setError, refreshTasksData, handleImported } =
+    useProjectTasksData({
+      projectId,
+      activeTab,
+      pauseAutoRefresh,
+    });
+  const {
+    runnerLog,
+    runnerLogError,
+    isRunnerRunning,
+    setRunnerLogError,
+    setIsRunnerRunning,
+    refreshRunnerLog,
+  } = useRunnerPolling({
+    projectId,
+    activeTab,
+    activeRunnerTab,
+    onRunnerStopped: refreshTasksData,
+  });
 
   useEffect(() => {
     setActiveTab("tasks");
@@ -83,132 +109,15 @@ export function ProjectTasksPage() {
     setActiveRunnerTab("list");
   }, [projectId]);
 
-  useEffect(() => {
-    runnerRunningRef.current = isRunnerRunning;
-  }, [isRunnerRunning]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadPage() {
-      setError("");
-      applyCache(projectId, setProject, setTasks, setRunnerHistory, setIsLoading);
-      try {
-        const loadedTaskData = await readTasks(projectId);
-        if (cancelled) {
-          return;
-        }
-        saveTaskCache(projectId, loadedTaskData.tasks);
-        saveRunnerHistoryCache(projectId, loadedTaskData.runnerHistory);
-        setTasks(loadedTaskData.tasks);
-        setRunnerHistory(loadedTaskData.runnerHistory);
-        setIsLoading(false);
-        try {
-          const loadedProject = await readProject(projectId);
-          if (!cancelled) {
-            saveProjectCache(projectId, loadedProject);
-            setProject(loadedProject);
-          }
-        } catch {
-          if (!cancelled) {
-            setProject(null);
-          }
-        }
-      } catch (loadError) {
-        if (!cancelled) {
-          setError(readErrorMessage(loadError, "タスク一覧の取得に失敗しました。"));
-          setIsLoading(false);
-        }
-      }
-    }
-
-    void loadPage();
-    return () => {
-      cancelled = true;
-    };
-  }, [projectId]);
-
-  useEffect(() => {
-    if (!projectId || activeTab !== "runner" || activeRunnerTab !== "log") {
-      return;
-    }
-    let cancelled = false;
-
-    async function pollRunnerLog() {
-      try {
-        const wasRunning = runnerRunningRef.current;
-        const log = await readRunnerLog(projectId);
-        if (cancelled) {
-          return;
-        }
-        setRunnerLog(log.log);
-        setIsRunnerRunning(log.running);
-        runnerRunningRef.current = log.running;
-        setRunnerLogError("");
-        if (wasRunning && !log.running) {
-          await refreshTasks(projectId, setTasks, setRunnerHistory);
-        }
-      } catch (runnerError) {
-        if (!cancelled) {
-          setRunnerLogError(readErrorMessage(runnerError, "runner ログの取得に失敗しました。"));
-        }
-      }
-    }
-
-    void pollRunnerLog();
-    const intervalId = window.setInterval(() => {
-      void pollRunnerLog();
-    }, RUNNER_LOG_REFRESH_MS);
-    return () => {
-      cancelled = true;
-      window.clearInterval(intervalId);
-    };
-  }, [activeRunnerTab, activeTab, projectId]);
-
-  useEffect(() => {
-    if (
-      !projectId ||
-      activeTab === "docs" ||
-      isLoading ||
-      isCreateOpen ||
-      isEditOpen ||
-      isCreating ||
-      isEditing ||
-      isRunnerStarting ||
-      isRunnerCanceling
-    ) {
-      return;
-    }
-
-    const intervalId = window.setInterval(() => {
-      void refreshTasks(projectId, setTasks, setRunnerHistory).catch((loadError) => {
-        setError(readErrorMessage(loadError, "タスク一覧の取得に失敗しました。"));
-      });
-    }, AUTO_REFRESH_MS);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, [
-    activeTab,
-    projectId,
-    isCreateOpen,
-    isEditOpen,
-    isCreating,
-    isEditing,
-    isLoading,
-    isRunnerStarting,
-    isRunnerCanceling,
-  ]);
-
   async function handleDelete(task: TaskRecord) {
     const ok = window.confirm(`task ${task.id} を削除しますか？`);
     if (!ok) {
       return;
     }
+
     try {
       await deleteTask(projectId, task.source, task.id);
-      await refreshTasks(projectId, setTasks, setRunnerHistory);
+      await refreshTasksData();
     } catch (deleteError) {
       setError(readErrorMessage(deleteError, "タスクの削除に失敗しました。"));
     }
@@ -219,11 +128,12 @@ export function ProjectTasksPage() {
     if (!ok) {
       return;
     }
+
     setError("");
     try {
       const created = await createTask(projectId, task.source);
       await updateTask(projectId, created.source, created.id, task.action);
-      await refreshTasks(projectId, setTasks, setRunnerHistory);
+      await refreshTasksData();
     } catch (copyError) {
       setError(readErrorMessage(copyError, "task のコピーに失敗しました。"));
     }
@@ -233,30 +143,17 @@ export function ProjectTasksPage() {
     if (!swapWithId) {
       return;
     }
+
     setIsSwapping(true);
     setError("");
     try {
       await swapTaskId(projectId, task.source, task.id, swapWithId);
-      await refreshTasks(projectId, setTasks, setRunnerHistory);
+      await refreshTasksData();
     } catch (swapError) {
       setError(readErrorMessage(swapError, "task の並び替えに失敗しました。"));
     } finally {
       setIsSwapping(false);
     }
-  }
-
-  function openCreateDialog() {
-    setCreateError("");
-    setNewTaskAction(defaultTaskAction);
-    setCreateTaskSource("action");
-    setIsCreateOpen(true);
-  }
-
-  function openCreateRunnerDialog() {
-    setCreateError("");
-    setNewTaskAction(defaultTaskAction);
-    setCreateTaskSource("runner");
-    setIsCreateOpen(true);
   }
 
   useEffect(() => {
@@ -273,60 +170,16 @@ export function ProjectTasksPage() {
       if (isEditableTarget(event.target)) {
         return;
       }
+
       event.preventDefault();
-      setCreateError("");
-      setNewTaskAction(defaultTaskAction);
-      setCreateTaskSource("action");
-      setIsCreateOpen(true);
+      openCreateDialog();
     }
 
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [activeTab, isCreateOpen, isEditOpen, isCreating, isEditing]);
-
-  function closeCreateDialog() {
-    if (isCreating) {
-      return;
-    }
-    setCreateError("");
-    setIsCreateOpen(false);
-    setCreateTaskSource("action");
-    createButtonRef.current?.focus();
-  }
-
-  function openEditDialog(task: TaskRecord) {
-    setEditError("");
-    setEditTask(task);
-    setEditTaskAction(task.action);
-    setEditTaskSource(task.source);
-    setIsEditOpen(true);
-  }
-
-  function closeEditDialog() {
-    if (isEditing) {
-      return;
-    }
-    setEditError("");
-    setIsEditOpen(false);
-    setEditTask(null);
-    setEditTaskAction("");
-    setEditTaskSource("action");
-    createButtonRef.current?.focus();
-  }
-
-  function handleEditTaskSource(status: string) {
-    if (isTaskSource(status)) {
-      setEditTaskSource(status);
-    }
-  }
-
-  function handleCreateTaskSource(status: string) {
-    if (isTaskSource(status)) {
-      setCreateTaskSource(status);
-    }
-  }
+  }, [activeTab, isCreateOpen, isEditOpen, isCreating, isEditing, openCreateDialog]);
 
   async function handleCreate() {
     setIsCreating(true);
@@ -334,10 +187,8 @@ export function ProjectTasksPage() {
     try {
       const created = await createTask(projectId, createTaskSource);
       await updateTask(projectId, created.source, created.id, newTaskAction);
-      await refreshTasks(projectId, setTasks, setRunnerHistory);
-      setIsCreateOpen(false);
-      setCreateTaskSource("action");
-      createButtonRef.current?.focus();
+      await refreshTasksData();
+      completeCreateDialog();
     } catch (createError) {
       setCreateError(readErrorMessage(createError, "task の作成に失敗しました。"));
     } finally {
@@ -349,39 +200,18 @@ export function ProjectTasksPage() {
     if (!editTask) {
       return;
     }
+
     setIsEditing(true);
     setEditError("");
     try {
       const nextSource = editTaskSource === editTask.source ? undefined : editTaskSource;
       await updateTask(projectId, editTask.source, editTask.id, editTaskAction, nextSource);
-      await refreshTasks(projectId, setTasks, setRunnerHistory);
-      setIsEditOpen(false);
-      setEditTask(null);
-      setEditTaskAction("");
-      setEditTaskSource("action");
-      createButtonRef.current?.focus();
+      await refreshTasksData();
+      completeEditDialog();
     } catch (saveError) {
       setEditError(readErrorMessage(saveError, "task の更新に失敗しました。"));
     } finally {
       setIsEditing(false);
-    }
-  }
-
-  async function handleImported() {
-    setError("");
-    try {
-      await refreshTasks(projectId, setTasks, setRunnerHistory);
-    } catch (loadError) {
-      setError(readErrorMessage(loadError, "タスク一覧の取得に失敗しました。"));
-      return;
-    }
-    try {
-      const loadedProject = await readProject(projectId);
-      saveProjectCache(projectId, loadedProject);
-      setProject(loadedProject);
-    } catch {
-      saveProjectCache(projectId, null);
-      setProject(null);
     }
   }
 
@@ -390,15 +220,13 @@ export function ProjectTasksPage() {
     if (!confirmed) {
       return;
     }
+
     setActiveRunnerTab("log");
     setRunnerLogError("");
     setIsRunnerStarting(true);
     try {
       await executeRunner(projectId);
-      const log = await readRunnerLog(projectId);
-      setRunnerLog(log.log);
-      setIsRunnerRunning(log.running);
-      runnerRunningRef.current = log.running;
+      await refreshRunnerLog();
     } catch (runnerError) {
       setRunnerLogError(readErrorMessage(runnerError, "runner の実行に失敗しました。"));
     } finally {
@@ -411,18 +239,15 @@ export function ProjectTasksPage() {
     if (!confirmed) {
       return;
     }
+
     setRunnerLogError("");
     setIsRunnerCanceling(true);
     try {
       await cancelRunner(projectId);
       setIsRunnerRunning(false);
-      runnerRunningRef.current = false;
       setActiveRunnerTab("log");
-      const log = await readRunnerLog(projectId);
-      setRunnerLog(log.log);
-      setIsRunnerRunning(log.running);
-      runnerRunningRef.current = log.running;
-      await refreshTasks(projectId, setTasks, setRunnerHistory);
+      await refreshRunnerLog();
+      await refreshTasksData();
     } catch (cancelError) {
       setRunnerLogError(readErrorMessage(cancelError, "runner のキャンセルに失敗しました。"));
     } finally {
@@ -455,139 +280,57 @@ export function ProjectTasksPage() {
       onImported={handleImported}
     >
       {activeTab === "tasks" ? (
-        <section className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
-          <div className="mb-4 flex w-full items-center justify-start gap-2 pl-2">
-            <PrimaryButton
-              ref={createButtonRef}
-              type="button"
-              onClick={openCreateDialog}
-              disabled={isCreating}
-            >
-              新規タスク(N)
-            </PrimaryButton>
-            {TASK_LIST_FILTER_ORDER.map((source, index) => (
-              <button
-                key={source}
-                type="button"
-                aria-pressed={visibleSources[source]}
-                onClick={() => toggleSourceFilter(source, setVisibleSources)}
-                className={`${sourceFilterClass(source, visibleSources[source])} ${index === 0 ? "ml-2" : ""}`}
-              >
-                {`${sourceLabel(source)}(${countTasks(tasks, source)})`}
-              </button>
-            ))}
-            <div className="relative w-full min-w-48 max-w-64">
-              <img
-                src="/assets/images/search.svg"
-                alt=""
-                aria-hidden="true"
-                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-65"
-              />
-              <input
-                id="task-search"
-                type="search"
-                aria-label="Search"
-                value={taskSearchQuery}
-                onChange={(event) => setTaskSearchQuery(event.target.value)}
-                placeholder="Search"
-                className="h-9 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12"
-              />
-            </div>
-          </div>
-          {error ? <Notice tone="error" message={error} /> : null}
-          {isLoading ? <Notice tone="neutral" message="Loading tasks..." /> : null}
-          {!error && !isLoading && visibleTasks.length === 0 ? (
-            <Notice tone="neutral" message="task はありません" />
-          ) : null}
-          {!error && !isLoading && visibleTasks.length > 0 && filteredTasks.length === 0 ? (
-            <Notice tone="neutral" message="検索条件に一致するtask はありません。" />
-          ) : null}
-          {!isLoading && filteredTasks.length > 0 ? (
-            <TaskTable
-              tasks={filteredTasks}
-              orderedTasks={orderedTasks}
-              isSwapping={isSwapping}
-              onEdit={openEditDialog}
-              onCopy={(task) => void handleCopy(task)}
-              onDelete={(task) => void handleDelete(task)}
-              onSwap={(task, targetId) => void handleSwap(task, targetId)}
-            />
-          ) : null}
-        </section>
-      ) : null}
-      {activeTab === "runner" ? (
-        <section className="rounded-xl border border-[var(--border)] bg-[var(--panel-strong)] p-4 shadow-[0_1px_0_rgba(9,9,11,0.04),0_14px_35px_rgba(9,9,11,0.08)]">
-          <div className="mb-4 flex w-full items-center justify-start gap-2 pl-2">
-            <PrimaryButton type="button" onClick={openCreateRunnerDialog} disabled={isCreating}>
-              新規Runner
-            </PrimaryButton>
-            <PrimaryButton
-              type="button"
-              onClick={() => void handleRunnerAction()}
-              disabled={isRunnerStarting || isRunnerCanceling}
-            >
-              {isRunnerStarting
-                ? "起動中..."
-                : isRunnerCanceling
-                  ? "キャンセル中..."
-                  : isRunnerRunning
-                    ? "Runnerキャンセル"
-                    : "Runner実行"}
-            </PrimaryButton>
-            <button
-              type="button"
-              onClick={() => setActiveRunnerTab("list")}
-              className={runnerTabClass(activeRunnerTab === "list")}
-            >
-              Runner
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveRunnerTab("log")}
-              className={runnerTabClass(activeRunnerTab === "log")}
-            >
-              ログ
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveRunnerTab("history")}
-              className={runnerTabClass(activeRunnerTab === "history")}
-            >
-              履歴
-            </button>
-          </div>
-          {error ? <Notice tone="error" message={error} /> : null}
-          {isLoading ? <Notice tone="neutral" message="Loading tasks..." /> : null}
-          {activeRunnerTab === "list" && !error && !isLoading && runnerTasks.length === 0 ? (
-            <Notice tone="neutral" message="RUNNER task はありません" />
-          ) : null}
-          {activeRunnerTab === "list" && !error && !isLoading && runnerTasks.length > 0 ? (
-            <TaskTable
-              tasks={runnerTasks}
-              orderedTasks={orderedTasks}
-              isSwapping={isSwapping}
-              onEdit={openEditDialog}
-              onCopy={(task) => void handleCopy(task)}
-              onDelete={(task) => void handleDelete(task)}
-              onSwap={(task, targetId) => void handleSwap(task, targetId)}
-            />
-          ) : null}
-          {activeRunnerTab === "log" ? (
-            <RunnerLogPanel
-              runnerLog={runnerLog}
-              isRunning={isRunnerRunning}
-              logError={runnerLogError}
-            />
-          ) : null}
-          {activeRunnerTab === "history" ? <RunnerHistoryPanel history={runnerHistory} /> : null}
-        </section>
-      ) : null}
-      {activeTab === "docs" && project?.repositoryPath ? (
-        <ProjectDocsPanel
-          isActive={activeTab === "docs"}
-          projectId={projectId}
+        <TaskTabPanel
+          tasks={tasks}
+          orderedTasks={orderedTasks}
+          visibleTasks={visibleTasks}
+          filteredTasks={filteredTasks}
+          visibleSources={visibleSources}
+          taskSearchQuery={taskSearchQuery}
+          isCreating={isCreating}
+          isLoading={isLoading}
+          isSwapping={isSwapping}
+          error={error}
+          createButtonRef={createButtonRef}
+          onTaskSearchChange={setTaskSearchQuery}
+          onToggleSource={(source) => {
+            setVisibleSources((current) => ({
+              ...current,
+              [source]: !current[source],
+            }));
+          }}
+          onOpenCreateDialog={openCreateDialog}
+          onEdit={openEditDialog}
+          onCopy={(task) => void handleCopy(task)}
+          onDelete={(task) => void handleDelete(task)}
+          onSwap={(task, targetId) => void handleSwap(task, targetId)}
         />
       ) : null}
+      {activeTab === "runner" ? (
+        <RunnerTabPanel
+          activeRunnerTab={activeRunnerTab}
+          setActiveRunnerTab={setActiveRunnerTab}
+          error={error}
+          isLoading={isLoading}
+          isCreating={isCreating}
+          isRunnerStarting={isRunnerStarting}
+          isRunnerCanceling={isRunnerCanceling}
+          isRunnerRunning={isRunnerRunning}
+          isSwapping={isSwapping}
+          orderedTasks={orderedTasks}
+          runnerTasks={runnerTasks}
+          runnerLog={runnerLog}
+          runnerLogError={runnerLogError}
+          runnerHistory={runnerHistory}
+          onOpenCreateRunnerDialog={openCreateRunnerDialog}
+          onRunnerAction={() => void handleRunnerAction()}
+          onEdit={openEditDialog}
+          onCopy={(task) => void handleCopy(task)}
+          onDelete={(task) => void handleDelete(task)}
+          onSwap={(task, targetId) => void handleSwap(task, targetId)}
+        />
+      ) : null}
+      {activeTab === "docs" && project?.repositoryPath ? <DocsTabPanel projectId={projectId} /> : null}
       {activeTab !== "docs" ? (
         <NewTaskDialog
           isOpen={isCreateOpen}
@@ -631,61 +374,6 @@ export function ProjectTasksPage() {
       ) : null}
     </PageFrame>
   );
-}
-
-async function readProject(projectId: string) {
-  const projectResponse = await fetchProjects();
-  const project = projectResponse.projects.find((item) => item.id === projectId) ?? null;
-  return project;
-}
-
-async function readTasks(projectId: string) {
-  const taskResponse = await fetchTasks(projectId);
-  return {
-    tasks: taskResponse.tasks,
-    runnerHistory: taskResponse.runnerHistory ?? [],
-  };
-}
-
-async function readRunnerLog(projectId: string) {
-  return fetchRunnerLogs(projectId, RUNNER_LOG_LINES);
-}
-
-async function refreshTasks(
-  projectId: string,
-  setTasks: (tasks: TaskRecord[]) => void,
-  setRunnerHistory: (history: RunnerHistoryRecord[]) => void,
-) {
-  const taskData = await readTasks(projectId);
-  saveTaskCache(projectId, taskData.tasks);
-  saveRunnerHistoryCache(projectId, taskData.runnerHistory);
-  setTasks(taskData.tasks);
-  setRunnerHistory(taskData.runnerHistory);
-}
-
-function applyCache(
-  projectId: string,
-  setProject: (project: Project | null) => void,
-  setTasks: (tasks: TaskRecord[]) => void,
-  setRunnerHistory: (history: RunnerHistoryRecord[]) => void,
-  setIsLoading: (isLoading: boolean) => void,
-) {
-  const cachedTasks = readCachedTasks(projectId);
-  if (cachedTasks) {
-    setTasks(cachedTasks);
-    setRunnerHistory(readCachedRunnerHistory(projectId) ?? []);
-    setIsLoading(false);
-  } else {
-    setTasks([]);
-    setRunnerHistory([]);
-    setIsLoading(true);
-  }
-  const cachedProject = readCachedProject(projectId);
-  if (cachedProject !== undefined) {
-    setProject(cachedProject);
-  } else {
-    setProject(null);
-  }
 }
 
 type ProjectTabsProps = {
@@ -745,361 +433,6 @@ function projectTabClass(isActive: boolean) {
   return "rounded-md border border-transparent px-3 py-1 text-base text-[var(--muted)] hover:bg-zinc-100";
 }
 
-function runnerTabClass(isActive: boolean) {
-  if (isActive) {
-    return "inline-flex h-8 items-center rounded-full border border-zinc-300 bg-zinc-200 px-3 text-xs font-semibold";
-  }
-  return "inline-flex h-8 items-center rounded-full border border-[var(--border)] bg-white px-3 text-xs font-semibold text-[var(--muted)]";
-}
-
-type TaskPrLinkProps = {
-  url: string;
-};
-
-function TaskPrLink(props: TaskPrLinkProps) {
-  if (props.url === "-") {
-    return <span className="block max-w-[14rem] break-all">-</span>;
-  }
-
-  return (
-    <a
-      href={props.url}
-      target="_blank"
-      rel="noreferrer"
-      onClick={(event) => {
-        event.stopPropagation();
-      }}
-      className="inline-flex items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
-    >
-      {prLabel(props.url)}
-    </a>
-  );
-}
-
-function prLabel(url: string) {
-  const matched = /\/pull\/(\d+)$/.exec(url);
-  if (!matched) {
-    return "PR";
-  }
-  return `PR#${matched[1]}`;
-}
-
-type TaskTableProps = {
-  tasks: TaskRecord[];
-  orderedTasks: TaskRecord[];
-  isSwapping: boolean;
-  onEdit: (task: TaskRecord) => void;
-  onCopy: (task: TaskRecord) => void;
-  onDelete: (task: TaskRecord) => void;
-  onSwap: (task: TaskRecord, targetId: string | null) => void;
-};
-
-function TaskTable(props: TaskTableProps) {
-  return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full border-separate border-spacing-y-1 text-left text-sm">
-        <thead>
-          <tr className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
-            <th className="px-3 whitespace-nowrap">id</th>
-            <th className="px-3 w-full">task</th>
-            <th className="pl-1 pr-3 w-[18rem] whitespace-nowrap">actions</th>
-            <th className="px-3 text-center">url</th>
-          </tr>
-        </thead>
-        <tbody>
-          {props.tasks.map((task) => {
-            const upTargetId = swapTargetId(props.orderedTasks, task, "up");
-            const downTargetId = swapTargetId(props.orderedTasks, task, "down");
-            return (
-              <tr
-                key={`${task.source}-${task.id}`}
-                onClick={(event) => {
-                  if (hasTextSelection(event.currentTarget)) {
-                    return;
-                  }
-                  props.onEdit(task);
-                }}
-                className="group cursor-pointer"
-              >
-                <td className="rounded-l-md border-y border-l border-[var(--border)] bg-[var(--panel-strong)] px-3 py-2 text-[var(--muted)] whitespace-nowrap transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
-                  <span
-                    className={`rounded-md px-3 py-1 text-xs font-semibold uppercase ${sourceBadgeTone(task.source)}`}
-                  >
-                    {sourceTag(task)}
-                  </span>
-                </td>
-                <td className="w-full min-w-[34rem] border-y border-[var(--border)] bg-[var(--panel-strong)] transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
-                  <button
-                    type="button"
-                    aria-label={`task ${task.id} を編集`}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      if (hasTextSelection(event.currentTarget)) {
-                        return;
-                      }
-                      props.onEdit(task);
-                    }}
-                    className="block h-full w-full select-text px-3 py-2 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
-                  >
-                    <div className="space-y-1">
-                      {showTaskTitle(task.title) ? (
-                        <p className="select-text font-semibold text-[var(--ink)]">{task.title}</p>
-                      ) : null}
-                      <p className="line-clamp-6 max-w-[56rem] whitespace-pre-wrap break-all select-text text-black">
-                        {task.action}
-                      </p>
-                    </div>
-                  </button>
-                </td>
-                <td className="w-[18rem] whitespace-nowrap border-y border-[var(--border)] bg-[var(--panel-strong)] pl-1 pr-3 py-2 transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
-                  <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        props.onEdit(task);
-                      }}
-                      className="inline-flex w-[4.5rem] items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 py-2 font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
-                    >
-                      編集
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        props.onCopy(task);
-                      }}
-                      className="inline-flex w-[4.5rem] items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 py-2 font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
-                    >
-                      コピー
-                    </button>
-                    <PrimaryButton
-                      type="button"
-                      className="w-[4.5rem] border border-rose-200 bg-white !text-rose-700 hover:border-rose-300 hover:bg-rose-50 focus-visible:outline-rose-300"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        props.onDelete(task);
-                      }}
-                    >
-                      削除
-                    </PrimaryButton>
-                    <SwapButton
-                      label="↑"
-                      ariaLabel={`task ${task.id} を上へ`}
-                      disabled={props.isSwapping || !upTargetId}
-                      onClick={() => props.onSwap(task, upTargetId)}
-                    />
-                    <SwapButton
-                      label="↓"
-                      ariaLabel={`task ${task.id} を下へ`}
-                      disabled={props.isSwapping || !downTargetId}
-                      onClick={() => props.onSwap(task, downTargetId)}
-                    />
-                  </div>
-                </td>
-                <td className="rounded-r-md border-y border-r border-[var(--border)] bg-[var(--panel-strong)] px-3 py-2 text-center transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
-                  <TaskPrLink url={task.url} />
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-type RunnerHistoryPanelProps = {
-  history: RunnerHistoryRecord[];
-};
-
-function RunnerHistoryPanel(props: RunnerHistoryPanelProps) {
-  const history = [...props.history].reverse();
-  return (
-    <section className="mb-4 rounded-lg border border-[var(--border)] bg-white px-3 py-2">
-      <div className="mb-2 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-[var(--ink)]">RUNNER履歴</h2>
-        <span className="text-xs text-[var(--muted)]">{history.length}件</span>
-      </div>
-      {history.length === 0 ? (
-        <p className="text-xs text-[var(--muted)]">履歴はありません。</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-xs">
-            <thead>
-              <tr className="text-[var(--muted)]">
-                <th className="px-2 py-1 font-medium">id</th>
-                <th className="px-2 py-1 font-medium">datetime</th>
-                <th className="px-2 py-1 font-medium">status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {history.map((item, index) => (
-                <tr key={`${item.datetime}-${index}`} className="border-t border-[var(--border)]">
-                  <td className="px-2 py-1 text-[var(--ink)]">{item.id.join(", ")}</td>
-                  <td className="px-2 py-1 text-[var(--ink)]">{item.datetime}</td>
-                  <td className="px-2 py-1">
-                    <span className={runnerStatusClass(item.status)}>{item.status.toUpperCase()}</span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </section>
-  );
-}
-
-type RunnerLogPanelProps = {
-  runnerLog: string;
-  isRunning: boolean;
-  logError: string;
-};
-
-function RunnerLogPanel(props: RunnerLogPanelProps) {
-  return (
-    <section className="flex h-[calc(100vh-16rem)] min-h-[28rem] flex-col rounded-lg border border-[var(--border)] bg-white px-3 py-2">
-      <div className="mb-2 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-[var(--ink)]">ログ</h2>
-        <span className={runnerStateClass(props.isRunning)}>
-          {props.isRunning ? "RUNNING" : "IDLE"}
-        </span>
-      </div>
-      {props.logError ? <Notice tone="error" message={props.logError} /> : null}
-      <pre className="min-h-0 flex-1 overflow-auto rounded-md border border-[var(--border)] bg-zinc-950 px-3 py-2 text-xs leading-5 text-zinc-100">
-        {props.runnerLog || "ログはありません。"}
-      </pre>
-    </section>
-  );
-}
-
-function runnerStateClass(isRunning: boolean) {
-  if (isRunning) {
-    return "inline-flex rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs text-blue-700";
-  }
-  return "inline-flex rounded-full border border-zinc-300 bg-zinc-100 px-2 py-0.5 text-xs text-zinc-700";
-}
-
-function runnerStatusClass(status: RunnerHistoryRecord["status"]) {
-  if (status === "error") {
-    return "inline-flex rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-rose-700";
-  }
-  return "inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-emerald-700";
-}
-
-function showTaskTitle(title: string) {
-  return title.trim() !== "" && title.trim() !== "-";
-}
-
-function sourceBadgeTone(source: TaskRecord["source"]) {
-  return SOURCE_META[source].badgeClass;
-}
-
-function sourceLabel(source: TaskRecord["source"]) {
-  return SOURCE_META[source].label;
-}
-
-function sourceTag(task: TaskRecord) {
-  return `${sourceLabel(task.source)} #${task.id}`;
-}
-
-function sourceFilterClass(source: TaskSource, active: boolean) {
-  const tone = SOURCE_META[source].filterClass;
-  const inactive = "border-[var(--border)] bg-white text-[var(--muted)]";
-  const toneClass = active ? tone : inactive;
-  return `inline-flex h-8 items-center rounded-full border px-3 text-xs font-semibold uppercase tracking-[0.08em] transition ${toneClass}`;
-}
-
-function orderTasks(tasks: TaskRecord[]) {
-  return TASK_FILTER_ORDER.flatMap((source) => {
-    const sort = SOURCE_META[source].descending ? compareTaskIdDesc : compareTaskIdAsc;
-    return tasks.filter((task) => task.source === source).sort(sort);
-  });
-}
-
-function filterTasks(tasks: TaskRecord[], visibleSources: Record<TaskSource, boolean>) {
-  return tasks.filter((task) => visibleSources[task.source]);
-}
-
-function filterTaskSearch(tasks: TaskRecord[], searchQuery: string) {
-  const query = searchQuery.trim().toLowerCase();
-  if (!query) {
-    return tasks;
-  }
-  return tasks.filter((task) => {
-    const title = showTaskTitle(task.title) ? task.title.toLowerCase() : "";
-    return (
-      task.id.toLowerCase().includes(query) ||
-      sourceLabel(task.source).toLowerCase().includes(query) ||
-      title.includes(query) ||
-      task.action.toLowerCase().includes(query)
-    );
-  });
-}
-
-function countTasks(tasks: TaskRecord[], source: TaskRecord["source"]) {
-  return tasks.filter((task) => task.source === source).length;
-}
-
-function compareTaskIdDesc(left: TaskRecord, right: TaskRecord) {
-  const leftId = Number(left.id);
-  const rightId = Number(right.id);
-  if (Number.isFinite(leftId) && Number.isFinite(rightId)) {
-    return rightId - leftId;
-  }
-  return right.id.localeCompare(left.id, undefined, { numeric: true, sensitivity: "base" });
-}
-
-function compareTaskIdAsc(left: TaskRecord, right: TaskRecord) {
-  const leftId = Number(left.id);
-  const rightId = Number(right.id);
-  if (Number.isFinite(leftId) && Number.isFinite(rightId)) {
-    return leftId - rightId;
-  }
-  return left.id.localeCompare(right.id, undefined, { numeric: true, sensitivity: "base" });
-}
-
-function swapTargetId(
-  tasks: TaskRecord[],
-  task: TaskRecord,
-  direction: "up" | "down",
-) {
-  const sourceTasks = tasks.filter((item) => item.source === task.source);
-  const index = sourceTasks.findIndex((item) => item.id === task.id);
-  if (index < 0) {
-    return null;
-  }
-  const offset = direction === "up" ? -1 : 1;
-  const target = sourceTasks[index + offset];
-  return target ? target.id : null;
-}
-
-type SwapButtonProps = {
-  label: string;
-  ariaLabel: string;
-  disabled: boolean;
-  onClick: () => void;
-};
-
-function SwapButton(props: SwapButtonProps) {
-  const { label, ariaLabel, disabled, onClick } = props;
-  return (
-    <button
-      type="button"
-      aria-label={ariaLabel}
-      disabled={disabled}
-      onClick={(event) => {
-        event.stopPropagation();
-        onClick();
-      }}
-      className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-[var(--border)] bg-white text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50 disabled:cursor-not-allowed disabled:text-[var(--muted)]"
-    >
-      {label}
-    </button>
-  );
-}
-
 function isCreateShortcut(event: KeyboardEvent) {
   const key = event.key.toLowerCase();
   if (key !== "n") {
@@ -1118,88 +451,3 @@ function isEditableTarget(target: EventTarget | null) {
   }
   return target.isContentEditable;
 }
-
-function hasTextSelection(container: Node) {
-  const selection = window.getSelection();
-  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
-    return false;
-  }
-  const selectedText = selection.toString().trim();
-  if (selectedText.length === 0) {
-    return false;
-  }
-  const anchorNode = selection.anchorNode;
-  const focusNode = selection.focusNode;
-  return (
-    (anchorNode ? container.contains(anchorNode) : false) ||
-    (focusNode ? container.contains(focusNode) : false)
-  );
-}
-
-function isTaskSource(value: string): value is TaskSource {
-  return (
-    value === "action" ||
-    value === "runner" ||
-    value === "pending" ||
-    value === "done" ||
-    value === "cancel"
-  );
-}
-
-function toggleSourceFilter(
-  source: TaskSource,
-  setVisibleSources: Dispatch<SetStateAction<Record<TaskSource, boolean>>>,
-) {
-  setVisibleSources((current) => ({
-    ...current,
-    [source]: !current[source],
-  }));
-}
-
-const TASK_FILTER_ORDER: TaskSource[] = ["action", "pending", "done", "cancel", "runner"];
-const TASK_LIST_FILTER_ORDER: TaskSource[] = ["action", "pending", "done", "cancel"];
-const SOURCE_META: Record<
-  TaskSource,
-  {
-    label: string;
-    badgeClass: string;
-    filterClass: string;
-    descending: boolean;
-  }
-> = {
-  action: {
-    label: "TODO",
-    badgeClass: "bg-blue-100 text-blue-700",
-    filterClass: "border-blue-200 bg-blue-100 text-blue-700",
-    descending: false,
-  },
-  runner: {
-    label: "RUNNER",
-    badgeClass: "bg-orange-100 text-orange-700",
-    filterClass: "border-orange-200 bg-orange-100 text-orange-700",
-    descending: false,
-  },
-  pending: {
-    label: "PENDING",
-    badgeClass: "bg-amber-100 text-amber-700",
-    filterClass: "border-amber-200 bg-amber-100 text-amber-700",
-    descending: false,
-  },
-  done: {
-    label: "DONE",
-    badgeClass: "bg-[#dcf5e3] text-[#3f7651]",
-    filterClass: "border-[#bfe7ca] bg-[#dcf5e3] text-[#3f7651]",
-    descending: true,
-  },
-  cancel: {
-    label: "CANCEL",
-    badgeClass: "bg-zinc-200 text-zinc-700",
-    filterClass: "border-zinc-300 bg-zinc-200 text-zinc-700",
-    descending: true,
-  },
-};
-const TASK_STATUS_OPTIONS = TASK_FILTER_ORDER.map((source) => ({
-  value: source,
-  label: SOURCE_META[source].label,
-  toneClass: SOURCE_META[source].filterClass,
-}));
