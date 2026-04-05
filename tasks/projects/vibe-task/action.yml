@@ -1,18 +1,7 @@
 task:
-  - id: '163'
-    url: '-'
-    title: '-'
-    action: |
-      frontend
-
-      タスク画面
-      DONEタスクなどのタイトルをドラッグなどで選択できない
-      できるようにして
-
-      タスク画面を開いたときに、タイトルに表示するでもいいです
-  - id: '164'
-    url: '-'
-    title: '-'
+  - id: "164"
+    url: "-"
+    title: "-"
     action: |-
       frontend
 
