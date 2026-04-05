@@ -6,7 +6,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends nodejs npm zsh bash \
+  && apt-get install -y --no-install-recommends nodejs npm zsh bash git gh \
   && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --no-cache-dir uv
