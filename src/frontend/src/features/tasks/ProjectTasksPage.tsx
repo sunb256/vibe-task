@@ -813,7 +813,12 @@ function TaskTable(props: TaskTableProps) {
             return (
               <tr
                 key={`${task.source}-${task.id}`}
-                onClick={() => props.onEdit(task)}
+                onClick={(event) => {
+                  if (hasTextSelection(event.currentTarget)) {
+                    return;
+                  }
+                  props.onEdit(task);
+                }}
                 className="group cursor-pointer"
               >
                 <td className="rounded-l-md border-y border-l border-[var(--border)] bg-[var(--panel-strong)] px-3 py-2 text-[var(--muted)] whitespace-nowrap transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
@@ -829,15 +834,18 @@ function TaskTable(props: TaskTableProps) {
                     aria-label={`task ${task.id} を編集`}
                     onClick={(event) => {
                       event.stopPropagation();
+                      if (hasTextSelection(event.currentTarget)) {
+                        return;
+                      }
                       props.onEdit(task);
                     }}
-                    className="block h-full w-full px-3 py-2 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+                    className="block h-full w-full select-text px-3 py-2 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
                   >
                     <div className="space-y-1">
                       {showTaskTitle(task.title) ? (
-                        <p className="font-semibold text-[var(--ink)]">{task.title}</p>
+                        <p className="select-text font-semibold text-[var(--ink)]">{task.title}</p>
                       ) : null}
-                      <p className="line-clamp-6 max-w-[56rem] whitespace-pre-wrap break-all text-black">
+                      <p className="line-clamp-6 max-w-[56rem] whitespace-pre-wrap break-all select-text text-black">
                         {task.action}
                       </p>
                     </div>
@@ -1109,6 +1117,23 @@ function isEditableTarget(target: EventTarget | null) {
     return true;
   }
   return target.isContentEditable;
+}
+
+function hasTextSelection(container: Node) {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+    return false;
+  }
+  const selectedText = selection.toString().trim();
+  if (selectedText.length === 0) {
+    return false;
+  }
+  const anchorNode = selection.anchorNode;
+  const focusNode = selection.focusNode;
+  return (
+    (anchorNode ? container.contains(anchorNode) : false) ||
+    (focusNode ? container.contains(focusNode) : false)
+  );
 }
 
 function isTaskSource(value: string): value is TaskSource {

@@ -2,15 +2,18 @@ task:
   - id: '163'
     url: '-'
     title: '-'
-    action: |-
+    action: |
       frontend
 
       タスク画面
-      DONEタスクなどのタイトルをコピーできないのでコピーできるようにして
+      DONEタスクなどのタイトルをドラッグなどで選択できない
+      できるようにして
+
+      タスク画面を開いたときに、タイトルに表示するでもいいです
   - id: '164'
     url: '-'
     title: '-'
-    action: |
+    action: |-
       frontend
 
       Custom Prompt機能はディスコンになってしまった。
