@@ -1,12 +1,4 @@
 task:
-  - id: '161'
-    url: '-'
-    title: '-'
-    action: |-
-      frontenc
-
-      新規タスク画面
-      タスクのコピー機能が欲しい
   - id: '162'
     url: '-'
     title: '-'
@@ -19,7 +11,7 @@ task:
   - id: '163'
     url: '-'
     title: '-'
-    action: |
+    action: |-
       frontend
 
       タスク画面

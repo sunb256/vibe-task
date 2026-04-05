@@ -212,6 +212,21 @@ export function ProjectTasksPage() {
     }
   }
 
+  async function handleCopy(task: TaskRecord) {
+    const ok = window.confirm(`task ${task.id} をコピーしますか？`);
+    if (!ok) {
+      return;
+    }
+    setError("");
+    try {
+      const created = await createTask(projectId, task.source);
+      await updateTask(projectId, created.source, created.id, task.action);
+      await refreshTasks(projectId, setTasks, setRunnerHistory);
+    } catch (copyError) {
+      setError(readErrorMessage(copyError, "task のコピーに失敗しました。"));
+    }
+  }
+
   async function handleSwap(task: TaskRecord, swapWithId: string | null) {
     if (!swapWithId) {
       return;
@@ -470,6 +485,7 @@ export function ProjectTasksPage() {
               orderedTasks={orderedTasks}
               isSwapping={isSwapping}
               onEdit={openEditDialog}
+              onCopy={(task) => void handleCopy(task)}
               onDelete={(task) => void handleDelete(task)}
               onSwap={(task, targetId) => void handleSwap(task, targetId)}
             />
@@ -528,6 +544,7 @@ export function ProjectTasksPage() {
               orderedTasks={orderedTasks}
               isSwapping={isSwapping}
               onEdit={openEditDialog}
+              onCopy={(task) => void handleCopy(task)}
               onDelete={(task) => void handleDelete(task)}
               onSwap={(task, targetId) => void handleSwap(task, targetId)}
             />
@@ -749,6 +766,7 @@ type TaskTableProps = {
   orderedTasks: TaskRecord[];
   isSwapping: boolean;
   onEdit: (task: TaskRecord) => void;
+  onCopy: (task: TaskRecord) => void;
   onDelete: (task: TaskRecord) => void;
   onSwap: (task: TaskRecord, targetId: string | null) => void;
 };
@@ -761,7 +779,7 @@ function TaskTable(props: TaskTableProps) {
           <tr className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
             <th className="px-3 whitespace-nowrap">id</th>
             <th className="px-3 w-full">task</th>
-            <th className="pl-1 pr-3 w-[13rem] whitespace-nowrap">actions</th>
+            <th className="pl-1 pr-3 w-[18rem] whitespace-nowrap">actions</th>
             <th className="px-3 text-center">url</th>
           </tr>
         </thead>
@@ -802,7 +820,7 @@ function TaskTable(props: TaskTableProps) {
                     </div>
                   </button>
                 </td>
-                <td className="w-[13rem] whitespace-nowrap border-y border-[var(--border)] bg-[var(--panel-strong)] pl-1 pr-3 py-2 transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
+                <td className="w-[18rem] whitespace-nowrap border-y border-[var(--border)] bg-[var(--panel-strong)] pl-1 pr-3 py-2 transition group-hover:bg-amber-50/70 group-focus-within:bg-amber-50/70">
                   <div className="flex items-center gap-1">
                     <button
                       type="button"
@@ -813,6 +831,16 @@ function TaskTable(props: TaskTableProps) {
                       className="inline-flex w-[4.5rem] items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 py-2 font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
                     >
                       編集
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        props.onCopy(task);
+                      }}
+                      className="inline-flex w-[4.5rem] items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 py-2 font-semibold text-[var(--ink)] transition hover:border-[var(--ink)] hover:bg-zinc-50"
+                    >
+                      コピー
                     </button>
                     <PrimaryButton
                       type="button"
