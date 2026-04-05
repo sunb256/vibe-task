@@ -226,7 +226,10 @@ export function ProjectTasksPage() {
     setIsRunnerStarting(true);
     try {
       await executeRunner(projectId);
-      await refreshRunnerLog();
+      const logState = await refreshRunnerLog();
+      if (!logState.running) {
+        await refreshTasksData();
+      }
     } catch (runnerError) {
       setRunnerLogError(readErrorMessage(runnerError, "runner の実行に失敗しました。"));
     } finally {

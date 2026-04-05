@@ -10,8 +10,8 @@ from app.models import ProjectRecord, RunnerLogRecord
 from app.repositories.project_repository import ProjectRepository
 from app.repositories.task_repository import TaskRepository, normalize_project_directory_name
 
-RUNNER_START_CMD = ["tsx", "src/runner/src/run.ts", "--task"]
-RUNNER_FALLBACK_START_CMD = ["--prefix", "src/runner", "run", "start", "--", "--task"]
+RUNNER_START_CMD = ["--prefix", "src/runner", "run", "start", "--", "--task"]
+RUNNER_FALLBACK_START_CMD = ["--yes", "--prefix", "src/runner", "tsx", "src/runner/src/run.ts", "--task"]
 RUNNER_LOG_FILE = Path("logs") / "log.log"
 
 
@@ -134,21 +134,23 @@ class RunnerService:
         project: ProjectRecord,
     ) -> tuple[list[str], dict[str, str]]:
         task_project = normalize_project_directory_name(project.name, project.id)
-        npx_path = self._resolve_node_command("npx")
-        if npx_path:
-            return [npx_path, *RUNNER_START_CMD, task_project], self._build_runner_env(npx_path)
-
         npm_path = self._resolve_node_command("npm")
         if npm_path:
-            return [npm_path, *RUNNER_FALLBACK_START_CMD, task_project], self._build_runner_env(
-                npm_path,
+            return [npm_path, *RUNNER_START_CMD, task_project], self._build_runner_env(npm_path)
+
+        npx_path = self._resolve_node_command("npx")
+        if npx_path:
+            return [npx_path, *RUNNER_FALLBACK_START_CMD, task_project], self._build_runner_env(
+                npx_path,
             )
 
         raise AppError("failed to start runner", 500)
 
     def _build_runner_env(self, command_path: str) -> dict[str, str]:
         env = os.environ.copy()
-        bin_dir = str(Path(command_path).resolve().parent)
+        # npm/npx が symlink の場合、resolve() すると lib/node_modules 配下へ飛び
+        # node 実行バイナリと同居しないため、元の bin ディレクトリを優先する。
+        bin_dir = str(Path(command_path).parent)
         current_path = env.get("PATH", "")
         if current_path:
             env["PATH"] = f"{bin_dir}{os.pathsep}{current_path}"
